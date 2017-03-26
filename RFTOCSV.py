@@ -1,14 +1,22 @@
 import os
 import glob
 import csv
+import json
 from string import Template
 import sys, traceback
 import datetime
 from collections import OrderedDict
 
 try :
+    CONFIG = json.loads(open('CONFIG.json').read())
+    print('Config :: ', CONFIG)
     CSV_FILE_PATH = 'DailyRainTest.csv'
     RF_DIR_PATH = './OUTPUT/RF/'
+    if 'CSV_FILE_PATH' in CONFIG :
+        CSV_FILE_PATH = CONFIG['CSV_FILE_PATH']
+    if 'RF_DIR_PATH' in CONFIG :
+        RF_DIR_PATH = CONFIG['RF_DIR_PATH']
+
     UPPER_CATCHMENT_WEIGHTS = {
         'Attanagalla'   : 1/7, # 1
         'Daraniyagala'  : 1/7, # 2
@@ -19,7 +27,6 @@ try :
         'Norwood'       : 1/7  # 7
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
-
 
     # now = datetime.datetime.now()
     now = datetime.datetime(2017, 3, 22)

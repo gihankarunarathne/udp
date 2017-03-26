@@ -1,0 +1,4 @@
+{
+	"CSV_FILE_PATH" : "DailyRainTest.csv",
+    "RF_DIR_PATH" : "./OUTPUT/RF/"
+}
