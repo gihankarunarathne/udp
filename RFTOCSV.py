@@ -28,8 +28,10 @@ try :
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
 
-    # now = datetime.datetime.now()
-    now = datetime.datetime(2017, 3, 22)
+    # Default run for current day
+    now = datetime.datetime.now()
+    if len(sys.argv) > 1 :
+        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
     THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
@@ -53,6 +55,8 @@ try :
         d = datetime.datetime.fromtimestamp(avg)
         csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % THEISSEN_VALUES[avg]])
 
+except ValueError:
+    raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 except Exception as e :
     traceback.print_exc()
 finally:
