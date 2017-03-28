@@ -18,13 +18,13 @@ try :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
 
     UPPER_CATCHMENT_WEIGHTS = {
-        'Attanagalla'   : 1/7, # 1
-        'Daraniyagala'  : 1/7, # 2
-        'Glencourse'    : 1/7, # 3
-        'Hanwella'      : 1/7, # 4
-        'Holombuwa'     : 1/7, # 5
-        'Kitulgala'     : 1/7, # 6
-        'Norwood'       : 1/7  # 7
+        # 'Attanagalla'   : 1/7,    # 1
+        'Daraniyagala'  : 0.146828, # 2
+        'Glencourse'    : 0.208938, # 3
+        'Hanwella'      : 0.078722, # 4
+        'Holombuwa'     : 0.163191, # 5
+        'Kitulgala'     : 0.21462,  # 6
+        'Norwood'       : 0.187701  # 7
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
 
