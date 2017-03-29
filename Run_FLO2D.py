@@ -3,8 +3,9 @@ import shutil
 from distutils.dir_util import copy_tree
 
 try :
-    FLO2D_TEMPLATE = './Template'
-    FLO2D_RUN_FOR_PROJECT = './RunForProjectFolder'
+    CWD = os.getcwd()
+    FLO2D_TEMPLATE = os.path.join(CWD, 'Template')
+    FLO2D_RUN_FOR_PROJECT = os.path.join(CWD, 'RunForProjectFolder')
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -12,15 +13,14 @@ try :
         now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
     print('Run FLO2D on', date)
-    app = date + '_Kelani'
-
+    appDir = os.path.join(CWD, date + '_Kelani')
 
     try:
-        if(os.path.isdir(app)) :
-            shutil.rmtree(app)
+        if(os.path.isdir(appDir)) :
+            shutil.rmtree(appDir)
 
-        copy_tree(FLO2D_TEMPLATE, app)
-        copy_tree(FLO2D_RUN_FOR_PROJECT, app)
+        copy_tree(FLO2D_TEMPLATE, appDir)
+        copy_tree(FLO2D_RUN_FOR_PROJECT, appDir)
         print('Copied FLO2D templates')
     # Directories are the same
     except shutil.Error as e:
@@ -29,8 +29,8 @@ try :
     except OSError as e:
         print('Directory not copied. Error: %s' % e)
 
-    # os.chdir('C:\\LKB\Simulations\\20170321New Kelani')
-    # os.system('"C:\\LKB\Simulations\\20170321New Kelani\\FLOPRO.exe"')
+    os.chdir(appDir)
+    os.system(os.path.join(appDir, 'FLOPRO.exe'))
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
