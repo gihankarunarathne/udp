@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import os
 import glob
 import csv
@@ -10,7 +12,7 @@ from collections import OrderedDict
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
     print('Config :: ', CONFIG)
-    CSV_FILE_PATH = 'DailyRainTest.csv'
+    CSV_FILE_PATH = 'DailyRain.csv'
     RF_DIR_PATH = './OUTPUT/RF/'
     if 'CSV_FILE_PATH' in CONFIG :
         CSV_FILE_PATH = CONFIG['CSV_FILE_PATH']

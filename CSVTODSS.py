@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime

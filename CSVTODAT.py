@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import csv
 from string import Template
 import sys, traceback
@@ -27,7 +29,6 @@ try :
 
     lines = []; i = 1.0
     for value in csvList[CSV_NUM_METADATA_LINES:]:
-        print(i)
         lines.append('{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, i, float(value[1]), b='.1f', w=DAT_WIDTH))
         i += 1.0
 

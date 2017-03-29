@@ -1,5 +1,8 @@
+#!/usr/bin/python
+
 from os import curdir
 from os.path import join as pjoin
+import os
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -28,6 +31,9 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/json')
             self.end_headers()
+
+            # Execute FLO2D
+            os.system('python Run_FLO2D.py')
 
 server = HTTPServer(('', 8080), StoreHandler)
 server.serve_forever()

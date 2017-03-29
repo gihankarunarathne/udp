@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys, string, os, datetime
 import shutil
 from distutils.dir_util import copy_tree
