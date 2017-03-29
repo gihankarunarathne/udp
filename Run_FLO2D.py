@@ -28,9 +28,9 @@ try :
     # Any error saying that the directory doesn't exist
     except OSError as e:
         print('Directory not copied. Error: %s' % e)
-
-    os.chdir(appDir)
-    os.system(os.path.join(appDir, 'FLOPRO.exe'))
+    else:
+        os.chdir(appDir)
+        os.system(os.path.join(appDir, 'FLOPRO.exe'))
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
