@@ -64,7 +64,7 @@ main() {
 
 		# Send INFLOW.DAT file into Windows, and run FLO2D
 		echo "Send POST request to $WINDOWS_HOST"
-		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT
+		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
 	
 		#writeForecastStatus $forecast_date $STATUS_FILE
 	else
