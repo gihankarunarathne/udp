@@ -4,7 +4,9 @@ from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
-import java, csv, sys, json
+import java, csv, sys
+sys.path.append("./simplejson-2.5.2")
+import simplejson as json
 
 try :
     try :
