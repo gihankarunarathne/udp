@@ -4,12 +4,29 @@
 # ./Forecast.sh <FORECAST_DATE>
 #	e.g. ./Forecast.sh 2017-03-22
 #
-WINDOWS_HOST='localhost:8080'
+
+trimQuotes() {
+	tmp="${1%\"}"
+	tmp="${tmp#\"}"
+	echo $tmp
+}
 
 ROOT_DIR=$(pwd)
-RF_DIR_PATH='OUTPUT/RF'
-STATUS_FILE='Status.txt'
-HEC_HMS_DIR='hec-hms35'
+CONFIG_FILE='CONFIG.json'
+if [ -z "$(find $ROOT_DIR/$CONFIG_FILE -name $CONFIG_FILE)" ]
+then
+	echo "Unable to find $CONFIG_FILE file"
+	exit 1
+fi
+
+HOST_ADDRESS=$(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))
+HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
+WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
+
+RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
+HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
+HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 forecast_date="`date +%Y-%m-%d`";
@@ -46,6 +63,7 @@ main() {
 		./CSVTODAT.py
 
 		# Send INFLOW.DAT file into Windows, and run FLO2D
+		echo "Send POST request to $WINDOWS_HOST"
 		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT
 	
 		#writeForecastStatus $forecast_date $STATUS_FILE

@@ -11,11 +11,11 @@ from collections import OrderedDict
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
-    print('Config :: ', CONFIG)
-    CSV_FILE_PATH = 'DailyRain.csv'
+    # print('Config :: ', CONFIG)
+    RAIN_CSV_FILE = 'DailyRain.csv'
     RF_DIR_PATH = './OUTPUT/RF/'
-    if 'CSV_FILE_PATH' in CONFIG :
-        CSV_FILE_PATH = CONFIG['CSV_FILE_PATH']
+    if 'RAIN_CSV_FILE' in CONFIG :
+        RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'RF_DIR_PATH' in CONFIG :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
 
@@ -51,7 +51,7 @@ try :
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(THEISSEN_VALUES)
-    csvWriter = csv.writer(open(CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
+    csvWriter = csv.writer(open(RAIN_CSV_FILE, 'w'), delimiter=',', quotechar='|')
     for avg in THEISSEN_VALUES :
         # print(avg, THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
@@ -62,4 +62,4 @@ except ValueError:
 except Exception as e :
     traceback.print_exc()
 finally:
-    print('Completed ', RF_DIR_PATH, ' to ', CSV_FILE_PATH)
+    print('Completed ', RF_DIR_PATH, ' to ', RAIN_CSV_FILE)

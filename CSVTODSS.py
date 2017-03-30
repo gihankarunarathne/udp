@@ -4,18 +4,25 @@ from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
-import java
-import csv
+import java, csv, json
 
 try :
     try :
         #print 'Jython version: ', sys.version
-        NUM_METADATA_LINES = 3;
-        DSS_FILE_PATH = './2008_2_Events/2008_2_Events_force.dss'
-        CSV_FILE_PATH = 'DailyRain.csv'
 
-        myDss = HecDss.open(DSS_FILE_PATH)
-        csvReader = csv.reader(open(CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
+        CONFIG = json.loads(open('CONFIG.json').read())
+        # print('Config :: ', CONFIG)
+
+        NUM_METADATA_LINES = 3;
+        DSS_INPUT_FILE = './2008_2_Events/2008_2_Events_force.dss'
+        RAIN_CSV_FILE = 'DailyRain.csv'
+        if 'DSS_INPUT_FILE' in CONFIG :
+            DSS_INPUT_FILE = CONFIG['DSS_INPUT_FILE']
+        if 'RAIN_CSV_FILE' in CONFIG :
+            RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
+
+        myDss = HecDss.open(DSS_INPUT_FILE)
+        csvReader = csv.reader(open(RAIN_CSV_FILE, 'r'), delimiter=',', quotechar='|')
         csvList = list(csvReader)
         
         numLocations = len(csvList[0]) - 1
@@ -57,4 +64,4 @@ try :
         MessageBox.showError(e.getMessage(), "Error")
 finally :
     myDss.done()
-    print '\nCompleted converting ', CSV_FILE_PATH, ' to ', DSS_FILE_PATH
+    print '\nCompleted converting ', RAIN_CSV_FILE, ' to ', DSS_INPUT_FILE

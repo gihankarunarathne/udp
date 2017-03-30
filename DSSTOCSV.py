@@ -4,19 +4,25 @@ from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
-import java
-import csv
-import sys
+import java, csv, sys, json
 
 try :
     try :
         print 'Jython version: ', sys.version
-        NUM_METADATA_LINES = 2;
-        DSS_FILE_PATH = './2008_2_Events/2008_2_Events.dss'
-        CSV_FILE_PATH = 'DailyDischarge.csv'
 
-        myDss = HecDss.open(DSS_FILE_PATH)
-        csvWriter = csv.writer(open(CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
+        CONFIG = json.loads(open('CONFIG.json').read())
+        # print('Config :: ', CONFIG)
+
+        NUM_METADATA_LINES = 2;
+        DSS_OUTPUT_FILE = './2008_2_Events/2008_2_Events.dss'
+        DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
+        if 'DSS_OUTPUT_FILE' in CONFIG :
+            DSS_OUTPUT_FILE = CONFIG['DSS_OUTPUT_FILE']
+        if 'DISCHARGE_CSV_FILE' in CONFIG :
+            DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
+
+        myDss = HecDss.open(DSS_OUTPUT_FILE)
+        csvWriter = csv.writer(open(DISCHARGE_CSV_FILE, 'w'), delimiter=',', quotechar='|')
         
         flow = myDss.get('//HANWELLA/FLOW//1DAY/RUN:RUN 1/', 1)
 
@@ -50,4 +56,4 @@ try :
         MessageBox.showError(e.getMessage(), "Error")
 finally :
     myDss.done()
-    print '\nCompleted converting ', DSS_FILE_PATH, ' to ', CSV_FILE_PATH
+    print '\nCompleted converting ', DSS_OUTPUT_FILE, ' to ', DISCHARGE_CSV_FILE
