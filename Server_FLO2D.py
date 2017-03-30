@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
+import os, json, subprocess
 from os import curdir
 from os.path import join as pjoin
-import os, json
-
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from sys import executable
+from subprocess import Popen
 
 CONFIG = json.loads(open('CONFIG.json').read())
 print('Config :: ', CONFIG)
@@ -44,10 +45,17 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             date = self.path[len('/'+INFLOW_DAT_FILE)+1:]
-            date = (' ' + date) if len(date)>0 else ''
-            # Execute FLO2D
-            os.system('python Run_FLO2D.py'+ date)
-            #os.system('python Run_FLO2D.py')
+
+            try :
+                # Execute FLO2D
+                if len(date) > 0 :
+                     Popen([executable, 'Run_FLO2D.py', date], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                else :
+                    Popen([executable, 'Run_FLO2D.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                #os.system('python Run_FLO2D.py'+ date)
+                #os.system('python Run_FLO2D.py')
+            except Exception as e :
+                traceback.print_exc()
 
 server = HTTPServer((HOST_ADDRESS, HOST_PORT), StoreHandler)
 server.serve_forever()
