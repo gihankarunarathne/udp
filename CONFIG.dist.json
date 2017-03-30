@@ -1,15 +1,15 @@
 {
-	"HEC_HMS_DIR"		: "hec-hms35",
-	"HEC_DSSVUE_DIR"	: "dssvue",
-	"STATUS_FILE"		: "Status.txt",
+    "HEC_HMS_DIR"       : "hec-hms35",
+    "HEC_DSSVUE_DIR"    : "dssvue",
+    "STATUS_FILE"       : "Status.txt",
 
-	"RAIN_CSV_FILE" 	: "DailyRain.csv",
-	"DSS_INPUT_FILE"	: "./2008_2_Events/2008_2_Events_force.dss",
-	"DSS_OUTPUT_FILE"	: "./2008_2_Events/2008_2_Events.dss",
-	"DISCHARGE_CSV_FILE": "DailyDischarge.csv",
-	"INFLOW_DAT_FILE"	: "INFLOW.DAT",
-    "RF_DIR_PATH"   	: "./OUTPUT/RF/",
+    "RAIN_CSV_FILE"     : "DailyRain.csv",
+    "DSS_INPUT_FILE"    : "./2008_2_Events/2008_2_Events_force.dss",
+    "DSS_OUTPUT_FILE"   : "./2008_2_Events/2008_2_Events.dss",
+    "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
+    "INFLOW_DAT_FILE"   : "INFLOW.DAT",
+    "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
 
- 	"HOST_ADDRESS"  	: "localhost",
- 	"HOST_PORT"			: 8080
+    "HOST_ADDRESS"      : "localhost",
+    "HOST_PORT"         : 8080
 }

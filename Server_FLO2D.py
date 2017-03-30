@@ -44,8 +44,9 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             date = self.path[len('/'+INFLOW_DAT_FILE)+1:]
+            date = (' ' + date) if len(date)>0 else ''
             # Execute FLO2D
-            os.system('python Run_FLO2D.py'+ (' '+date if len(date)>0 else ''))
+            os.system('python Run_FLO2D.py'+ date)
             #os.system('python Run_FLO2D.py')
 
 server = HTTPServer((HOST_ADDRESS, HOST_PORT), StoreHandler)

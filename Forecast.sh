@@ -75,7 +75,7 @@ main() {
 
 isWRFAvailable() {
 	local File_Pattern="*$forecast_date*.txt"
-	if [ -z "$(find $ROOT_DIR/$RF_DIR_PATH -name $File_Pattern)" ]
+	if [ -z "$(find $RF_DIR_PATH -name $File_Pattern)" ]
 	then
 	  # echo "empty (Unable find files $File_Pattern)"
 	  echo 0
