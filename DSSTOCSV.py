@@ -26,7 +26,7 @@ try :
         myDss = HecDss.open(DSS_OUTPUT_FILE)
         csvWriter = csv.writer(open(DISCHARGE_CSV_FILE, 'w'), delimiter=',', quotechar='|')
         
-        flow = myDss.get('//HANWELLA/FLOW//1DAY/RUN:RUN 1/', 1)
+        flow = myDss.get('//HANWELLA/FLOW//1HOUR/RUN:RUN 1/', 1)
 
         if flow.numberValues == 0 :
             MessageBox.showError('No Data', 'Error')

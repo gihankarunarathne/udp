@@ -51,6 +51,9 @@ main() {
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
 		./dssvue/hec-dssvue.sh CSVTODSS.py
 
+		# Change HEC-HMS running time window
+		./Update_HECHMS.py
+
 		# Run HEC-HMS model
 		cd $ROOT_DIR/$HEC_HMS_DIR
 		./HEC-HMS.sh -s ../2008_2_Events/2008_2_Events.script

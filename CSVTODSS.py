@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# Rainfall CSV file format should follow as 
+# https://publicwiki.deltares.nl/display/FEWSDOC/CSV 
+
 import java, csv, sys
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
@@ -45,11 +48,12 @@ try :
             print 'Precipitation of ', locationIds[i], precipitations[:10]
             tsc = TimeSeriesContainer()
             # tsc.fullName = "/BASIN/LOC/FLOW//1HOUR/OBS/"
-            tsc.fullName = '//' + locationIds[i].upper() + '/PRECIP-INC//1DAY/GAGE/'
+            # tsc.fullName = '//' + locationIds[i].upper() + '/PRECIP-INC//1DAY/GAGE/'
+            tsc.fullName = '//' + locationIds[i].upper() + '/PRECIP-INC//1HOUR/GAGE/'
 
             print 'Start time : ', csvList[NUM_METADATA_LINES][0]
             start = HecTime(csvList[NUM_METADATA_LINES][0])
-            tsc.interval = 24 * 60
+            tsc.interval = 60 # in minutes
             times = []
             for value in precipitations :
               times.append(start.value())

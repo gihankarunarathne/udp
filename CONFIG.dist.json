@@ -4,8 +4,10 @@
     "STATUS_FILE"       : "Status.txt",
 
     "RAIN_CSV_FILE"     : "DailyRain.csv",
+    "TIME_INTERVAL"     : 60,
     "DSS_INPUT_FILE"    : "./2008_2_Events/2008_2_Events_force.dss",
     "DSS_OUTPUT_FILE"   : "./2008_2_Events/2008_2_Events.dss",
+    "HEC_HMS_CONTROL"   : "./2008_2_Events/Control_1.control",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
     "INFLOW_DAT_FILE"   : "INFLOW.DAT",
     "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",

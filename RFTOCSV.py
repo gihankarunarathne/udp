@@ -30,32 +30,57 @@ try :
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
 
+    LOWER_CATCHMENT_WEIGHTS = {
+        'Colombo'       :  1
+    }
+    LOWER_CATCHMENTS = LOWER_CATCHMENT_WEIGHTS.keys()
+
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 :
+    if len(sys.argv) > 1 : # Or taken from first arg for the program
         now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
-    THEISSEN_VALUES = OrderedDict()
+
+    UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
         for filename in glob.glob(os.path.join(RF_DIR_PATH, catchment+date+'*.txt')):
-            print('Start Operating on ', filename)
+            print('Start Operating on (Upper) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=',', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
             for row in csvCatchment :
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))
                 d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
                 key = d.timestamp()
-                if key not in THEISSEN_VALUES :
-                    THEISSEN_VALUES[key] = 0
-                THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
+                if key not in UPPER_THEISSEN_VALUES :
+                    UPPER_THEISSEN_VALUES[key] = 0
+                UPPER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
+
+    LOWER_THEISSEN_VALUES = OrderedDict()
+    for lowerCatchment in LOWER_CATCHMENTS :
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+date+'*.txt')):
+            print('Start Operating on (Lower) ', filename)
+            csvCatchment = csv.reader(open(filename, 'r'), delimiter=',', skipinitialspace=True)
+            csvCatchment = list(csvCatchment)
+            for row in csvCatchment :
+                # print(row[0].replace('_', ' '), row[1].strip(' \t'))
+                d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
+                key = d.timestamp()
+                if key not in LOWER_THEISSEN_VALUES :
+                    LOWER_THEISSEN_VALUES[key] = 0
+                LOWER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * LOWER_CATCHMENT_WEIGHTS[lowerCatchment]
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
-    # print(THEISSEN_VALUES)
+    # print(UPPER_THEISSEN_VALUES)
     csvWriter = csv.writer(open(RAIN_CSV_FILE, 'w'), delimiter=',', quotechar='|')
-    for avg in THEISSEN_VALUES :
-        # print(avg, THEISSEN_VALUES[avg])
+    # Write Metadata https://publicwiki.deltares.nl/display/FEWSDOC/CSV
+    csvWriter.writerow(['Location Names', 'Awissawella', 'Colombo'])
+    csvWriter.writerow(['Location Ids', 'Awissawella', 'Colombo'])
+    csvWriter.writerow(['Time', 'Rainfall', 'Rainfall'])
+
+    for avg in UPPER_THEISSEN_VALUES :
+        # print(avg, UPPER_THEISSEN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
-        csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % THEISSEN_VALUES[avg]])
+        csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % UPPER_THEISSEN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
