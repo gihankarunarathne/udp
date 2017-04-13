@@ -4,6 +4,16 @@
 # ./Forecast.sh <FORECAST_DATE>
 #	e.g. ./Forecast.sh 2017-03-22
 #
+usage() {
+cat <<EOF
+Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR]
+
+	-h 	Show usage
+	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
+	-c 	Location of CONFIG.json
+	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory. 	
+EOF
+}
 
 trimQuotes() {
 	tmp="${1%\"}"
@@ -11,9 +21,34 @@ trimQuotes() {
 	echo $tmp
 }
 
-ROOT_DIR=$(pwd)
-CONFIG_FILE='CONFIG.json'
-if [ -z "$(find $ROOT_DIR/$CONFIG_FILE -name $CONFIG_FILE)" ]
+forecast_date="`date +%Y-%m-%d`";
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INIT_DIR=$(pwd)
+CONFIG_FILE=$ROOT_DIR/CONFIG.json
+# Extract user arguments
+while getopts hd:c:r: opt; do
+    case $opt in
+        h)
+            usage
+            exit 0
+            ;;
+        d)  forecast_date=$OPTARG
+            ;;
+        c)  CONFIG_FILE=$OPTARG
+            ;;
+        r)  ROOT_DIR=$OPTARG
+			;;
+        *)
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+# cd into bash script's root directory
+cd $ROOT_DIR
+echo $(pwd)
+if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
 then
 	echo "Unable to find $CONFIG_FILE file"
 	exit 1
@@ -24,19 +59,16 @@ HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
 WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
 
 RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
 STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
 HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
 HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
-forecast_date="`date +%Y-%m-%d`";
-if [ ! -z "$1" ]; then
-	forecast_date=$1
-fi
 
 main() {
 	echo "Start at $current_date_time"
-	echo "Forecasting for $forecast_date"
+	echo "Forecasting with Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
 	local isWRF=$(isWRFAvailable)
 	local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
@@ -44,6 +76,8 @@ main() {
 
 	if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]
 	then
+		mkdir $OUTPUT_DIR
+		
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date

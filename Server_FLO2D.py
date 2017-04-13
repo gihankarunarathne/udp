@@ -8,7 +8,7 @@ from sys import executable
 from subprocess import Popen
 
 CONFIG = json.loads(open('CONFIG.json').read())
-print('Config :: ', CONFIG)
+print('Server Configurations :: ', CONFIG)
 HOST_ADDRESS = ''
 HOST_PORT = 8080
 if 'HOST_ADDRESS' in CONFIG :
@@ -32,6 +32,7 @@ class StoreHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path.startswith('/'+INFLOW_DAT_FILE):
+            print('POST request on ', self.path)
             length = self.headers['content-length']
             data = self.rfile.read(int(length))
             # print('DATA:', data)
