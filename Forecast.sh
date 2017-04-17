@@ -10,7 +10,7 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR]
 
 	-h 	Show usage
 	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
-	-c 	Location of CONFIG.json
+	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
 	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory. 	
 EOF
 }
@@ -81,6 +81,7 @@ main() {
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date
+		exit 0
 
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
 		./dssvue/hec-dssvue.sh CSVTODSS.py

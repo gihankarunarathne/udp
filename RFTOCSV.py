@@ -14,10 +14,13 @@ try :
     # print('Config :: ', CONFIG)
     RAIN_CSV_FILE = 'DailyRain.csv'
     RF_DIR_PATH = './OUTPUT/RF/'
+    OUTPUT_DIR = './OUTPUT'
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'RF_DIR_PATH' in CONFIG :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
+    if 'OUTPUT_DIR' in CONFIG :
+        OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
@@ -71,7 +74,10 @@ try :
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
-    csvWriter = csv.writer(open(RAIN_CSV_FILE, 'w'), delimiter=',', quotechar='|')
+    fileName = RAIN_CSV_FILE.split('.', 1)
+    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
+    RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    csvWriter = csv.writer(open(RAIN_CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
     # Write Metadata https://publicwiki.deltares.nl/display/FEWSDOC/CSV
     csvWriter.writerow(['Location Names', 'Awissawella', 'Colombo'])
     csvWriter.writerow(['Location Ids', 'Awissawella', 'Colombo'])
@@ -87,4 +93,4 @@ except ValueError:
 except Exception as e :
     traceback.print_exc()
 finally:
-    print('Completed ', RF_DIR_PATH, ' to ', RAIN_CSV_FILE)
+    print('Completed ', RF_DIR_PATH, ' to ', RAIN_CSV_FILE_PATH)
