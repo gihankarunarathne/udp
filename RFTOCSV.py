@@ -5,8 +5,7 @@ import glob
 import csv
 import json
 from string import Template
-import sys, traceback
-import datetime
+import sys, traceback, datetime
 from collections import OrderedDict
 
 try :

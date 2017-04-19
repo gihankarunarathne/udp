@@ -10,6 +10,7 @@ try :
     HEC_HMS_CONTROL_FILE = './2008_2_Events/Control_1.control'
     RAIN_CSV_FILE = 'DailyRain.csv'
     TIME_INTERVAL = 60
+    OUTPUT_DIR = './OUTPUT'
 
     if 'HEC_HMS_CONTROL' in CONFIG :
         HEC_HMS_CONTROL_FILE = CONFIG['HEC_HMS_CONTROL']
@@ -17,9 +18,20 @@ try :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'TIME_INTERVAL' in CONFIG :
         TIME_INTERVAL = CONFIG['TIME_INTERVAL']
+    if 'OUTPUT_DIR' in CONFIG :
+            OUTPUT_DIR = CONFIG['OUTPUT_DIR']
+
+    # Default run for current day
+    now = datetime.datetime.now()
+    if len(sys.argv) > 1 : # Or taken from first arg for the program
+        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    date = now.strftime("%Y-%m-%d")
 
     # Extract Start and End times
-    csvReader = csv.reader(open(RAIN_CSV_FILE, 'r'), delimiter=',', quotechar='|')
+    fileName = RAIN_CSV_FILE.split('.', 1)
+    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
+    RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    csvReader = csv.reader(open(RAIN_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
 
     print(csvList[NUM_METADATA_LINES][0])

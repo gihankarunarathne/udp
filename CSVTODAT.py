@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from string import Template
-import sys, traceback, csv, json
+import sys, traceback, csv, json, datetime
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -11,10 +11,14 @@ try :
     DAT_WIDTH = 12
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     INFLOW_DAT_FILE = './FLO2D/INFLOW.DAT'
+    OUTPUT_DIR = './OUTPUT'
+
     if 'DISCHARGE_CSV_FILE' in CONFIG :
         DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
     if 'INFLOW_DAT_FILE' in CONFIG :
         INFLOW_DAT_FILE = CONFIG['INFLOW_DAT_FILE']
+    if 'OUTPUT_DIR' in CONFIG :
+        OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     # FLO-2D parameters
     IHOURDAILY  = 1     # 0-hourly interval, 1-daily interval
@@ -24,7 +28,16 @@ try :
     KHIN        = 77821 # inflow nodes
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
-    csvReader = csv.reader(open(DISCHARGE_CSV_FILE, 'r'), delimiter=',', quotechar='|')
+    # Default run for current day
+    now = datetime.datetime.now()
+    if len(sys.argv) > 1 : # Or taken from first arg for the program
+        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    date = now.strftime("%Y-%m-%d")
+
+    fileName = DISCHARGE_CSV_FILE.split('.', 1)
+    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
+    DISCHARGE_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    csvReader = csv.reader(open(DISCHARGE_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
 
     f = open(INFLOW_DAT_FILE, 'w')
@@ -44,4 +57,4 @@ except Exception as e :
     traceback.print_exc()
 finally:
     f.close()
-    print('Completed ', DISCHARGE_CSV_FILE, ' to ', INFLOW_DAT_FILE)
+    print('Completed ', DISCHARGE_CSV_FILE_PATH, ' to ', INFLOW_DAT_FILE)

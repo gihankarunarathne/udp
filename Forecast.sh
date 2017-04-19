@@ -81,13 +81,12 @@ main() {
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date
-		exit 0
 
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
-		./dssvue/hec-dssvue.sh CSVTODSS.py
+		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
 
 		# Change HEC-HMS running time window
-		./Update_HECHMS.py
+		./Update_HECHMS.py $forecast_date
 
 		# Run HEC-HMS model
 		cd $ROOT_DIR/$HEC_HMS_DIR
@@ -95,10 +94,10 @@ main() {
 		cd $ROOT_DIR
 
 		# Read HEC-HMS result, then extract Discharge into .csv
-		./dssvue/hec-dssvue.sh DSSTOCSV.py
+		./dssvue/hec-dssvue.sh DSSTOCSV.py $forecast_date
 
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
-		./CSVTODAT.py
+		./CSVTODAT.py $forecast_date
 
 		# Send INFLOW.DAT file into Windows, and run FLO2D
 		echo "Send POST request to $WINDOWS_HOST"
