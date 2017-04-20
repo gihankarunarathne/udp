@@ -45,9 +45,9 @@ try :
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, catchment+date+'*.txt')):
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, catchment+'-'+date+'*.txt')):
             print('Start Operating on (Upper) ', filename)
-            csvCatchment = csv.reader(open(filename, 'r'), delimiter=',', skipinitialspace=True)
+            csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
             for row in csvCatchment :
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))
@@ -59,9 +59,9 @@ try :
 
     LOWER_THEISSEN_VALUES = OrderedDict()
     for lowerCatchment in LOWER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+date+'*.txt')):
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+'-'+date+'*.txt')):
             print('Start Operating on (Lower) ', filename)
-            csvCatchment = csv.reader(open(filename, 'r'), delimiter=',', skipinitialspace=True)
+            csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
             for row in csvCatchment :
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))

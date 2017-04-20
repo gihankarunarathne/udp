@@ -36,6 +36,7 @@ try :
         if len(sys.argv) > 1 : # Or taken from first arg for the program
             now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
+        print 'Start CSVTODSS.py on ', date
 
         myDss = HecDss.open(DSS_INPUT_FILE)
         fileName = RAIN_CSV_FILE.split('.', 1)
