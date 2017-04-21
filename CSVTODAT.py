@@ -22,10 +22,10 @@ try :
 
     # FLO-2D parameters
     IHOURDAILY  = 1     # 0-hourly interval, 1-daily interval
-    IDEPLT      = 77821
+    IDEPLT      = 8672
     IFC         = 'F'   # foodplain 'F' or a channel 'C'
     INOUTFC     = 0     # 0-inflow, 1-outflow
-    KHIN        = 77821 # inflow nodes
+    KHIN        = 8672 # inflow nodes
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
     # Default run for current day
