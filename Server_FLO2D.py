@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, json, subprocess, datetime, traceback
+import os, json, subprocess, datetime, traceback, shutil
 from os import curdir
 from os.path import join as pjoin
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -42,6 +42,10 @@ class StoreHandler(BaseHTTPRequestHandler):
             # print('DATA:', data)
 
             FLO2D_DIR_PATH = os.path.join(curdir, date + '_Kelani')
+            # If Dir already exists, cleanup
+            #TODO: Handle in a proper way
+            if(os.path.isdir(FLO2D_DIR_PATH)):
+                shutil.rmtree(FLO2D_DIR_PATH)
             # Create FLO2D Directory for new simulation
             if not os.path.exists(FLO2D_DIR_PATH):
                 os.makedirs(FLO2D_DIR_PATH)

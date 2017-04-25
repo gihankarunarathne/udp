@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
-import sys, string, os, datetime
-import shutil
+import sys, string, os, datetime. shutil
 from distutils.dir_util import copy_tree
 
 try :
@@ -18,8 +17,8 @@ try :
     appDir = os.path.join(CWD, date + '_Kelani')
 
     try:
-        if(os.path.isdir(appDir)) :
-            shutil.rmtree(appDir)
+        # if(os.path.isdir(appDir)) :
+        #     shutil.rmtree(appDir)
 
         copy_tree(FLO2D_TEMPLATE, appDir)
         copy_tree(FLO2D_RUN_FOR_PROJECT, appDir)
