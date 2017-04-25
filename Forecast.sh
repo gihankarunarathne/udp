@@ -65,6 +65,8 @@ OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
 STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
 HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
 HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
+DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
+DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
@@ -84,6 +86,8 @@ main() {
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date
 
+		# Remove .dss files in order to remove previous results
+		rm $DSS_INPUT_FILE $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
 		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
 
