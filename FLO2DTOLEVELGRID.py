@@ -70,11 +70,11 @@ try :
                     ModelTime = float(waterLevelLines[0].split()[3])
                     fileModelTime = datetime.datetime.strptime(date, '%Y-%m-%d')
                     fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
-                    dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H:%M:%S")
+                    dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
                     # Create files
                     fileName = WATER_LEVEL_FILE.split('.', 1)
                     fileName = "%s-%s.%s" % (fileName[0], dateAndTime, fileName[1])
-                    WATER_LEVEL_FILE_PATH = "%s/%s" % (WATER_LEVEL_DIR_PATH, fileName)
+                    WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
                     file = open(WATER_LEVEL_FILE_PATH, 'w')
                     file.writelines(EsriGrid)
 
