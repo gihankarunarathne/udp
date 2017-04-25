@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, string, os, datetime. shutil
+import sys, string, os, datetime, shutil
 from distutils.dir_util import copy_tree
 
 try :

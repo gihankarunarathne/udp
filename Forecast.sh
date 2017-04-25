@@ -102,16 +102,16 @@ main() {
 		./CSVTODAT.py $forecast_date
 
 		# Send INFLOW.DAT file into Windows
-		echo "Send POST request to $WINDOWS_HOST"
+		echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
 		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
 
 		# Send RAINCELL.DAT file into Windows
-		echo "Send POST request to $WINDOWS_HOST"
+		echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
 		FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$forecast_date/RAINCELL.DAT
 		curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
 
 		# Send INFLOW.DAT file into Windows, and run FLO2D
-		echo "Send POST request to $WINDOWS_HOST"
+		echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
 		curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 	
 		#writeForecastStatus $forecast_date $STATUS_FILE
