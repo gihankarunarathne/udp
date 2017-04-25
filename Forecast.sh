@@ -59,6 +59,8 @@ HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
 WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
 
 RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
+FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
 OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
 STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
 HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
@@ -99,9 +101,18 @@ main() {
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
 		./CSVTODAT.py $forecast_date
 
+		# Send INFLOW.DAT file into Windows
+		echo "Send POST request to $WINDOWS_HOST"
+		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
+
+		# Send RAINCELL.DAT file into Windows
+		echo "Send POST request to $WINDOWS_HOST"
+		FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$forecast_date/RAINCELL.DAT
+		curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
+
 		# Send INFLOW.DAT file into Windows, and run FLO2D
 		echo "Send POST request to $WINDOWS_HOST"
-		curl -X POST --data-binary @./INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
+		curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 	
 		#writeForecastStatus $forecast_date $STATUS_FILE
 	else

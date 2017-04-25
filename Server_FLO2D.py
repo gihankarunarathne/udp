@@ -95,6 +95,10 @@ class StoreHandler(BaseHTTPRequestHandler):
                     Popen([executable, 'Run_FLO2D.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
                 #os.system('python Run_FLO2D.py'+ date)
                 #os.system('python Run_FLO2D.py')
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/json')
+                self.end_headers()
             except Exception as e :
                 traceback.print_exc()
 
