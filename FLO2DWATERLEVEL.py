@@ -5,7 +5,7 @@ from os.path import join as pjoin
 
 SKIP_META_LINES = 6
 # FLO2D cells to longitude, latitude mapping file location
-CADPTS_DAT_FILE = 'FLO2d/CADPTS.DAT'
+CADPTS_DAT_FILE = 'META_FLO2D/CADPTS.DAT'
 CWD = os.getcwd()
 CADPTS_DAT_FILE_PATH = pjoin(CWD, CADPTS_DAT_FILE)
 
@@ -56,8 +56,8 @@ def getCellGrid(boudary, gap=250.0) :
             v = line.split()
             i = int((float(v[1]) - boudary['long_min']) / gap)
             j = int((float(v[2]) - boudary['lat_min']) / gap)
-            if i < 0 or j < 0 :
-            CellMap[int(v[0])] = (i, j)
+            if i >= 0 or j >= 0 :
+                CellMap[int(v[0])] = (i, j)
 
     return CellMap
 
