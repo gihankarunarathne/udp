@@ -6,12 +6,13 @@
 #
 usage() {
 cat <<EOF
-Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR]
+Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-f]
 
 	-h 	Show usage
 	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
 	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
-	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory. 	
+	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory. 
+	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.	
 EOF
 }
 
@@ -25,8 +26,9 @@ forecast_date="`date +%Y-%m-%d`";
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
+FORCE_RUN=false
 # Extract user arguments
-while getopts hd:c:r: opt; do
+while getopts hd:c:r:f opt; do
     case $opt in
         h)
             usage
@@ -37,6 +39,8 @@ while getopts hd:c:r: opt; do
         c)  CONFIG_FILE=$OPTARG
             ;;
         r)  ROOT_DIR=$OPTARG
+			;;
+		f)  FORCE_RUN=true
 			;;
         *)
             usage >&2
@@ -76,6 +80,10 @@ main() {
 
 	local isWRF=$(isWRFAvailable)
 	local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
+	if [ $FORCE_RUN == true ]
+	then
+		forecastStatus=0
+	fi
 	echo "isWRF $isWRF forecastStatus $forecastStatus"
 
 	if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]
@@ -118,7 +126,11 @@ main() {
 		echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
 		curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 	
-		#writeForecastStatus $forecast_date $STATUS_FILE
+		local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
+		if [ $writeStatus == 0 ]
+		then
+			writeForecastStatus $forecast_date $STATUS_FILE
+		fi
 	else
 		echo "WARN: Already run the forecast. Quit"
 		exit 1
@@ -143,6 +155,7 @@ writeForecastStatus() {
 
 alreadyForecast() {
 	local forecasted=0
+
 	while IFS='' read -r line || [[ -n "$line" ]]; do
     	if [ $2 == $line ] 
     	then
