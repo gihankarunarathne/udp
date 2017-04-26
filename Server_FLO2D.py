@@ -51,9 +51,9 @@ class StoreHandler(BaseHTTPRequestHandler):
                 os.makedirs(FLO2D_DIR_PATH)
             INFLOW_DAT_FILE_PATH = pjoin(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
 
-            with open(INFLOW_DAT_FILE_PATH, 'w') as fh:
-                fh.write(data.decode())
-                fh.close()
+            inflowFile = open(INFLOW_DAT_FILE_PATH, 'w')
+                inflowFile.write(data.decode())
+                inflowFile.close()
 
             self.send_response(200)
             self.send_header('Content-type', 'text/json')
@@ -73,9 +73,9 @@ class StoreHandler(BaseHTTPRequestHandler):
                 os.makedirs(FLO2D_DIR_PATH)
             RAINCELL_DAT_FILE_PATH = pjoin(FLO2D_DIR_PATH, RAINCELL_DAT_FILE)
 
-            with open(RAINCELL_DAT_FILE_PATH, 'w') as fh:
-                fh.write(data.decode())
-                fh.close()
+            raincellFile = open(RAINCELL_DAT_FILE_PATH, 'w')
+                raincellFile.write(data.decode())
+                raincellFile.close()
 
             self.send_response(200)
             self.send_header('Content-type', 'text/json')
