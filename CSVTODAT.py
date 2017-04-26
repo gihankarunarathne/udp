@@ -21,7 +21,7 @@ try :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     # FLO-2D parameters
-    IHOURDAILY  = 1     # 0-hourly interval, 1-daily interval
+    IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
     IDEPLT      = 8672
     IFC         = 'F'   # foodplain 'F' or a channel 'C'
     INOUTFC     = 0     # 0-inflow, 1-outflow
