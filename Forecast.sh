@@ -6,12 +6,14 @@
 #
 usage() {
 cat <<EOF
-Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-f]
+Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
 	-h 	Show usage
 	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
 	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
-	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory. 
+	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
+	-b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
+		When specified -d option will be ignored.
 	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.	
 EOF
 }
@@ -26,9 +28,10 @@ forecast_date="`date +%Y-%m-%d`";
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
+DAYS_BACK=0
 FORCE_RUN=false
 # Extract user arguments
-while getopts hd:c:r:f opt; do
+while getopts hd:c:r:b:f opt; do
     case $opt in
         h)
             usage
@@ -40,6 +43,8 @@ while getopts hd:c:r:f opt; do
             ;;
         r)  ROOT_DIR=$OPTARG
 			;;
+		b)  DAYS_BACK=$OPTARG
+			;;
 		f)  FORCE_RUN=true
 			;;
         *)
@@ -48,6 +53,12 @@ while getopts hd:c:r:f opt; do
             ;;
     esac
 done
+
+if [ "$DAYS_BACK" -gt 0 ]
+then
+	#TODO: Try to back date base on user given date
+	forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
+fi
 
 # cd into bash script's root directory
 cd $ROOT_DIR
@@ -167,3 +178,5 @@ alreadyForecast() {
 }
 
 main "$@"
+
+# End of Forecast.sh
