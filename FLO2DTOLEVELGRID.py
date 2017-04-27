@@ -38,6 +38,11 @@ try :
     BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
 
+    # Create BASE.OUT file exists
+    if not os.path.exists(BASE_OUT_FILE_PATH):
+        print('Unable to find file : ', BASE_OUT_FILE_PATH)
+        sys.exit()
+
     # Create OUTPUT Directory
     if not os.path.exists(OUTPUT_DIR_PATH):
         os.makedirs(OUTPUT_DIR_PATH)
@@ -77,6 +82,7 @@ try :
                     WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
                     file = open(WATER_LEVEL_FILE_PATH, 'w')
                     file.writelines(EsriGrid)
+                    file.close()
 
                     isWaterLevelLines = False
                     # for l in waterLevelLines :
@@ -89,5 +95,4 @@ try :
 except Exception as e :
     traceback.print_exc()
 finally:
-    file.close()
     print('Completed processing', BASE_OUT_FILE_PATH, ' to ', WATER_LEVEL_FILE)
