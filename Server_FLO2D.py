@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, json, subprocess, datetime, traceback, shutil
+import os, json, subprocess, datetime, traceback, shutil, sys
 from os import curdir
 from os.path import join as pjoin
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -114,11 +114,11 @@ class StoreHandler(BaseHTTPRequestHandler):
                 # Execute WATERLEVEL GRID extraction
                 print('Execute WATERLEVEL GRID extraction ...')
                 if len(date) > 0 :
-                    Popen([executable, 'FLO2DTOLEVELGRID.py', date], creationflags=subprocess.CREATE_NEW_CONSOLE)
-                    #os.system('python FLO2DTOLEVELGRID.py '+ date)
+                    Popen(["powershell.exe", '.\CopyWaterLevelToCMS.ps1', '-d', date], stdout=sys.stdout)
+                    #os.system('python CopyWaterLevelToCMS.ps1 '+ date)
                 else :
-                    Popen([executable, 'FLO2DTOLEVELGRID.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
-                    #os.system('python FLO2DTOLEVELGRID.py')
+                    Popen(["powershell.exe", '.\CopyWaterLevelToCMS.ps1'], stdout=sys.stdout)
+                    #os.system('python CopyWaterLevelToCMS.ps1 ')
 
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
