@@ -19,6 +19,7 @@ if 'HOST_PORT' in CONFIG :
 INFLOW_DAT_FILE='INFLOW.DAT'
 RAINCELL_DAT_FILE='RAINCELL.DAT'
 RUN_FLO2D='RUN_FLO2D'
+EXTRACT_WATERLEVEL_GRID='EXTRACT_WATERLEVEL_GRID'
 
 # Refer: http://stackoverflow.com/a/13146494/1461060
 class StoreHandler(BaseHTTPRequestHandler):
@@ -101,6 +102,32 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.end_headers()
             except Exception as e :
                 traceback.print_exc()
+                self.send_response(500)
+                self.end_headers()
+
+        # Run WATERLEVEL GRID extraction
+        if self.path.startswith('/'+EXTRACT_WATERLEVEL_GRID):
+            date = self.path[len('/'+EXTRACT_WATERLEVEL_GRID)+1:]
+            print('POST request on ', self.path, date)
+
+            try :
+                # Execute WATERLEVEL GRID extraction
+                print('Execute WATERLEVEL GRID extraction ...')
+                if len(date) > 0 :
+                    Popen([executable, 'FLO2DTOLEVELGRID.py', date], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    #os.system('python FLO2DTOLEVELGRID.py '+ date)
+                else :
+                    Popen([executable, 'FLO2DTOLEVELGRID.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    #os.system('python FLO2DTOLEVELGRID.py')
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/json')
+                self.end_headers()
+            except Exception as e :
+                traceback.print_exc()
+                self.send_response(500)
+                self.end_headers()
+
 
 server = HTTPServer((HOST_ADDRESS, HOST_PORT), StoreHandler)
 server.serve_forever()
