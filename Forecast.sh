@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #
-# ./Forecast.sh <FORECAST_DATE>
-#	e.g. ./Forecast.sh 2017-03-22
+# ./Forecast.sh -d <FORECAST_DATE>
+#	e.g. ./Forecast.sh -d 2017-03-22
 #
 usage() {
 cat <<EOF
@@ -136,6 +136,8 @@ main() {
 		# Send RUN_FLO2D.json file into Windows, and run FLO2D
 		echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
 		curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
+
+		./CopyToCMS.sh
 	
 		local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
 		if [ $writeStatus == 0 ]
