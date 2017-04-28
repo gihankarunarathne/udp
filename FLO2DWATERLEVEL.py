@@ -65,7 +65,7 @@ def getCellGrid(boudary, gap=250.0) :
     return CellMap
 
 
-def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9999) :
+def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9) :
     "Esri GRID format : https://en.wikipedia.org/wiki/Esri_grid"
     "ncols         4"
     "nrows         6"
@@ -85,7 +85,7 @@ def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9999) :
     cols = int(math.ceil((boudary['long_max'] - boudary['long_min']) / gap))
     rows = int(math.ceil((boudary['lat_max'] - boudary['lat_min']) / gap))
 
-    Grid = [[-9999 for x in range(cols)] for y in range(rows)]
+    Grid = [[missingVal for x in range(cols)] for y in range(rows)]
 
     for level in waterLevels :
         v = level.split()
