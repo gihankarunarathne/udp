@@ -15,7 +15,10 @@ def getWaterLevelGrid(lines) :
         if line == '\n' :
             break
         v = line.split()
-        waterLevels.append('%s %s' % (v[0], v[1]))
+        # Get flood level (Elevation)
+        # waterLevels.append('%s %s' % (v[0], v[1]))
+        # Get flood depth (Depth)
+        waterLevels.append('%s %s' % (v[0], v[2]))
 
     return waterLevels
 
