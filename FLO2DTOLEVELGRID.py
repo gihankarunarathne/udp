@@ -49,14 +49,11 @@ try :
 
     bufsize = 65536
     with open(BASE_OUT_FILE_PATH) as infile: 
-        i=0
         isWaterLevelLines = False
         waterLevelLines = []
         while True:
             lines = infile.readlines(bufsize)
-            i += 1
-            if i > 2 :
-                break
+
             if not lines:
                 break
             for line in lines:
@@ -83,6 +80,7 @@ try :
                     file = open(WATER_LEVEL_FILE_PATH, 'w')
                     file.writelines(EsriGrid)
                     file.close()
+                    # print('Write to :', fileName)
 
                     isWaterLevelLines = False
                     # for l in waterLevelLines :

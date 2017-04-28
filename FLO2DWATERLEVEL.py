@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, json, datetime, sys, math
+import os, json, datetime, sys, math, numbers
 from os.path import join as pjoin
 
 SKIP_META_LINES = 6
@@ -53,12 +53,19 @@ def getGridBoudary(gap=250.0) :
 def getCellGrid(boudary, gap=250.0) :
     CellMap = {}
 
+    cols = int(math.ceil((boudary['long_max'] - boudary['long_min']) / gap)) + 1
+    rows = int(math.ceil((boudary['lat_max'] - boudary['lat_min']) / gap)) + 1
+
     with open(CADPTS_DAT_FILE_PATH) as f:
         lines = f.readlines()
         for line in lines :
             v = line.split()
             i = int((float(v[1]) - boudary['long_min']) / gap)
             j = int((float(v[2]) - boudary['lat_min']) / gap)
+            if not isinstance(i, numbers.Integral) or not isinstance(j, numbers.Integral) :
+                print('### WARNING i: %d, j: %d, cols: %d, rows: %d' % (i, j, cols, rows))
+            if (i >= cols or j >= rows) :
+                print('### WARNING i: %d, j: %d, cols: %d, rows: %d' % (i, j, cols, rows))
             if i >= 0 or j >= 0 :
                 CellMap[int(v[0])] = (i, j)
 
@@ -82,15 +89,19 @@ def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9) :
 
     EsriGrid = []
 
-    cols = int(math.ceil((boudary['long_max'] - boudary['long_min']) / gap))
-    rows = int(math.ceil((boudary['lat_max'] - boudary['lat_min']) / gap))
+    cols = int(math.ceil((boudary['long_max'] - boudary['long_min']) / gap)) + 1
+    rows = int(math.ceil((boudary['lat_max'] - boudary['lat_min']) / gap)) + 1
+    #print('>>>>>  cols: %d, rows: %d' % (cols, rows))
 
     Grid = [[missingVal for x in range(cols)] for y in range(rows)]
 
     for level in waterLevels :
         v = level.split()
         i, j = CellMap[int(v[0])]
-        Grid[i][j] = float(v[1])
+        if (i >= cols or j >= rows) :
+            print('i: %d, j: %d, cols: %d, rows: %d' % (i, j, cols, rows))
+            print(boudary)
+        Grid[j][i] = float(v[1])
 
     EsriGrid.append('%s\t%s\n' % ('ncols', cols))
     EsriGrid.append('%s\t%s\n' % ('nrows', rows))
@@ -99,10 +110,10 @@ def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9) :
     EsriGrid.append('%s\t%s\n' % ('cellsize', gap))
     EsriGrid.append('%s\t%s\n' % ('NODATA_value', missingVal))
 
-    for i in range(0, rows) :
+    for j in range(0, rows) :
         arr = []
-        for j in range(0, cols) :
-            arr.append(Grid[i][j])
+        for i in range(0, cols) :
+            arr.append(Grid[j][i])
 
         EsriGrid.append('%s\n' % (' '.join(str(x) for x in arr)))
 
