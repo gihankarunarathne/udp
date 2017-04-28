@@ -73,6 +73,7 @@ main() {
 	echo "Trigger FLO2D WaterLevel Extraction on Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
 	curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/EXTRACT_WATERLEVEL_GRID?$forecast_date
+	echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D?$forecast_date"
 }
 
 main "$@"
