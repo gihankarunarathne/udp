@@ -8,8 +8,8 @@ try :
 
     NUM_METADATA_LINES = 3;
     HEC_HMS_CONTROL_FILE = './2008_2_Events/Control_1.control'
-    HEC_HMS_RUN_FILE = './2008_2_Events/Control_1.run'
-    HEC_HMS_GAGE_FILE = './2008_2_Events/Control_1.gage'
+    HEC_HMS_RUN_FILE = './2008_2_Events/2008_2_Events.run'
+    HEC_HMS_GAGE_FILE = './2008_2_Events/2008_2_Events.gage'
     RAIN_CSV_FILE = 'DailyRain.csv'
     TIME_INTERVAL = 60
     OUTPUT_DIR = './OUTPUT'
