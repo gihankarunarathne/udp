@@ -121,23 +121,17 @@ try :
     gageFile.close()
 
     gageFile = open(HEC_HMS_GAGE_FILE, 'w')
-    locations = csvList[1][1:]
-    for location in locations:
-        underLocation = False
-        for line in gageData :
-            if location in line :
-                underLocation = True
-                gageFile.write(line)
-            elif underLocation and 'Start Time:' in line :
-                s = line[:line.rfind('Start Time:')+11]
-                s += ' ' + startDate + ', ' + startTime
-                gageFile.write(s + '\n')
-            elif underLocation and 'End Time:' in line :
-                s = line[:line.rfind('End Time:')+9]
-                s += ' ' + endDate + ', ' + endTime
-                gageFile.write(s + '\n')
-            else :
-                gageFile.write(line)
+    for line in gageData :
+        if 'Start Time:' in line :
+            s = line[:line.rfind('Start Time:')+11]
+            s += ' ' + startDate + ', ' + startTime
+            gageFile.write(s + '\n')
+        elif 'End Time:' in line :
+            s = line[:line.rfind('End Time:')+9]
+            s += ' ' + endDate + ', ' + endTime
+            gageFile.write(s + '\n')
+        else :
+            gageFile.write(line)
 
 
 except Exception as e :
