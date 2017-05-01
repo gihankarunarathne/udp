@@ -133,10 +133,10 @@ try :
                 s += ' ' + startDate + ', ' + startTime
                 gageFile.write(s + '\n')
             elif underLocation and 'End Time:' in line :
-                s = line[:line.rfind('End Date:')+9]
+                s = line[:line.rfind('End Time:')+9]
                 s += ' ' + endDate + ', ' + endTime
                 gageFile.write(s + '\n')
-            else
+            else :
                 gageFile.write(line)
 
 
