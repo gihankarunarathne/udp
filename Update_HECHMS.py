@@ -104,9 +104,13 @@ try :
             runFile.write(line4 + '\n')
         # Skip Writing these lines
         elif 'Save State At End of Run:' in line :
+            continue
         elif 'Save State Name:' in line :
+            continue
         elif 'Save State Date:' in line :
+            continue
         elif 'Save State Time:' in line :
+            continue
         elif 'Start State Name:' in line :
             continue
         else :
