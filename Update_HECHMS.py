@@ -57,7 +57,6 @@ try :
     controlFile.close()
 
     controlFile = open(HEC_HMS_CONTROL_FILE, 'w')
-    lines = []
     for line in controlData :
         if 'Start Date:' in line :
             s = line[:line.rfind('Start Date:')+11]
@@ -88,7 +87,6 @@ try :
     runFile.close()
 
     runFile = open(HEC_HMS_RUN_FILE, 'w')
-    lines = []
     for line in runData :
         if 'Control:' in line :
             runFile.write(line)
@@ -116,6 +114,31 @@ try :
             continue
         else :
             runFile.write(line)
+
+    #Update Gage file
+    gageFile = open(HEC_HMS_GAGE_FILE, 'r')
+    gageData = gageFile.readlines()
+    gageFile.close()
+
+    gageFile = open(HEC_HMS_GAGE_FILE, 'w')
+    locations = csvList[1][1:]
+    for location in locations:
+        underLocation = False
+        for line in gageData :
+            if location in line :
+                underLocation = True
+                gageFile.write(line)
+            elif underLocation and 'Start Time:' in line :
+                s = line[:line.rfind('Start Time:')+11]
+                s += ' ' + startDate + ', ' + startTime
+                gageFile.write(s + '\n')
+            elif underLocation and 'End Time:' in line :
+                s = line[:line.rfind('End Date:')+9]
+                s += ' ' + endDate + ', ' + endTime
+                gageFile.write(s + '\n')
+            else
+                gageFile.write(line)
+
 
 except Exception as e :
     traceback.print_exc()
