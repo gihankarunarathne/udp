@@ -91,6 +91,7 @@ try :
     lines = []
     for line in runData :
         if 'Control:' in line :
+            runFile.write(line)
             indent = line[:line.rfind('Control:')]
 
             saveStateDateTime = startDateTime + datetime.timedelta(hours=STATE_INTERVAL)
@@ -120,4 +121,4 @@ except Exception as e :
     traceback.print_exc()
 finally:
     controlFile.close()
-    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL_FILE)
+    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL_FILE, HEC_HMS_RUN_FILE)
