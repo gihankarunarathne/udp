@@ -57,10 +57,18 @@ try :
                 time = HecTime()
                 time.set(int(flow.times[i]))
                 
-                d = [time.year(), '%02d' % (time.month(),), '%02d' % (time.day(),)]
-                t = ['%02d' % (time.hour(),), '%02d' % (time.minute(),), '%02d' % (time.second(),)]
-                dateTime = ':'.join(str(x) for x in d) + ' ' + ':'.join(str(x) for x in t)
-                csvList.append([dateTime, "%.2f" % flow.values[i]])
+                d = [time.year(), '%d' % (time.month(),), '%d' % (time.day(),)]
+                t = ['%d' % (time.hour(),), '%d' % (time.minute(),), '%d' % (time.second(),)]
+                if(int(t[0]) > 23) :
+                    t[0] = '23'
+                    dtStr = ':'.join(str(x) for x in d) + ' ' + ':'.join(str(x) for x in t)
+                    dt = datetime.datetime.strptime(dtStr, '%Y:%m:%d %H:%M:%S')
+                    dt = dt + datetime.timedelta(hours=1)
+                else :
+                    dtStr = ':'.join(str(x) for x in d) + ' ' + ':'.join(str(x) for x in t)
+                    dt = datetime.datetime.strptime(dtStr, '%Y:%m:%d %H:%M:%S')
+
+                csvList.append([dt.strftime('%Y:%m/%d %H:%M:%S'), "%.2f" % flow.values[i]])
                 
             print csvList[:10]
             csvWriter.writerows(csvList)
