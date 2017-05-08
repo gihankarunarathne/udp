@@ -1,6 +1,30 @@
 #!/usr/bin/python3
 
-import sys, traceback, csv, json, datetime
+import sys, traceback, csv, json, datetime, collections
+
+DSSDateTime = collections.namedtuple('DSSDateTime', ['dateTime', 'date', 'time'])
+
+def getDSSDateTime(dateTime) :
+    value = dateTime.strftime('%Y:%m:%d %H:%M:%S')
+    s = value.split(' ')
+    d = s[0].split(':')
+    t = s[1].split(':')
+    if(int(t[0]) == 0) : # In case of 00:00, mention it as 24:00 of previous day
+        dateTimeTmp = dateTime - datetime.timedelta(hours=1)
+        date = dateTimeTmp.strftime('%d %B %Y')
+        time = dateTimeTmp.strftime('%H:%M')
+        time = time.split(':')
+        time[0] = '24'
+        time = ':'.join(time)
+    else :
+        date = dateTime.strftime('%d %B %Y')
+        time = dateTime.strftime('%H:%M')
+
+    return DSSDateTime(
+        dateTime  = date + ' ' + time,
+        date      = date,
+        time      = time
+    )
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -47,16 +71,21 @@ try :
     startDateTime = datetime.datetime.strptime(csvList[NUM_METADATA_LINES][0], '%Y-%m-%d %H:%M:%S')
     endDateTime = datetime.datetime.strptime(csvList[-1][0], '%Y-%m-%d %H:%M:%S')
 
-    startDate = startDateTime.strftime('%d %B %Y')
-    startTime = startDateTime.strftime('%H:%M')
-    endDate = endDateTime.strftime('%d %B %Y')
-    endTime = endDateTime.strftime('%H:%M')
+    startDateTimeDSS = getDSSDateTime(startDateTime)
+    endDateTimeDSS = getDSSDateTime(endDateTime)
+    startDate = startDateTimeDSS.date
+    startTime = startDateTimeDSS.time
+    endDate = endDateTimeDSS.date
+    endTime = endDateTimeDSS.time
 
     controlEndDateTime = startDateTime + datetime.timedelta(minutes=CONTROL_INTERVAL)
-    controlEndDate = controlEndDateTime.strftime('%d %B %Y')
-    controlEndTime = controlEndDateTime.strftime('%H:%M')
+    controlEndDateTimeDSS = getDSSDateTime(controlEndDateTime)
+    controlEndDate = controlEndDateTimeDSS.date
+    controlEndTime = controlEndDateTimeDSS.time
 
-    # Update Control file
+    #############################################
+    # Update Control file                       #
+    #############################################
     controlFile = open(HEC_HMS_CONTROL_FILE, 'r')
     controlData = controlFile.readlines()
     controlFile.close()
@@ -86,7 +115,9 @@ try :
         else :
             controlFile.write(line)
 
-    # Update Run file
+    #############################################
+    # Update Run file                           #
+    #############################################
     runFile = open(HEC_HMS_RUN_FILE, 'r')
     runData = runFile.readlines()
     runFile.close()
@@ -98,10 +129,11 @@ try :
             indent = line[:line.rfind('Control:')]
 
             saveStateDateTime = startDateTime + datetime.timedelta(minutes=STATE_INTERVAL)
+            saveStateDateTimeDSS = getDSSDateTime(saveStateDateTime)
             startStateDateTime = startDateTime - datetime.timedelta(minutes=STATE_INTERVAL)
             line1 = indent + 'Save State Name: State_' + startDateTime.strftime('%Y_%m_%d') + '_To_' + saveStateDateTime.strftime('%Y_%m_%d')
-            line2 = indent + 'Save State Date: ' + saveStateDateTime.strftime('%d %B %Y')
-            line3 = indent + 'Save State Time: ' + saveStateDateTime.strftime('%H:%M')
+            line2 = indent + 'Save State Date: ' + saveStateDateTimeDSS.date
+            line3 = indent + 'Save State Time: ' + saveStateDateTimeDSS.time
             runFile.write(line1 + '\n'); runFile.write(line2 + '\n'); runFile.write(line3 + '\n')
 
             line4 = indent + 'Start State Name: State_' + startStateDateTime.strftime('%Y_%m_%d') + '_To_' + startDateTime.strftime('%Y_%m_%d')
@@ -121,7 +153,9 @@ try :
         else :
             runFile.write(line)
 
-    #Update Gage file
+    #############################################
+    #Update Gage file                           #
+    #############################################
     gageFile = open(HEC_HMS_GAGE_FILE, 'r')
     gageData = gageFile.readlines()
     gageFile.close()
