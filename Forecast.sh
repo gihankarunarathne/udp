@@ -105,8 +105,15 @@ main() {
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date
 
+		# There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
+		# We discovered that, this issue on 3.5 version, hence upgrade into 4.1
+		# But with 4.1, it runs correctly when the data are saved by the HEC-HMS program
+		# After run the model using script, it can't reuse for correct run
+		yes | cp -R 2008_2_Events_Hack/* 2008_2_Events/
+
 		# Remove .dss files in order to remove previous results
-		rm $DSS_INPUT_FILE $DSS_OUTPUT_FILE
+		rm $DSS_INPUT_FILE 
+		rm $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
 		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
 

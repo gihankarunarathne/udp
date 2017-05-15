@@ -20,6 +20,10 @@ def getDSSDateTime(dateTime) :
         date = dateTime.strftime('%d %B %Y')
         time = dateTime.strftime('%H:%M')
 
+    # Removed DSS formating with HEC-HMS upgrading from 3.5 to 4.1
+    date = dateTime.strftime('%d %B %Y')
+    time = dateTime.strftime('%H:%M')
+
     return DSSDateTime(
         dateTime  = date + ' ' + time,
         date      = date,
@@ -178,4 +182,4 @@ except Exception as e :
     traceback.print_exc()
 finally:
     controlFile.close()
-    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL_FILE, HEC_HMS_RUN_FILE)
+    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL_FILE, HEC_HMS_RUN_FILE, HEC_HMS_GAGE_FILE)
