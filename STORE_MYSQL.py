@@ -25,8 +25,9 @@ try :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     date = ''
+    forceInsert = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "date="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:f", ["help", "date=", "force"])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -36,6 +37,8 @@ try :
             sys.exit()           
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-f", "--force"):
+            forceInsert = True
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -75,12 +78,22 @@ def storeDischarge():
     eventId = adapter.getEventId(metaData)
     if eventId is None :
         print('eventId is None. Creating a New.')
-        #eventId = adapter.createEventId(metaData)
-    print('HASH SHA256 : ', eventId)
-
-    for l in timeseries[:10] :
-        print(l)
-    rowCount = adapter.insertTimeSeries(eventId, timeseries)
-    print('%s rows inserted.' % rowCount)
+        eventId = adapter.createEventId(metaData)
+        print('HASH SHA256 : ', eventId)
+        for l in timeseries[:5] :
+            print(l)
+        rowCount = adapter.insertTimeseries(eventId, timeseries)
+        print('%s rows inserted.' % rowCount)
+    else:
+        print('HASH SHA256 : ', eventId)
+        if forceInsert :
+            deleteCount = adapter.deleteTimeseries(eventId)
+            print('%s rows deleted.' % deleteCount)
+            for l in timeseries[:5] :
+                print(l)
+            rowCount = adapter.insertTimeseries(eventId, timeseries)
+            print('%s rows inserted.' % rowCount)
+        else :
+            print('Timeseries already exists. User -f arg to override existing timeseries.')
 
 storeDischarge()

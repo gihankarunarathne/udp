@@ -142,7 +142,7 @@ class mysqladapter :
 
         return eventId
 
-    def insertTimeSeries(self, eventId, timeseries) :
+    def insertTimeseries(self, eventId, timeseries) :
         '''Insert timeseries into the db against given eventId'''
         print('insertTimeSeries')
         rowCount = 0
@@ -164,11 +164,26 @@ class mysqladapter :
         finally:
             return rowCount
 
+    def deleteTimeseries(self, eventId) :
+        '''Delete given timeseries from the database'''
+        rowCount = 0
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "DELETE FROM `data` WHERE `id`=%s"
+
+                rowCount = cursor.execute(sql, (eventId))
+                self.connection.commit()
+
+        except Exception as e :
+            traceback.print_exc()
+        finally:
+            return rowCount
+
     def getEventIds(self) :
         '''Get event ids set according to given meta data'''
         print('getEventIds')
 
-    def retrieveTimeSeries(self) :
+    def retrieveTimeseries(self) :
         '''Get timeseries'''
         print('retrieveTimeSeries')
 
