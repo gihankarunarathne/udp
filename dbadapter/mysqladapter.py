@@ -145,6 +145,7 @@ class mysqladapter :
     def insertTimeSeries(self, eventId, timeseries) :
         '''Insert timeseries into the db against given eventId'''
         print('insertTimeSeries')
+        rowCount = 0
         try:
             with self.connection.cursor() as cursor:
                 sql = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
@@ -155,11 +156,13 @@ class mysqladapter :
                     newTimeseries.append(t)
 
                 # print(newTimeseries[:10])
-                cursor.executemany(sql, (newTimeseries))
+                rowCount = cursor.executemany(sql, (newTimeseries))
                 self.connection.commit()
 
         except Exception as e :
             traceback.print_exc()
+        finally:
+            return rowCount
 
     def getEventIds(self) :
         '''Get event ids set according to given meta data'''
