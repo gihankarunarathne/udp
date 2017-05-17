@@ -19,10 +19,24 @@ try :
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     OUTPUT_DIR = './OUTPUT'
 
+    MYSQL_HOST="localhost"
+    MYSQL_USER="root"
+    MYSQL_DB="curw"
+    MYSQL_PASSWORD=""
+
     if 'DISCHARGE_CSV_FILE' in CONFIG :
         DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
+
+    if 'MYSQL_HOST' in CONFIG :
+        MYSQL_HOST = CONFIG['MYSQL_HOST']
+    if 'MYSQL_USER' in CONFIG :
+        MYSQL_USER = CONFIG['MYSQL_USER']
+    if 'MYSQL_DB' in CONFIG :
+        MYSQL_DB = CONFIG['MYSQL_DB']
+    if 'MYSQL_PASSWORD' in CONFIG :
+        MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
     date = ''
     forceInsert = False
@@ -62,7 +76,7 @@ def storeDischarge():
     startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y:%m:%d %H:%M:%S')
     endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y:%m:%d %H:%M:%S')
 
-    adapter = mysqladapter()
+    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
 
     metaData = {
         'station': 'Hanwella',

@@ -5,13 +5,13 @@ import pymysql.cursors, hashlib, collections, json, traceback
 MyStruct = collections.namedtuple("MyStruct", "field1 field2 field3")
 
 class mysqladapter :
-    def __init__(self) :
+    def __init__(self, host="localhost", user="root", password="", db="curw") :
         '''Initialize Database Connection'''
         # Open database connection
-        self.connection = pymysql.connect(host="localhost",
-                            user="curw",
-                            password="curw@123",
-                            db="curw")
+        self.connection = pymysql.connect(host=host,
+                            user=user,
+                            password=password,
+                            db=db)
 
         # prepare a cursor object using cursor() method
         cursor = self.connection.cursor()
