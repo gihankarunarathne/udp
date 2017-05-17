@@ -28,9 +28,44 @@ class mysqladapter :
         #self.connection.close()
 
 
-    def getEventId(self) :
-        '''Get the event id for given meta data'''
+    def getEventId(self, metaData) :
+        '''Get the event id for given meta data
+
+        :param dict metaData: Dict of Meta Data that use to create the hash
+        Meta Data should contains all of following keys s.t.
+        {
+            'station': 'Hanwella',
+            'variable': 'Discharge',
+            'unit': 'mm',
+            'rate': 60,
+            'type': 'Forecast',
+            'source': 'HEC-HMS',
+            'name': 'HEC 1st',
+            'start_date': '2017-05-01 00:00:00',
+            'end_date': '2017-05-03 23:00:00'
+        }
+
+        :return str: sha256 hash value in hex format (length of 64 characters)
+        '''
         print('getEventId')
+        eventId = None
+        print(json.dumps(metaData, sort_keys=True).encode("ascii"))
+        m = hashlib.sha256()
+        m.update(json.dumps(metaData, sort_keys=True).encode("ascii"))
+        possibleId = m.hexdigest()
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "SELECT 1 FROM `run` WHERE `id`=%s"
+
+                cursor.execute(sql, possibleId)
+                isExist = cursor.fetchone()
+                if isExist is not None :
+                    eventId = possibleId
+        except Exception as e :
+            traceback.print_exc()
+        finally:
+            return eventId
+
 
     def createEventId(self, metaData) :
         '''Create a new event id for given meta data
