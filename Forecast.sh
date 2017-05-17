@@ -127,7 +127,7 @@ main() {
 		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
 
 		# Change HEC-HMS running time window
-		./Update_HECHMS.py $forecast_date
+		./Update_HECHMS.py -d $forecast_date `[[ $INIT_STATE == true ]] && echo "-i" || echo ""`
 
 		# Run HEC-HMS model
 		cd $ROOT_DIR/$HEC_HMS_DIR
@@ -139,6 +139,7 @@ main() {
 
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
 		./CSVTODAT.py $forecast_date
+		exit 0
 
 		# Send INFLOW.DAT file into Windows
 		echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"

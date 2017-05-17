@@ -95,6 +95,8 @@ try :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
+    print('Update_HECHMS startTime:', now.strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
+
     # Extract Start and End times
     fileName = RAIN_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
