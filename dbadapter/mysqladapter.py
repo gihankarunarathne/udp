@@ -1,0 +1,119 @@
+#!/usr/bin/python3
+
+import pymysql.cursors, hashlib, collections, json, traceback
+
+MyStruct = collections.namedtuple("MyStruct", "field1 field2 field3")
+
+class mysqladapter :
+    def __init__(self) :
+        '''Initialize Database Connection'''
+        # Open database connection
+        self.connection = pymysql.connect(host="localhost",
+                            user="curw",
+                            password="curw@123",
+                            db="curw")
+
+        # prepare a cursor object using cursor() method
+        cursor = self.connection.cursor()
+
+        # execute SQL query using execute() method.
+        cursor.execute("SELECT VERSION()")
+
+        # Fetch a single row using fetchone() method.
+        data = cursor.fetchone()
+
+        print ("Database version : %s " % data)
+
+        # disconnect from server
+        #self.connection.close()
+
+
+    def getEventId(self) :
+        '''Get the event id for given meta data'''
+        print('getEventId')
+
+    def createEventId(self, metaData) :
+        '''Create a new event id for given meta data'''
+        print('createEventId')
+        #d = MyStruct("foo", "bar", "baz")
+        #d = { 'name': 'Gihan', 'send': '123' }
+        print(json.dumps(metaData, sort_keys=True).encode("ascii"))
+        m = hashlib.sha256()
+        m.update(json.dumps(metaData, sort_keys=True).encode("ascii"))
+        eventId = m.hexdigest()
+        try:
+            with self.connection.cursor() as cursor:
+                sql = [
+                    "SELECT `id` as `stationId` FROM `station` WHERE `name`=%s",
+                    "SELECT `id` as `variableId` FROM `variable` WHERE `variable`=%s",
+                    "SELECT `id` as `unitId` FROM `unit` WHERE `unit`=%s AND `rate`=%s",
+                    "SELECT `id` as `typeId` FROM `type` WHERE `type`=%s",
+                    "SELECT `id` as `sourceId` FROM `source` WHERE `source`=%s"
+                ]
+
+                cursor.execute(sql[0], (metaData['station']))
+                stationId = cursor.fetchone()[0]
+                cursor.execute(sql[1], (metaData['variable']))
+                variableId = cursor.fetchone()[0]
+                cursor.execute(sql[2], (metaData['unit'], metaData['rate']))
+                unitId = cursor.fetchone()[0]
+                cursor.execute(sql[3], (metaData['type']))
+                typeId = cursor.fetchone()[0]
+                cursor.execute(sql[4], (metaData['source']))
+                sourceId = cursor.fetchone()[0]
+
+                print('stationId', metaData['station'], '>', stationId)
+                print('variableId', metaData['variable'], '>', variableId)
+                print('unitId', metaData['unit'], '>', unitId)
+                print('typeId', metaData['type'], '>', typeId)
+                print('sourceId', metaData['source'], '>', sourceId)
+
+                sql = "INSERT INTO `run` (`id`, `name`, `start_date`, `end_date`, `station`, `variable`, `unit`, `type`, `source`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                sqlValues = (
+                    eventId,
+                    metaData['name'],
+                    metaData['start_date'],
+                    metaData['end_date'],
+                    stationId,
+                    variableId,
+                    unitId,
+                    typeId,
+                    sourceId
+                )
+                print(sqlValues)
+                # 48ff7c9981483fa638226dbe29577ff3d7329ee753d99a8bbc46d5b90a6516f8
+                cursor.execute(sql, sqlValues)
+                self.connection.commit()
+
+        except Exception as e :
+            traceback.print_exc()
+
+        return eventId
+
+    def insertTimeSeries(self, eventId, timeseries) :
+        '''Insert timeseries into the db against given eventId'''
+        print('insertTimeSeries')
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "INSERT INTO `data` (`id`, `time`, `value`) VALUES (%s, %s, %s)"
+
+                newTimeseries = []
+                for t in timeseries :
+                    t.insert(0, eventId)
+                    newTimeseries.append(t)
+
+                # print(newTimeseries[:10])
+                cursor.executemany(sql, (newTimeseries))
+                self.connection.commit()
+
+        except Exception as e :
+            traceback.print_exc()
+
+    def getEventIds(self) :
+        '''Get event ids set according to given meta data'''
+        print('getEventIds')
+
+    def retrieveTimeSeries(self) :
+        '''Get timeseries'''
+        print('retrieveTimeSeries')
+
