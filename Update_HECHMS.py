@@ -6,7 +6,7 @@ DSSDateTime = collections.namedtuple('DSSDateTime', ['dateTime', 'date', 'time']
 
 def usage() :
     usageText = """
-Usage: ./HECHMSTORGRAPHS.py [-d date] [-h]
+Usage: ./Update_HECHMS.py [-d date] [-h -i] [-s sInterval] [-c cInterval] 
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM. Default is current date.
@@ -95,7 +95,7 @@ try :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
-    print('Update_HECHMS startTime:', now.strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
+    print('Update_HECHMS startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
 
     # Extract Start and End times
     fileName = RAIN_CSV_FILE.split('.', 1)

@@ -1,12 +1,17 @@
 #!/usr/bin/python3
 
-import os
-import glob
-import csv
-import json
+import sys, traceback, datetime, os, glob, csv, json, getopt
 from string import Template
-import sys, traceback, datetime
 from collections import OrderedDict
+
+def usage() :
+    usageText = """
+Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
+
+-h  --help          Show usage
+-d  --date          Date in YYYY-MM-DD. Default is current date.
+"""
+    print(usageText)
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -20,6 +25,19 @@ try :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
+
+    date = ''
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "date="])
+    except getopt.GetoptError:          
+        usage()                        
+        sys.exit(2)                     
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()                     
+            sys.exit()           
+        elif opt in ("-d", "--date"):
+            date = arg
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
@@ -39,9 +57,11 @@ try :
 
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 : # Or taken from first arg for the program
-        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    if date :
+        now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
+
+    print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :

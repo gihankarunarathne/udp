@@ -1,7 +1,16 @@
 #!/usr/bin/python3
 
 from string import Template
-import sys, traceback, csv, json, datetime
+import sys, traceback, csv, json, datetime, getopt
+
+def usage() :
+    usageText = """
+Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
+
+-h  --help          Show usage
+-d  --date          Date in YYYY-MM-DD. Default is current date.
+"""
+    print(usageText)
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -20,6 +29,19 @@ try :
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+    date = ''
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "date="])
+    except getopt.GetoptError:          
+        usage()                        
+        sys.exit(2)                     
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()                     
+            sys.exit()           
+        elif opt in ("-d", "--date"):
+            date = arg
+
     # FLO-2D parameters
     IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
     IDEPLT      = 8672
@@ -30,9 +52,11 @@ try :
 
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 : # Or taken from first arg for the program
-        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    if date :
+        now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
+
+    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     fileName = DISCHARGE_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])

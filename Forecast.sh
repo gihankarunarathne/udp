@@ -111,7 +111,7 @@ main() {
 		
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
 		# using Theissen Polygen
-		./RFTOCSV.py $forecast_date
+		./RFTOCSV.py -d $forecast_date
 
 		# HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
 		# We discovered that, this issue on 3.5 version, hence upgrade into 4.1
@@ -138,7 +138,7 @@ main() {
 		./dssvue/hec-dssvue.sh DSSTOCSV.py $forecast_date
 
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
-		./CSVTODAT.py $forecast_date
+		./CSVTODAT.py  -d $forecast_date
 		exit 0
 
 		# Send INFLOW.DAT file into Windows
