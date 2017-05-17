@@ -1,8 +1,20 @@
 #!/usr/bin/python3
 
-import sys, traceback, csv, json, datetime, collections
+import sys, traceback, csv, json, datetime, collections, getopt
 
 DSSDateTime = collections.namedtuple('DSSDateTime', ['dateTime', 'date', 'time'])
+
+def usage() :
+    usageText = """
+Usage: ./HECHMSTORGRAPHS.py [-d date] [-h]
+
+-h  --help          Show usage
+-d  --date          Date in YYYY-MM. Default is current date.
+-i  --init          Create a State while running the HEC-HMS model
+-s  --sInterval     (State Interval in minutes) Time period that state should create after start time
+-c  --cInterval     (Control Interval in minutes) Time period that HEC-HMS model should run
+"""
+    print(usageText)
 
 def getDSSDateTime(dateTime) :
     value = dateTime.strftime('%Y:%m:%d %H:%M:%S')
@@ -57,10 +69,30 @@ try :
     if 'OUTPUT_DIR' in CONFIG :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+    date = ''
+    initState = False
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hd:is:c:", ["help", "date=", "backDays=", "init", "sInterval", "cInterval"])
+    except getopt.GetoptError:          
+        usage()                        
+        sys.exit(2)                     
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()                     
+            sys.exit()           
+        elif opt in ("-d", "--date"):
+            date = arg
+        elif opt in ("-i", "--init"):
+            initState = True
+        elif opt in ("-s", "--sInterval"):
+            STATE_INTERVAL = int(arg)
+        elif opt in ("-cInterval", "--cInterval"):
+            CONTROL_INTERVAL = int(arg)
+
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 : # Or taken from first arg for the program
-        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    if date :
+        now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
     # Extract Start and End times
@@ -140,8 +172,9 @@ try :
             line3 = indent + 'Save State Time: ' + saveStateDateTimeDSS.time
             runFile.write(line1 + '\n'); runFile.write(line2 + '\n'); runFile.write(line3 + '\n')
 
-            line4 = indent + 'Start State Name: State_' + startStateDateTime.strftime('%Y_%m_%d') + '_To_' + startDateTime.strftime('%Y_%m_%d')
-            runFile.write(line4 + '\n')
+            if not initState :
+                line4 = indent + 'Start State Name: State_' + startStateDateTime.strftime('%Y_%m_%d') + '_To_' + startDateTime.strftime('%Y_%m_%d')
+                runFile.write(line4 + '\n')
 
         # Skip Writing these lines
         elif 'Save State At End of Run:' in line :

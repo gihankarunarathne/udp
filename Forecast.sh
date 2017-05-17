@@ -14,7 +14,9 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_
 	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
 	-b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
 		When specified -d option will be ignored.
-	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.	
+	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.
+	-i 	Initiate a State at the end of HEC-HMS run
+	-s 	Store Timeseries data on MySQL database
 EOF
 }
 
@@ -30,8 +32,10 @@ INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
 DAYS_BACK=0
 FORCE_RUN=false
+INIT_STATE=false
+STORE_DATA=false
 # Extract user arguments
-while getopts hd:c:r:b:f opt; do
+while getopts hd:c:r:b:fis opt; do
     case $opt in
         h)
             usage
@@ -46,6 +50,10 @@ while getopts hd:c:r:b:f opt; do
 		b)  DAYS_BACK=$OPTARG
 			;;
 		f)  FORCE_RUN=true
+			;;
+		i)  INIT_STATE=true
+			;;
+		s)  STORE_DATA=true
 			;;
         *)
             usage >&2
@@ -105,14 +113,15 @@ main() {
 		# using Theissen Polygen
 		./RFTOCSV.py $forecast_date
 
-		# There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
+		# HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
 		# We discovered that, this issue on 3.5 version, hence upgrade into 4.1
 		# But with 4.1, it runs correctly when the data are saved by the HEC-HMS program
-		# After run the model using script, it can't reuse for correct run
+		# After run the model using the script, it can't reuse for a correct run again
+		# Here we reuse a corrected model which can run using the script
 		yes | cp -R 2008_2_Events_Hack/* 2008_2_Events/
 
 		# Remove .dss files in order to remove previous results
-		rm $DSS_INPUT_FILE 
+		rm $DSS_INPUT_FILE
 		rm $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
 		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date

@@ -33,7 +33,24 @@ class mysqladapter :
         print('getEventId')
 
     def createEventId(self, metaData) :
-        '''Create a new event id for given meta data'''
+        '''Create a new event id for given meta data
+
+        :param dict metaData: Dict of Meta Data that use to create the hash
+        Meta Data should contains all of following keys s.t.
+        {
+            'station': 'Hanwella',
+            'variable': 'Discharge',
+            'unit': 'mm',
+            'rate': 60,
+            'type': 'Forecast',
+            'source': 'HEC-HMS',
+            'name': 'HEC 1st',
+            'start_date': '2017-05-01 00:00:00',
+            'end_date': '2017-05-03 23:00:00'
+        }
+
+        :return str: sha256 hash value in hex format (length of 64 characters)
+        '''
         print('createEventId')
         #d = MyStruct("foo", "bar", "baz")
         #d = { 'name': 'Gihan', 'send': '123' }
