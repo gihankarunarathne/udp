@@ -38,7 +38,7 @@ try :
     BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
 
-    # Create BASE.OUT file exists
+    # Check BASE.OUT file exists
     if not os.path.exists(BASE_OUT_FILE_PATH):
         print('Unable to find file : ', BASE_OUT_FILE_PATH)
         sys.exit()

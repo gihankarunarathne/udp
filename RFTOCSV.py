@@ -17,7 +17,7 @@ try :
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
     RAIN_CSV_FILE = 'DailyRain.csv'
-    RF_DIR_PATH = './OUTPUT/RF/'
+    RF_DIR_PATH = './WRF/RF/'
     OUTPUT_DIR = './OUTPUT'
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']

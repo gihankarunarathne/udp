@@ -139,7 +139,6 @@ main() {
 
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
 		./CSVTODAT.py  -d $forecast_date
-		exit 0
 
 		# Send INFLOW.DAT file into Windows
 		echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
