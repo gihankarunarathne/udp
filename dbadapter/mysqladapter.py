@@ -36,11 +36,10 @@ class mysqladapter :
         {
             'station': 'Hanwella',
             'variable': 'Discharge',
-            'unit': 'mm',
-            'rate': 60,
+            'unit': 'm3/s',
             'type': 'Forecast',
             'source': 'HEC-HMS',
-            'name': 'HEC 1st',
+            'name': 'HEC-HMS 1st',
             'start_date': '2017-05-01 00:00:00',
             'end_date': '2017-05-03 23:00:00'
         }
@@ -74,12 +73,11 @@ class mysqladapter :
         Meta Data should contains all of following keys s.t.
         {
             'station': 'Hanwella',
-            'variable': 'Discharge',
+            'variable': 'Precipitation',
             'unit': 'mm',
-            'rate': 60,
             'type': 'Forecast',
-            'source': 'HEC-HMS',
-            'name': 'HEC 1st',
+            'source': 'WRF',
+            'name': 'WRF 1st',
             'start_date': '2017-05-01 00:00:00',
             'end_date': '2017-05-03 23:00:00'
         }
@@ -98,7 +96,7 @@ class mysqladapter :
                 sql = [
                     "SELECT `id` as `stationId` FROM `station` WHERE `name`=%s",
                     "SELECT `id` as `variableId` FROM `variable` WHERE `variable`=%s",
-                    "SELECT `id` as `unitId` FROM `unit` WHERE `unit`=%s AND `rate`=%s",
+                    "SELECT `id` as `unitId` FROM `unit` WHERE `unit`=%s",
                     "SELECT `id` as `typeId` FROM `type` WHERE `type`=%s",
                     "SELECT `id` as `sourceId` FROM `source` WHERE `source`=%s"
                 ]
@@ -107,7 +105,7 @@ class mysqladapter :
                 stationId = cursor.fetchone()[0]
                 cursor.execute(sql[1], (metaData['variable']))
                 variableId = cursor.fetchone()[0]
-                cursor.execute(sql[2], (metaData['unit'], metaData['rate']))
+                cursor.execute(sql[2], (metaData['unit']))
                 unitId = cursor.fetchone()[0]
                 cursor.execute(sql[3], (metaData['type']))
                 typeId = cursor.fetchone()[0]
@@ -133,7 +131,6 @@ class mysqladapter :
                     sourceId
                 )
                 print(sqlValues)
-                # 48ff7c9981483fa638226dbe29577ff3d7329ee753d99a8bbc46d5b90a6516f8
                 cursor.execute(sql, sqlValues)
                 self.connection.commit()
 
@@ -152,6 +149,7 @@ class mysqladapter :
 
                 newTimeseries = []
                 for t in timeseries :
+                    t[1] = round(float(t[1]), 3)
                     t.insert(0, eventId)
                     newTimeseries.append(t)
 
