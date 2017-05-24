@@ -20,6 +20,7 @@ INFLOW_DAT_FILE='INFLOW.DAT'
 RAINCELL_DAT_FILE='RAINCELL.DAT'
 RUN_FLO2D='RUN_FLO2D'
 EXTRACT_WATERLEVEL_GRID='EXTRACT_WATERLEVEL_GRID'
+EXTRACT_WATERLEVEL='EXTRACT_WATERLEVEL'
 
 # Refer: http://stackoverflow.com/a/13146494/1461060
 class StoreHandler(BaseHTTPRequestHandler):
@@ -105,7 +106,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
 
-        # Run WATERLEVEL GRID extraction
+        # Run WATERLEVEL GRID extraction from BASE.OUT
         if self.path.startswith('/'+EXTRACT_WATERLEVEL_GRID):
             date = self.path[len('/'+EXTRACT_WATERLEVEL_GRID)+1:]
             print('POST request on ', self.path, date)
@@ -113,6 +114,29 @@ class StoreHandler(BaseHTTPRequestHandler):
             try :
                 # Execute WATERLEVEL GRID extraction
                 print('Execute WATERLEVEL GRID extraction ...')
+                if len(date) > 0 :
+                    Popen(["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1', '-d', date], stdout=sys.stdout)
+                    #os.system('python CopyWaterLevelGridToCMS.ps1 '+ date)
+                else :
+                    Popen(["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1'], stdout=sys.stdout)
+                    #os.system('python CopyWaterLevelGridToCMS.ps1 ')
+
+                self.send_response(200)
+                self.send_header('Content-type', 'text/json')
+                self.end_headers()
+            except Exception as e :
+                traceback.print_exc()
+                self.send_response(500)
+                self.end_headers()
+
+        # Run FLO2D WATERLEVEL extraction from HYCHAN.OUT
+        if self.path.startswith('/'+EXTRACT_WATERLEVEL):
+            date = self.path[len('/'+EXTRACT_WATERLEVEL)+1:]
+            print('POST request on ', self.path, date)
+
+            try :
+                # Execute WATERLEVEL extraction
+                print('Execute WATERLEVEL extraction ...')
                 if len(date) > 0 :
                     Popen(["powershell.exe", '.\CopyWaterLevelToCMS.ps1', '-d', date], stdout=sys.stdout)
                     #os.system('python CopyWaterLevelToCMS.ps1 '+ date)
