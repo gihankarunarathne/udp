@@ -43,6 +43,8 @@ class mysqladapter :
             'start_date': '2017-05-01 00:00:00',
             'end_date': '2017-05-03 23:00:00'
         }
+        If start_date is not set, use default date as "01 Jan 1970 00:00:00 GMT"
+        If end_date   is not set, use default date as "01 Jan 2100 00:00:00 GMT"
 
         :return str: sha256 hash value in hex format (length of 64 characters)
         '''

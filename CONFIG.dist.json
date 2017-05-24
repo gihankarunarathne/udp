@@ -12,10 +12,13 @@
     "HEC_HMS_RUN"       : "./2008_2_Events/2008_2_Events.run",
     "HEC_HMS_GAGE"      : "./2008_2_Events/2008_2_Events.gage",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
-    "INFLOW_DAT_FILE"   : "INFLOW.DAT",
     "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
     "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo/",
+
     "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin/",
+    "INFLOW_DAT_FILE"   : "INFLOW.DAT",
+    "BASE_OUT_FILE"     : "BASE.OUT",
+    "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
 
     "HOST_ADDRESS"      : "localhost",
     "HOST_PORT"         : 8080,

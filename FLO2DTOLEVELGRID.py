@@ -17,7 +17,7 @@ try :
     CWD = os.getcwd()
     BASE_OUT_FILE = 'BASE.OUT'
     WATER_LEVEL_FILE = 'water_level.asc'
-    WATER_LEVEL_DIR = 'water_level'
+    WATER_LEVEL_DIR = 'water_level_grid'
     OUTPUT_DIR = 'OUTPUT'
     if 'BASE_OUT_FILE' in CONFIG :
         BASE_OUT_FILE = CONFIG['BASE_OUT_FILE']
