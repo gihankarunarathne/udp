@@ -40,6 +40,9 @@ fi
 # Copy Rainfall data
 scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/RF/*-$forecast_date.*  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
 
+# Copy Kelani Upper Basin mean Rainfall data
+scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin/mean-rf-$forecast_date.txt  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-$forecast_date.txt
+
 # Copy Rainfall Grid data
 scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/colombo/created-$forecast_date  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
 
