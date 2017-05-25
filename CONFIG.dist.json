@@ -13,6 +13,7 @@
     "HEC_HMS_GAGE"      : "./2008_2_Events/2008_2_Events.gage",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
     "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
+    "KUB_DIR_PATH"      : "/mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin",
     "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo/",
 
     "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin/",
