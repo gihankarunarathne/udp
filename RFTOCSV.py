@@ -18,11 +18,14 @@ try :
     # print('Config :: ', CONFIG)
     RAIN_CSV_FILE = 'DailyRain.csv'
     RF_DIR_PATH = './WRF/RF/'
+    KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'RF_DIR_PATH' in CONFIG :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
+    if 'KUB_DIR_PATH' in CONFIG :
+        KUB_DIR_PATH = CONFIG['KUB_DIR_PATH']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
@@ -50,6 +53,11 @@ try :
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
 
+    KELANI_UPPER_BASIN_WEIGHTS = {
+        'mean-rf'       : 1
+    }
+    KELANI_UPPER_BASIN = KELANI_UPPER_BASIN_WEIGHTS.keys()
+
     LOWER_CATCHMENT_WEIGHTS = {
         'Colombo'       :  1
     }
@@ -76,6 +84,20 @@ try :
                 if key not in UPPER_THEISSEN_VALUES :
                     UPPER_THEISSEN_VALUES[key] = 0
                 UPPER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
+
+    KELANI_UPPER_BASIN_VALUES = OrderedDict()
+    for catchment in KELANI_UPPER_BASIN :
+        for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment+'-'+date+'*.txt')):
+            print('Start Operating on (Kelani Upper Basin) ', filename)
+            csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
+            csvCatchment = list(csvCatchment)
+            for row in csvCatchment :
+                # print(row[0].replace('_', ' '), row[1].strip(' \t'))
+                d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
+                key = d.timestamp()
+                if key not in KELANI_UPPER_BASIN_VALUES :
+                    KELANI_UPPER_BASIN_VALUES[key] = 0
+                KELANI_UPPER_BASIN_VALUES[key] += float(row[1].strip(' \t')) * KELANI_UPPER_BASIN_WEIGHTS[catchment]
 
     LOWER_THEISSEN_VALUES = OrderedDict()
     for lowerCatchment in LOWER_CATCHMENTS :
@@ -105,7 +127,7 @@ try :
     for avg in UPPER_THEISSEN_VALUES :
         # print(avg, UPPER_THEISSEN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
-        csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % UPPER_THEISSEN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
+        csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")

@@ -1,1 +1,1 @@
-from dbadapter.mysqladapter import mysqladapter
+from .mysqladapter import mysqladapter
