@@ -3,13 +3,15 @@
 import sys, traceback, datetime, os, glob, csv, json, getopt
 from string import Template
 from collections import OrderedDict
+# from curwmysqladapter import mysqladapter
 
 def usage() :
     usageText = """
-Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
+Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
+-t  --time          Time in HH:MM:SS. Default is current time.
 """
     print(usageText)
 
@@ -20,6 +22,12 @@ try :
     RF_DIR_PATH = './WRF/RF/'
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
+
+    MYSQL_HOST="localhost"
+    MYSQL_USER="root"
+    MYSQL_DB="curw"
+    MYSQL_PASSWORD=""
+
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'RF_DIR_PATH' in CONFIG :
@@ -29,9 +37,19 @@ try :
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+    if 'MYSQL_HOST' in CONFIG :
+        MYSQL_HOST = CONFIG['MYSQL_HOST']
+    if 'MYSQL_USER' in CONFIG :
+        MYSQL_USER = CONFIG['MYSQL_USER']
+    if 'MYSQL_DB' in CONFIG :
+        MYSQL_DB = CONFIG['MYSQL_DB']
+    if 'MYSQL_PASSWORD' in CONFIG :
+        MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
+
     date = ''
+    time = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "date="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:", ["help", "date=", "time="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -41,6 +59,8 @@ try :
             sys.exit()           
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
@@ -68,8 +88,12 @@ try :
     if date :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
+    if time :
+        now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = now.strftime("%H:%M:%S")
 
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print(' RFTOCSV run for', date, '@', time)
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :

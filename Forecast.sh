@@ -37,7 +37,7 @@ DAYS_BACK=0
 FORCE_RUN=false
 INIT_STATE=false
 STORE_DATA=false
-EXIT=false
+FORCE_EXIT=false
 # Extract user arguments
 while getopts hd:t:c:r:b:fise opt; do
     case $opt in
@@ -61,7 +61,7 @@ while getopts hd:t:c:r:b:fise opt; do
 			;;
 		s)  STORE_DATA=true
 			;;
-		e)  EXIT=true
+		e)  FORCE_EXIT=true
 			;;
         *)
             usage >&2
@@ -102,7 +102,7 @@ DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
 main() {
-	echo "Start at $current_date_time"
+	echo "Start at $current_date_time $FORCE_EXIT"
 	echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
 	local isWRF=$(isWRFAvailable)
@@ -119,7 +119,7 @@ main() {
 		
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
 		# using Theissen Polygen
-		./RFTOCSV.py -d $forecast_date
+		./RFTOCSV.py -d $forecast_date -t $forecast_time
 
 		# HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
 		# We discovered that, this issue on 3.5 version, hence upgrade into 4.1
@@ -148,20 +148,23 @@ main() {
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
 		./CSVTODAT.py  -d $forecast_date
 
-		# Send INFLOW.DAT file into Windows
-		echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
-		curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
+		if [ $FORCE_EXIT == false ]
+		then
+			# Send INFLOW.DAT file into Windows
+			echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
+			curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
 
-		# Send RAINCELL.DAT file into Windows
-		echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
-		FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$forecast_date/RAINCELL.DAT
-		curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
+			# Send RAINCELL.DAT file into Windows
+			echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
+			FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$forecast_date/RAINCELL.DAT
+			curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
 
-		# Send RUN_FLO2D.json file into Windows, and run FLO2D
-		echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
-		curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
+			# Send RUN_FLO2D.json file into Windows, and run FLO2D
+			echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
+			curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 
-		./CopyToCMS.sh -d $forecast_date
+			./CopyToCMS.sh -d $forecast_date
+		fi
 	
 		local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
 		if [ $writeStatus == 0 ]

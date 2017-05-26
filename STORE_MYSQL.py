@@ -1,4 +1,4 @@
-from dbadapter import mysqladapter
+from curwmysqladapter import mysqladapter
 import sys, traceback, csv, json, datetime, getopt, glob, os
 
 def usage() :
