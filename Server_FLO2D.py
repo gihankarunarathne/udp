@@ -62,7 +62,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
         # Handle RAINCELL.DAT file
-        if self.path.startswith('/'+RAINCELL_DAT_FILE):
+        elif self.path.startswith('/'+RAINCELL_DAT_FILE):
             date = self.path[len('/'+RAINCELL_DAT_FILE)+1:]
             print('POST request on ', self.path, date)
             length = self.headers['content-length']
@@ -84,7 +84,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
         # Run FLO2D application
-        if self.path.startswith('/'+RUN_FLO2D):
+        elif self.path.startswith('/'+RUN_FLO2D):
             date = self.path[len('/'+RUN_FLO2D)+1:]
             print('POST request on ', self.path, date)
 
@@ -107,7 +107,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.end_headers()
 
         # Run WATERLEVEL GRID extraction from BASE.OUT
-        if self.path.startswith('/'+EXTRACT_WATERLEVEL_GRID):
+        elif self.path.startswith('/'+EXTRACT_WATERLEVEL_GRID):
             date = self.path[len('/'+EXTRACT_WATERLEVEL_GRID)+1:]
             print('POST request on ', self.path, date)
 
@@ -130,7 +130,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.end_headers()
 
         # Run FLO2D WATERLEVEL extraction from HYCHAN.OUT
-        if self.path.startswith('/'+EXTRACT_WATERLEVEL):
+        elif self.path.startswith('/'+EXTRACT_WATERLEVEL):
             date = self.path[len('/'+EXTRACT_WATERLEVEL)+1:]
             print('POST request on ', self.path, date)
 
