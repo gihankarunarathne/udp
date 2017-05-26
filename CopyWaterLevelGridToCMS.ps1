@@ -4,7 +4,7 @@ if(!$d) {
 	$d = (Get-Date).ToString('yyyy-MM-dd')
 }
 
-echo "forecast date : $d"
+echo "CopyWaterLevelGridToCMS:: forecast date : $d"
 
 python FLO2DTOLEVELGRID.py $d
 
