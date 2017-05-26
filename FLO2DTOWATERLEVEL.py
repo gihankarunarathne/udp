@@ -24,8 +24,8 @@ try :
     CELL_MAP = {
         3627 : "Ambathale",
         3626 : "Madiwela Out",
-        2438 : "Balalihini Out",
-        2439 : "Balalihini Out 2",
+        2438 : "Salalihini Out",
+        2439 : "Salalihini Out 2",
         1365 : "Kittampahuwa Bridge",
         1102 : "Kittampahuwa Out",
         1103 : "Kittampahuwa Out 2",
@@ -118,9 +118,9 @@ try :
                         if len(v) < 1 :
                             continue
                         # Get flood level (Elevation)
-                        # value = v[1]
+                        value = v[1]
                         # Get flood depth (Depth)
-                        value = v[2]
+                        # value = v[2]
                         if not value.replace('.','',1).isdigit() :
                             value = MISSING_VALUE
                         timeStep = float(v[0])
