@@ -6,17 +6,19 @@
 #
 usage() {
 cat <<EOF
-Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
+Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
 	-h 	Show usage
 	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
+	-t 	Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
 	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
 	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
 	-b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
 		When specified -d option will be ignored.
 	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.
-	-i 	Initiate a State at the end of HEC-HMS run
-	-s 	Store Timeseries data on MySQL database
+	-i 	Initiate a State at the end of HEC-HMS run.
+	-s 	Store Timeseries data on MySQL database.
+	-e  Exit without executing models which run on Windows.
 EOF
 }
 
@@ -27,6 +29,7 @@ trimQuotes() {
 }
 
 forecast_date="`date +%Y-%m-%d`";
+forecast_time="`date +%H:00:00`";
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
@@ -34,14 +37,17 @@ DAYS_BACK=0
 FORCE_RUN=false
 INIT_STATE=false
 STORE_DATA=false
+EXIT=false
 # Extract user arguments
-while getopts hd:c:r:b:fis opt; do
+while getopts hd:t:c:r:b:fise opt; do
     case $opt in
         h)
             usage
             exit 0
             ;;
         d)  forecast_date=$OPTARG
+            ;;
+        t)  forecast_time=$OPTARG
             ;;
         c)  CONFIG_FILE=$OPTARG
             ;;
@@ -54,6 +60,8 @@ while getopts hd:c:r:b:fis opt; do
 		i)  INIT_STATE=true
 			;;
 		s)  STORE_DATA=true
+			;;
+		e)  EXIT=true
 			;;
         *)
             usage >&2
@@ -95,7 +103,7 @@ current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
 main() {
 	echo "Start at $current_date_time"
-	echo "Forecasting with Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
+	echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
 	local isWRF=$(isWRFAvailable)
 	local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
