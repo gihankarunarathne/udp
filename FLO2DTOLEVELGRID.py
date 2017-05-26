@@ -31,7 +31,7 @@ try :
     if len(sys.argv) > 1 : # Or taken from first arg for the program
         now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
-    print('Extract Result of FLO2D on', date)
+    print('Extract Water Level Grid Result of FLO2D on', date)
 
     appDir = pjoin(CWD, date + '_Kelani')
     OUTPUT_DIR_PATH = pjoin(CWD, 'OUTPUT')

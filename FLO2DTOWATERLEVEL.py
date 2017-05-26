@@ -90,7 +90,6 @@ try :
                     elementNo = int(line.split()[5])
 
                     if elementNo in ELEMENT_NUMBERS :
-                        print('>>>', elementNo)
                         isWaterLevelLines = True
                         waterLevelLines.append(line)
                     else :
@@ -106,13 +105,10 @@ try :
                             isSeriesComplete = True
 
                 if isSeriesComplete :
-                    print('Series', isSeriesComplete)
-                    for l in waterLevelLines[:5]:
-                        print(l)
-
                     baseTime = datetime.datetime.strptime(date, '%Y-%m-%d')
                     timeseries = []
                     elementNo = int(waterLevelLines[0].split()[5])
+                    print('Extracted Cell No', elementNo, CELL_MAP[elementNo])
                     for ts in waterLevelLines[1:] :
                         v = ts.split()
                         if len(v) < 1 :
