@@ -50,7 +50,7 @@ try :
         238  : "Dehiwala 2",
     }
     ELEMENT_NUMBERS = CELL_MAP.keys()
-    SERIES_LENGTH = 144
+    SERIES_LENGTH = 0
     MISSING_VALUE = -999
 
     # Default run for current day
@@ -74,6 +74,29 @@ try :
     if not os.path.exists(OUTPUT_DIR_PATH):
         os.makedirs(OUTPUT_DIR_PATH)
 
+    # Calculate the size of time series
+    bufsize = 65536
+    with open(HYCHAN_OUT_FILE_PATH) as infile: 
+        isWaterLevelLines = False
+        isCounting = False
+        countSeriesSize = 0 # HACK: When it comes to the end of file, unable to detect end of time series
+        while True:
+            lines = infile.readlines(bufsize)
+            if not lines or SERIES_LENGTH:
+                break
+            for line in lines:
+                if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5) :
+                    isWaterLevelLines = True
+                elif isWaterLevelLines :
+                    cols = line.split()
+                    if len(cols) > 0 and cols[0].replace('.','',1).isdigit() :
+                        countSeriesSize += 1
+                        isCounting = True
+                    elif isWaterLevelLines and isCounting :
+                        SERIES_LENGTH = countSeriesSize
+                        break
+
+    print('Series Length is :', SERIES_LENGTH)
     bufsize = 65536
     with open(HYCHAN_OUT_FILE_PATH) as infile: 
         isWaterLevelLines = False
@@ -101,7 +124,7 @@ try :
                         seriesSize += 1
                         waterLevelLines.append(line)
 
-                        if seriesSize is SERIES_LENGTH + 1 :
+                        if seriesSize == SERIES_LENGTH :
                             isSeriesComplete = True
 
                 if isSeriesComplete :
