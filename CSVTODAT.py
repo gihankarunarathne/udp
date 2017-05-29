@@ -47,7 +47,7 @@ try :
     IDEPLT      = 0     # Set to 0 on running with Text mode. Otherwise cell number e.g. 8672
     IFC         = 'C'   # foodplain 'F' or a channel 'C'
     INOUTFC     = 0     # 0-inflow, 1-outflow
-    KHIN        = 0     # inflow nodes (e.x. 8672)
+    KHIN        = 8672  # inflow nodes
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
     # Default run for current day
