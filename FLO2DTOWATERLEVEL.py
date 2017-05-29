@@ -6,6 +6,13 @@ from os.path import join as pjoin
 from sys import executable
 from subprocess import Popen
 
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
+
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
 
@@ -120,7 +127,7 @@ try :
 
                 elif isWaterLevelLines :
                     cols = line.split()
-                    if len(cols) > 0 and cols[0].replace('.','',1).isdigit() :
+                    if len(cols) > 0 and isfloat(cols[0]) :
                         seriesSize += 1
                         waterLevelLines.append(line)
 
@@ -140,8 +147,11 @@ try :
                         value = v[1]
                         # Get flood depth (Depth)
                         # value = v[2]
-                        if not value.replace('.','',1).isdigit() :
+                        if not isfloat(value) :
                             value = MISSING_VALUE
+                            continue # If value is not present, skip
+                        if value == 'NaN' :
+                            continue # If value is NaN, skip
                         timeStep = float(v[0])
                         currentStepTime = baseTime + datetime.timedelta(hours=timeStep)
                         dateAndTime = currentStepTime.strftime("%Y-%m-%d %H:%M:%S")

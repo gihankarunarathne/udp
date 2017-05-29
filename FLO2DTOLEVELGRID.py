@@ -80,7 +80,7 @@ try :
                     file = open(WATER_LEVEL_FILE_PATH, 'w')
                     file.writelines(EsriGrid)
                     file.close()
-                    # print('Write to :', fileName)
+                    print('Write to :', fileName)
 
                     isWaterLevelLines = False
                     # for l in waterLevelLines :
