@@ -45,9 +45,9 @@ try :
     # FLO-2D parameters
     IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
     IDEPLT      = 0     # Set to 0 on running with Text mode. Otherwise cell number e.g. 8672
-    IFC         = 'F'   # foodplain 'F' or a channel 'C'
+    IFC         = 'C'   # foodplain 'F' or a channel 'C'
     INOUTFC     = 0     # 0-inflow, 1-outflow
-    KHIN        = 8672 # inflow nodes
+    KHIN        = 0     # inflow nodes (e.x. 8672)
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
     # Default run for current day
