@@ -134,15 +134,23 @@ class StoreHandler(BaseHTTPRequestHandler):
             date = self.path[len('/'+EXTRACT_WATERLEVEL)+1:]
             print('POST request on ', self.path, date)
 
+            length = self.headers['content-length']
+            data = self.rfile.read(int(length))
+            runConfig = json.loads(data.decode())
+            print('RUN FLO2D options:', runConfig)
+
             try :
                 # Execute WATERLEVEL extraction
                 print('Execute WATERLEVEL extraction ...')
+                execList = ["powershell.exe", '.\CopyWaterLevelToCMS.ps1']
                 if len(date) > 0 :
-                    Popen(["powershell.exe", '.\CopyWaterLevelToCMS.ps1', '-d', date], stdout=sys.stdout)
-                    #os.system('python CopyWaterLevelToCMS.ps1 '+ date)
-                else :
-                    Popen(["powershell.exe", '.\CopyWaterLevelToCMS.ps1'], stdout=sys.stdout)
-                    #os.system('python CopyWaterLevelToCMS.ps1 ')
+                    execList = execList + ['-d' , date]
+                if runConfig.get('FLO2D_PATH') :
+                    execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
+                print('exec List:', execList)
+
+                #Popen(execList, stdout=sys.stdout)
+                #os.system('python CopyWaterLevelToCMS.ps1 '+ date)
 
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')

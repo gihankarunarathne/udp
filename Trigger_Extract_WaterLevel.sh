@@ -8,12 +8,12 @@ usage() {
 cat <<EOF
 Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
-	-h 	Show usage
-	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
-	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
-	-b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
+    -h 	Show usage
+    -d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
+    -c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
+    -b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
 		When specified -d option will be ignored.
-    -p  Path of FLO2D folder
+    -p  Path of FLO2D Model folder
 EOF
 }
 
@@ -32,7 +32,7 @@ CONFIG_FILE=$ROOT_DIR/CONFIG.json
 DAYS_BACK=0
 FLO2D_PATH=""
 # Extract user arguments
-while getopts hd:c:b: opt; do
+while getopts hd:c:b:p: opt; do
     case $opt in
         h)
             usage
@@ -61,7 +61,7 @@ fi
 
 # cd into bash script's root directory
 cd $ROOT_DIR
-echo $(pwd)
+echo "At $(pwd)"
 if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
 then
 	echo "Unable to find $CONFIG_FILE file"
@@ -77,7 +77,8 @@ current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 main() {
     echo "Start at $current_date_time"
     cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_DIR
-    sed -i '/FLO2D_PATH/c\FLO2D_PATH : $FLO2D_PATH' $FLO2D_DIR/RUN_FLO2D.json
+    FLO2D_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_PATH\""
+    sed -i "/FLO2D_PATH/c\    $FLO2D_PATH_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
     echo "Trigger FLO2D WaterLevel Extraction on Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
