@@ -149,7 +149,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                     execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
                 print('exec List:', execList)
 
-                #Popen(execList, stdout=sys.stdout)
+                Popen(execList, stdout=sys.stdout)
                 #os.system('python CopyWaterLevelToCMS.ps1 '+ date)
 
                 self.send_response(200)
