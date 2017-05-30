@@ -41,7 +41,7 @@ try :
 
     CELL_MAP = {
         3627 : "Ambathale",
-        4327 : "Madiwela Out",
+        3626 : "Madiwela Out",
         2438 : "Salalihini Out",
         2439 : "Salalihini Out 2",
         1365 : "Kittampahuwa Bridge",
@@ -58,7 +58,7 @@ try :
         2305 : "Parliament Lake 2",
         2712 : "Parliament Upstream",
         2516 : "Ahangama",
-        3603 : "Madiwela US",
+        4327 : "Madiwela US",
         1000 : "Heen Ela",
         621  : "Torington",
         912  : "Wellawatta 1",
