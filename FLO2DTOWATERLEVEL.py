@@ -1,10 +1,21 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, datetime, sys, csv, traceback
+import os, json, subprocess, datetime, sys, csv, traceback, getopt
 from os import curdir
 from os.path import join as pjoin
 from sys import executable
 from subprocess import Popen
+
+def usage() :
+    usageText = """
+Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
+
+-h  --help          Show usage
+-d  --date          Date in YYYY-MM-DD. Default is current date.
+-t  --time          Time in HH:MM:SS. Default is current time.
+-p  --path          FLO2D model path which include HYCHAN.OUT
+"""
+    print(usageText)
 
 def isfloat(value):
   try:
@@ -60,14 +71,40 @@ try :
     SERIES_LENGTH = 0
     MISSING_VALUE = -999
 
+    date = ''
+    time = ''
+    path = ''
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:", ["help", "date=", "time=", "path="])
+    except getopt.GetoptError:          
+        usage()                        
+        sys.exit(2)                     
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()                     
+            sys.exit()           
+        elif opt in ("-d", "--date"):
+            date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
+        elif opt in ("-p", "--path"):
+            path = arg
+
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 : # Or taken from first arg for the program
-        now = datetime.datetime.strptime(sys.argv[1], "%Y-%m-%d")
+    if date :
+        now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
-    print('Extract Water Level Result of FLO2D on', date)
+    if time :
+        now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = now.strftime("%H:%M:%S")
+
+    print('Extract Water Level Result of FLO2D on', date, '@', time)
 
     appDir = pjoin(CWD, date + '_Kelani')
+    if path :
+        appDir = pjoin(CWD, path)
+
     OUTPUT_DIR_PATH = pjoin(CWD, 'OUTPUT')
     HYCHAN_OUT_FILE_PATH = pjoin(appDir, HYCHAN_OUT_FILE)
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
