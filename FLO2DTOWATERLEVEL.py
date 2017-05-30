@@ -41,7 +41,7 @@ try :
 
     CELL_MAP = {
         3627 : "Ambathale",
-        3626 : "Madiwela Out",
+        4327 : "Madiwela Out",
         2438 : "Salalihini Out",
         2439 : "Salalihini Out 2",
         1365 : "Kittampahuwa Bridge",
