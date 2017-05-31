@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, datetime, sys
+import os, json, subprocess, datetime, sys, csv, traceback, getopt
 from os import curdir
 from os.path import join as pjoin
 from sys import executable
@@ -10,6 +10,21 @@ from FLO2DWATERLEVEL import getWaterLevelGrid
 from FLO2DWATERLEVEL import getGridBoudary
 from FLO2DWATERLEVEL import getCellGrid
 from FLO2DWATERLEVEL import getEsriGrid
+
+def usage() :
+    usageText = """
+Usage: ./FLO2DTOLEVELGRID.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-S YYYY-MM-DD] [-T HH:MM:SS]
+
+-h  --help          Show usage
+-d  --date          Date in YYYY-MM-DD. Default is current date.
+-t  --time          Time in HH:MM:SS. If -d passed, then default is 00:00:00. Otherwise Default is current time.
+-p  --path          FLO2D model path which include HYCHAN.OUT
+-o  --out           Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
+                    Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
+-S  --start_date    Base Date of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
+-T  --start_time    Base Time of FLO2D model output in HH:MM:SS format. Default is set to 00:00:00
+"""
+    print(usageText)
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -26,17 +41,71 @@ try :
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+    date = ''
+    time = ''
+    path = ''
+    output_suffix = ''
+    start_date = ''
+    start_time = ''
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:o:S:T:", ["help", "date=", "time=", "path=", "out=", "start_date=", "start_time="])
+    except getopt.GetoptError:          
+        usage()                        
+        sys.exit(2)                     
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()                     
+            sys.exit()           
+        elif opt in ("-d", "--date"):
+            date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
+        elif opt in ("-p", "--path"):
+            path = arg.strip()
+        elif opt in ("-o", "--out"):
+            output_suffix = arg.strip()
+        elif opt in ("-S", "--start_date"):
+            start_date = arg.strip()
+        elif opt in ("-T", "--start_time"):
+            start_time = arg.strip()
+
     # Default run for current day
     now = datetime.datetime.now()
-    if len(sys.argv) > 1 : # Or taken from first arg for the program
-        now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+    if date :
+        now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
-    print('Extract Water Level Grid Result of FLO2D on', date)
+    if time :
+        now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = now.strftime("%H:%M:%S")
+
+    if start_date :
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        start_date = start_date.strftime("%Y-%m-%d")
+    elif :
+        start_date = date
+
+    if start_time :
+        start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+        start_time = start_time.strftime("%H:%M:%S")
+    elif :
+        start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
+        start_time = start_time.strftime("%H:%M:%S")
+
+    print('Extract Water Level Grid Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@', start_time)
 
     appDir = pjoin(CWD, date + '_Kelani')
-    OUTPUT_DIR_PATH = pjoin(CWD, 'OUTPUT')
+    if path :
+        appDir = pjoin(CWD, path)
+
+    OUTPUT_DIR_PATH = pjoin(CWD, OUTPUT_DIR)
     BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
+
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
+    if output_suffix :
+            WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, output_suffix))
+
+    print('Processing FLO2D model on', appDir)
 
     # Check BASE.OUT file exists
     if not os.path.exists(BASE_OUT_FILE_PATH):
@@ -70,7 +139,7 @@ try :
                         os.makedirs(WATER_LEVEL_DIR_PATH)
                     # Get Time stamp Ref:http://stackoverflow.com/a/13685221/1461060
                     ModelTime = float(waterLevelLines[0].split()[3])
-                    fileModelTime = datetime.datetime.strptime(date, '%Y-%m-%d')
+                    fileModelTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
                     dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
                     # Create files

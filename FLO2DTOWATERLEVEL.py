@@ -8,12 +8,16 @@ from subprocess import Popen
 
 def usage() :
     usageText = """
-Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
+Usage: ./FLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-S YYYY-MM-DD] [-T HH:MM:SS]
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
--t  --time          Time in HH:MM:SS. Default is current time.
+-t  --time          Time in HH:MM:SS. If -d passed, then default is 00:00:00. Otherwise Default is current time.
 -p  --path          FLO2D model path which include HYCHAN.OUT
+-o  --out           Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
+                    Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
+-S  --start_date    Base Date of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
+-T  --start_time    Base Time of FLO2D model output in HH:MM:SS format. Default is set to 00:00:00
 """
     print(usageText)
 
@@ -74,8 +78,11 @@ try :
     date = ''
     time = ''
     path = ''
+    output_suffix = ''
+    start_date = ''
+    start_time = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:", ["help", "date=", "time=", "path="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:o:S:T:", ["help", "date=", "time=", "path=", "out=", "start_date=", "start_time="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -89,6 +96,12 @@ try :
             time = arg
         elif opt in ("-p", "--path"):
             path = arg.strip()
+        elif opt in ("-o", "--out"):
+            output_suffix = arg.strip()
+        elif opt in ("-S", "--start_date"):
+            start_date = arg.strip()
+        elif opt in ("-T", "--start_time"):
+            start_time = arg.strip()
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -99,15 +112,31 @@ try :
         now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = now.strftime("%H:%M:%S")
 
-    print('Extract Water Level Result of FLO2D on', date, '@', time)
+    if start_date :
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        start_date = start_date.strftime("%Y-%m-%d")
+    elif :
+        start_date = date
+
+    if start_time :
+        start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+        start_time = start_time.strftime("%H:%M:%S")
+    elif :
+        start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
+        start_time = start_time.strftime("%H:%M:%S")
+
+    print('Extract Water Level Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@', start_time)
 
     appDir = pjoin(CWD, date + '_Kelani')
     if path :
         appDir = pjoin(CWD, path)
 
-    OUTPUT_DIR_PATH = pjoin(CWD, 'OUTPUT')
+    OUTPUT_DIR_PATH = pjoin(CWD, OUTPUT_DIR)
     HYCHAN_OUT_FILE_PATH = pjoin(appDir, HYCHAN_OUT_FILE)
+
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
+    if output_suffix :
+        WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, output_suffix))
 
     print('Processing FLO2D model on', appDir)
 
@@ -174,7 +203,7 @@ try :
                             isSeriesComplete = True
 
                 if isSeriesComplete :
-                    baseTime = datetime.datetime.strptime(date, '%Y-%m-%d')
+                    baseTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     timeseries = []
                     elementNo = int(waterLevelLines[0].split()[5])
                     print('Extracted Cell No', elementNo, CELL_MAP[elementNo])

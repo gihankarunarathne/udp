@@ -111,15 +111,29 @@ class StoreHandler(BaseHTTPRequestHandler):
             date = self.path[len('/'+EXTRACT_WATERLEVEL_GRID)+1:]
             print('POST request on ', self.path, date)
 
+            length = self.headers['content-length']
+            data = self.rfile.read(int(length))
+            runConfig = json.loads(data.decode())
+            print('WATER_LEVEL_GRID: RUN FLO2D options:', runConfig)
+
             try :
                 # Execute WATERLEVEL GRID extraction
                 print('Execute WATERLEVEL GRID extraction ...')
+                execList = ["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1']
                 if len(date) > 0 :
-                    Popen(["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1', '-d', date], stdout=sys.stdout)
-                    #os.system('python CopyWaterLevelGridToCMS.ps1 '+ date)
-                else :
-                    Popen(["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1'], stdout=sys.stdout)
-                    #os.system('python CopyWaterLevelGridToCMS.ps1 ')
+                    execList = execList + ['-d' , date]
+                if runConfig.get('FLO2D_PATH') :
+                    execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
+                if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
+                    execList = execList + ['-o' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+                if runConfig.get('START_DATE') :
+                    execList = execList + ['-S' , runConfig.get('START_DATE')]
+                if runConfig.get('START_TIME') :
+                    execList = execList + ['-T' , runConfig.get('START_TIME')]
+                print('exec List:', execList)
+
+                Popen(execList, stdout=sys.stdout)
+                #os.system('python CopyWaterLevelGridToCMS.ps1 '+ date)
 
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
@@ -137,7 +151,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             length = self.headers['content-length']
             data = self.rfile.read(int(length))
             runConfig = json.loads(data.decode())
-            print('RUN FLO2D options:', runConfig)
+            print('WATER_LEVEL: RUN FLO2D options:', runConfig)
 
             try :
                 # Execute WATERLEVEL extraction
@@ -147,6 +161,12 @@ class StoreHandler(BaseHTTPRequestHandler):
                     execList = execList + ['-d' , date]
                 if runConfig.get('FLO2D_PATH') :
                     execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
+                if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
+                    execList = execList + ['-o' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+                if runConfig.get('START_DATE') :
+                    execList = execList + ['-S' , runConfig.get('START_DATE')]
+                if runConfig.get('START_TIME') :
+                    execList = execList + ['-T' , runConfig.get('START_TIME')]
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)

@@ -14,6 +14,10 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_
     -b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
 		When specified -d option will be ignored.
     -p  Path of FLO2D Model folder
+    -o  Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
+        Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
+    -S  Base Date of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
+    -T  Base Time of FLO2D model output in HH:MM:SS format. Default is set to 00:00:00
 EOF
 }
 
@@ -31,8 +35,12 @@ INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
 DAYS_BACK=0
 FLO2D_PATH=""
+FLO2D_OUTPUT_SUFFIX=""
+START_DATE=""
+START_TIME=""
+
 # Extract user arguments
-while getopts hd:c:b:p: opt; do
+while getopts hd:c:b:p:o:S:T: opt; do
     case $opt in
         h)
             usage
@@ -45,6 +53,12 @@ while getopts hd:c:b:p: opt; do
 		b)  DAYS_BACK=$OPTARG
 			;;
         p)  FLO2D_PATH=$OPTARG
+            ;;
+        o)  FLO2D_OUTPUT_SUFFIX=$OPTARG
+            ;;
+        S)  START_DATE=$OPTARG
+            ;;
+        T)  START_TIME=$OPTARG
             ;;
         *)
             usage >&2
@@ -77,8 +91,18 @@ current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 main() {
     echo "Start at $current_date_time"
     cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_DIR
+    # Set FLO2D model path
     FLO2D_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_PATH\""
     sed -i "/FLO2D_PATH/c\    $FLO2D_PATH_TXT" $FLO2D_DIR/RUN_FLO2D.json
+    # Set FLO2D output SUFFIX
+    FLO2D_OUTPUT_SUFFIX_TXT="\"FLO2D_OUTPUT_SUFFIX\"\t : \"$FLO2D_OUTPUT_SUFFIX\""
+    sed -i "/FLO2D_OUTPUT_SUFFIX/c\    $FLO2D_OUTPUT_SUFFIX_TXT" $FLO2D_DIR/RUN_FLO2D.json
+    # Set Base Start Date for FLO2D
+    START_DATE_TXT="\"START_DATE\"\t : \"$START_DATE\""
+    sed -i "/START_DATE/c\    $START_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
+    # Set Base Start Time for FLO2D
+    START_TIME_TXT="\"START_TIME\"\t : \"$START_TIME\""
+    sed -i "/START_TIME/c\    $START_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
     echo "Trigger FLO2D WaterLevel Extraction on Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
