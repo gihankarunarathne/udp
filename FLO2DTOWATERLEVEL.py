@@ -88,7 +88,7 @@ try :
         elif opt in ("-t", "--time"):
             time = arg
         elif opt in ("-p", "--path"):
-            path = arg
+            path = arg.strip()
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -108,6 +108,8 @@ try :
     OUTPUT_DIR_PATH = pjoin(CWD, 'OUTPUT')
     HYCHAN_OUT_FILE_PATH = pjoin(appDir, HYCHAN_OUT_FILE)
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
+
+    print('Processing FLO2D model on', appDir)
 
     # Check BASE.OUT file exists
     if not os.path.exists(HYCHAN_OUT_FILE_PATH):
