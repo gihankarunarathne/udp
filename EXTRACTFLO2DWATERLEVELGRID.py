@@ -6,10 +6,10 @@ from os.path import join as pjoin
 from sys import executable
 from subprocess import Popen
 
-from FLO2DWATERLEVEL import getWaterLevelGrid
-from FLO2DWATERLEVEL import getGridBoudary
-from FLO2DWATERLEVEL import getCellGrid
-from FLO2DWATERLEVEL import getEsriGrid
+from LIBFLO2DWATERLEVELGRID import getWaterLevelGrid
+from LIBFLO2DWATERLEVELGRID import getGridBoudary
+from LIBFLO2DWATERLEVELGRID import getCellGrid
+from LIBFLO2DWATERLEVELGRID import getEsriGrid
 
 def usage() :
     usageText = """
