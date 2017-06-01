@@ -67,7 +67,7 @@ def getCellGrid(boudary, gap=250.0) :
             if (i >= cols or j >= rows) :
                 print('### WARNING i: %d, j: %d, cols: %d, rows: %d' % (i, j, cols, rows))
             if i >= 0 or j >= 0 :
-                CellMap[int(v[0])] = (i, j)
+                CellMap[int(v[0])] = (i, rows - j -1)
 
     return CellMap
 

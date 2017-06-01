@@ -56,7 +56,7 @@ try :
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             usage()                     
-            sys.exit()           
+            sys.exit(0)        
         elif opt in ("-d", "--date"):
             date = arg
         elif opt in ("-t", "--time"):
@@ -82,13 +82,13 @@ try :
     if start_date :
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    elif :
+    else :
         start_date = date
 
     if start_time :
         start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    elif :
+    else :
         start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
         start_time = start_time.strftime("%H:%M:%S")
 
@@ -120,6 +120,8 @@ try :
     with open(BASE_OUT_FILE_PATH) as infile: 
         isWaterLevelLines = False
         waterLevelLines = []
+        boundary    = getGridBoudary()
+        CellGrid    = getCellGrid(boundary)
         while True:
             lines = infile.readlines(bufsize)
 
@@ -130,8 +132,6 @@ try :
                     isWaterLevelLines = True
                 elif isWaterLevelLines and line.startswith('***CHANNEL RESULTS***', 17) :
                     waterLevels = getWaterLevelGrid(waterLevelLines)
-                    boundary    = getGridBoudary()
-                    CellGrid    = getCellGrid(boundary)
                     EsriGrid    = getEsriGrid(waterLevels, boundary, CellGrid)
 
                     # Create Directory
