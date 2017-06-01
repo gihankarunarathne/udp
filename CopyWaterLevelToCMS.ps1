@@ -6,7 +6,7 @@ if(!$d) {
 
 echo "CopyWaterLevelToCMS:: forecast date : $d $p $o $S $T"
 
-python FLO2DTOWATERLEVEL.py -d $d `
+python EXTRACTFLO2DWATERLEVEL.py -d $d `
     $(If ($p) {"-p $p"} Else {""}) `
     $(If ($o) {"-o $o"} Else {""}) `
     $(If ($S) {"-S $S"} Else {""}) `
