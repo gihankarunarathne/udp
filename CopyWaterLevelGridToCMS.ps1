@@ -6,7 +6,7 @@ if(!$d) {
 
 echo "CopyWaterLevelGridToCMS:: forecast date : $d $p $o $S $T"
 
-python EXTRACTFLO2DWATERLEVELGRID.py $d `
+python EXTRACTFLO2DWATERLEVELGRID.py -d $d `
     $(If ($p) {"-p $p"} Else {""}) `
     $(If ($o) {"-o $o"} Else {""}) `
     $(If ($S) {"-S $S"} Else {""}) `
