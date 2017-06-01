@@ -115,13 +115,13 @@ try :
     if start_date :
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    elif :
+    else :
         start_date = date
 
     if start_time :
         start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    elif :
+    else :
         start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
         start_time = start_time.strftime("%H:%M:%S")
 

@@ -92,13 +92,13 @@ main() {
     echo "Start at $current_date_time"
     cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_DIR
     # Set FLO2D model path
-    FLO2D_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_PATH\""
+    FLO2D_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_PATH\","
     sed -i "/FLO2D_PATH/c\    $FLO2D_PATH_TXT" $FLO2D_DIR/RUN_FLO2D.json
     # Set FLO2D output SUFFIX
-    FLO2D_OUTPUT_SUFFIX_TXT="\"FLO2D_OUTPUT_SUFFIX\"\t : \"$FLO2D_OUTPUT_SUFFIX\""
+    FLO2D_OUTPUT_SUFFIX_TXT="\"FLO2D_OUTPUT_SUFFIX\"\t : \"$FLO2D_OUTPUT_SUFFIX\","
     sed -i "/FLO2D_OUTPUT_SUFFIX/c\    $FLO2D_OUTPUT_SUFFIX_TXT" $FLO2D_DIR/RUN_FLO2D.json
     # Set Base Start Date for FLO2D
-    START_DATE_TXT="\"START_DATE\"\t : \"$START_DATE\""
+    START_DATE_TXT="\"START_DATE\"\t : \"$START_DATE\","
     sed -i "/START_DATE/c\    $START_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
     # Set Base Start Time for FLO2D
     START_TIME_TXT="\"START_TIME\"\t : \"$START_TIME\""
