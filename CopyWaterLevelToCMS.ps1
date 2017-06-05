@@ -15,7 +15,7 @@ python EXTRACTFLO2DWATERLEVEL.py -d $d `
 $output_dir = If ($o) {".\OUTPUT\water_level-$o"} Else {".\OUTPUT\water_level-$d"}
 C:\udp\pscp.exe -i .\ssh\id_lahikos -r $output_dir uwcc-admin@10.138.0.6:/home/uwcc-admin/cfcwm/data/FLO2D/WL
 
-if([System.IO.File]::Exists($output_dir)){
-    Compress-Archive -Path $output_dir -DestinationPath "$output_dir.zip"
+if(Test-Path $output_dir){
+    Compress-Archive -Force -Path $output_dir -DestinationPath "$output_dir.zip"
     C:\udp\pscp.exe -i .\ssh\id_lahikos "$output_dir.zip" uwcc-admin@10.138.0.6:/home/uwcc-admin/cfcwm/data/FLO2D/WL
 }
