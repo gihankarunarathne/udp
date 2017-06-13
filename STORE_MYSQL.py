@@ -21,7 +21,7 @@ try :
     DISCHARGE_NUM_METADATA_LINES = 2
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     RAIN_CSV_FILE = 'DailyRain.csv'
-    RF_DIR_PATH = './WRF/RF/'
+    RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
     RAIN_GUAGES = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
 
