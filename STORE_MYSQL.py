@@ -130,7 +130,7 @@ def storeDischarge(adapter):
             print('%s rows deleted.' % deleteCount)
             for l in timeseries[:3] + timeseries[-2:] :
                 print(l)
-            rowCount = adapter.insertTimeseries(eventId, timeseries)
+            rowCount = adapter.insertTimeseries(metaData, timeseries)
             print('%s rows inserted.' % rowCount)
         else :
             print('Timeseries already exists. User -f arg to override existing timeseries.')
@@ -177,7 +177,7 @@ def storeRainfall(adapter):
                     print('%s rows deleted.' % deleteCount)
                     for l in timeseries[:3] + timeseries[-2:] :
                         print(l)
-                    rowCount = adapter.insertTimeseries(eventId, timeseries)
+                    rowCount = adapter.insertTimeseries(metaData, timeseries)
                     print('%s rows inserted.' % rowCount)
                 else :
                     print('Timeseries already exists. User -f arg to override existing timeseries.')

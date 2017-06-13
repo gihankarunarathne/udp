@@ -2,7 +2,7 @@
     "HEC_HMS_DIR"       : "hec-hms41",
     "HEC_DSSVUE_DIR"    : "dssvue",
     "STATUS_FILE"       : "Status.txt",
-    "OUTPUT_DIR"        : "OUTPUT",
+    "OUTPUT_DIR"        : "./OUTPUT",
 
     "RAIN_CSV_FILE"     : "DailyRain.csv",
     "TIME_INTERVAL"     : 60,
