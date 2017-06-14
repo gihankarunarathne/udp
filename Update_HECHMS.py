@@ -86,7 +86,7 @@ try :
             initState = True
         elif opt in ("-s", "--sInterval"):
             STATE_INTERVAL = int(arg)
-        elif opt in ("-cInterval", "--cInterval"):
+        elif opt in ("-c", "--cInterval"):
             CONTROL_INTERVAL = int(arg)
 
     # Default run for current day
@@ -96,7 +96,7 @@ try :
     date = now.strftime("%Y-%m-%d")
 
     print('Update_HECHMS startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
-
+    print('Control Interval:', CONTROL_INTERVAL/60, 'hours')
     # Extract Start and End times
     fileName = RAIN_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])

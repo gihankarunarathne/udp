@@ -19,6 +19,7 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
 	-i 	Initiate a State at the end of HEC-HMS run.
 	-s 	Store Timeseries data on MySQL database.
 	-e  Exit without executing models which run on Windows.
+	-C  (Control Interval in minutes) Time period that HEC-HMS model should run
 EOF
 }
 
@@ -38,8 +39,9 @@ FORCE_RUN=false
 INIT_STATE=false
 STORE_DATA=false
 FORCE_EXIT=false
+CONTROL_INTERVAL=0
 # Extract user arguments
-while getopts hd:t:c:r:b:fise opt; do
+while getopts hd:t:c:r:b:fiseC: opt; do
     case $opt in
         h)
             usage
@@ -62,6 +64,8 @@ while getopts hd:t:c:r:b:fise opt; do
 		s)  STORE_DATA=true
 			;;
 		e)  FORCE_EXIT=true
+			;;
+		C)  CONTROL_INTERVAL=$OPTARG
 			;;
         *)
             usage >&2
@@ -132,10 +136,12 @@ main() {
 		rm $DSS_INPUT_FILE
 		rm $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
-		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
+		# ./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
 
 		# Change HEC-HMS running time window
-		./Update_HECHMS.py -d $forecast_date `[[ $INIT_STATE == true ]] && echo "-i" || echo ""`
+		./Update_HECHMS.py -d $forecast_date \
+			`[[ $INIT_STATE == true ]] && echo "-i" || echo ""` \
+			`[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"`
 
 		# Run HEC-HMS model
 		cd $ROOT_DIR/$HEC_HMS_DIR
