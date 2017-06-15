@@ -27,7 +27,6 @@ try :
     WATER_LEVEL_DIR_NAME = 'water_level'
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
-    RAIN_GUAGES = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
     DAY_INTERVAL = 24 # In hours
 
     MYSQL_HOST="localhost"
@@ -115,9 +114,9 @@ def storeDischarge(adapter):
         'station': 'Hanwella',
         'variable': 'Discharge',
         'unit': 'm3/s',
-        'type': 'Forecast',
+        'type': 'Forecast-0-d',
         'source': 'HEC-HMS',
-        'name': 'HEC-HMS %s' % (date),
+        'name': 'Cloud Continuous',
         'start_date': '2017-05-01 00:00:00',
         'end_date': '2017-05-03 23:00:00'
     }
@@ -158,8 +157,21 @@ def storeDischarge(adapter):
 
 
 def storeRainfall(adapter):
-    for guage in RAIN_GUAGES :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (guage, date))):
+    stations = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
+    types = ['Forecast-0-d', 'Forecast-1-d-after', 'Forecast-2-d-after']
+    metaData = {
+        'station': 'Hanwella',
+        'variable': 'Precipitation',
+        'unit': 'mm',
+        'type': 'Forecast-0-d',
+        'source': 'WRF',
+        'name': 'Cloud-1',
+        'start_date': '2017-05-01 00:00:00',
+        'end_date': '2017-05-03 23:00:00'
+    }
+
+    for station in stations :
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (station, date))):
             if not os.path.exists(filename):
                 print('Discharge > Unable to find file : ', filename)
                 break
@@ -173,37 +185,25 @@ def storeRainfall(adapter):
             startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d_%H:%M:%S')
             endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d_%H:%M:%S')
 
-            metaData = {
-                'station': guage,
-                'variable': 'Precipitation',
-                'unit': 'mm',
-                'type': 'Forecast',
-                'source': 'WRF',
-                'name': 'WRF %s' % (date),
-                'start_date': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                'end_date': endDateTime.strftime("%Y-%m-%d %H:%M:%S")
-            }
-            eventId = adapter.getEventId(metaData)
-            if eventId is None :
-                print('eventId is None. Creating a New.')
-                eventId = adapter.createEventId(metaData)
-                print('HASH SHA256 : ', eventId)
-                for l in timeseries[:3:-2] :
-                    print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries)
-                print('%s rows inserted.' % rowCount)
-            else:
-                print('HASH SHA256 : ', eventId)
-                if forceInsert :
-                    deleteCount = adapter.deleteTimeseries(eventId)
-                    print('%s rows deleted.' % deleteCount)
-                    for l in timeseries[:3] + timeseries[-2:] :
-                        print(l)
-                    eventId = adapter.createEventId(metaData)
-                    rowCount = adapter.insertTimeseries(eventId, timeseries)
-                    print('%s rows inserted.' % rowCount)
+            rainfallMeta = dict(metaData)
+            rainfallMeta['station'] = station
+            rainfallMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
+            rainfallMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
+
+            for i in range(0, 3) :
+                rainfallMeta['type'] = types[i]
+                eventId = adapter.getEventId(rainfallMeta)
+                if eventId is None :
+                    eventId = adapter.createEventId(rainfallMeta)
+                    print('HASH SHA256 created: ', eventId)
                 else :
-                    print('Timeseries already exists. User -f arg to override existing timeseries.')
+                    print('HASH SHA256 exists: ', eventId)
+                
+                # for l in timeseries[:3] + timeseries[-2:] :
+                #     print(l)
+                rowCount = adapter.insertTimeseries(eventId, timeseries[i*DAY_INTERVAL:(i+1)*DAY_INTERVAL], True)
+                print('%s rows inserted.' % rowCount)
+
 
 def storeWaterlevel(adapter):
     print('\nStoring Waterlevels :::')
