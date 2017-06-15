@@ -7,6 +7,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
+-t  --time          Time which need to run the forecast in HH:MM:SS format.
 -f  --force         Force insert timeseries. If timeseries exists, delete existing data and replace with new data.
 -r  --rainfall      Store rainfall specifically. Ignore others if not mentioned.
 -e  --discharge     Store discharge(emission) specifically. Ignore others if not mentioned.
@@ -27,6 +28,7 @@ try :
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
     RAIN_GUAGES = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
+    DAY_INTERVAL = 24 # In hours
 
     MYSQL_HOST="localhost"
     MYSQL_USER="root"
@@ -52,6 +54,7 @@ try :
         MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
     date = ''
+    time = ''
     forceInsert = False
     allInsert = True
     rainfallInsert = False
@@ -59,7 +62,7 @@ try :
     waterlevelInsert = False
     waterlevelOutSuffix = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:frew", ["help", "date=", "force", "rainfall", "discharge", "waterlevel", "wl_out_suffix="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:frew", ["help", "date=", "time=", "force", "rainfall", "discharge", "waterlevel", "wl_out_suffix="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -69,6 +72,8 @@ try :
             sys.exit()           
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
         elif opt in ("-f", "--force"):
             forceInsert = True
         elif opt in ("-r", "--rainfall"):
@@ -97,6 +102,26 @@ except Exception as e :
     traceback.print_exc()
 
 def storeDischarge(adapter):
+    stations = ['Hanwella']
+    types = [
+        'Forecast-0-d', 
+        'Forecast-1-d-after', 
+        'Forecast-2-d-after', 
+        'Forecast-3-d-after',
+        'Forecast-4-d-after',
+        'Forecast-5-d-after'
+    ]
+    metaData = {
+        'station': 'Hanwella',
+        'variable': 'Discharge',
+        'unit': 'm3/s',
+        'type': 'Forecast',
+        'source': 'HEC-HMS',
+        'name': 'HEC-HMS %s' % (date),
+        'start_date': '2017-05-01 00:00:00',
+        'end_date': '2017-05-03 23:00:00'
+    }
+
     fileName = DISCHARGE_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
     DISCHARGE_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
@@ -113,37 +138,24 @@ def storeDischarge(adapter):
     startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y:%m:%d %H:%M:%S')
     endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y:%m:%d %H:%M:%S')
 
-    metaData = {
-        'station': 'Hanwella',
-        'variable': 'Discharge',
-        'unit': 'm3/s',
-        'type': 'Forecast',
-        'source': 'HEC-HMS',
-        'name': 'HEC-HMS %s' % (date),
-        'start_date': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
-        'end_date': endDateTime.strftime("%Y-%m-%d %H:%M:%S")
-    }
-    eventId = adapter.getEventId(metaData)
-    if eventId is None :
-        print('eventId is None. Creating a New.')
-        eventId = adapter.createEventId(metaData)
-        print('HASH SHA256 : ', eventId)
-        for l in timeseries[:5] :
-            print(l)
-        rowCount = adapter.insertTimeseries(eventId, timeseries)
-        print('%s rows inserted.' % rowCount)
-    else:
-        print('HASH SHA256 : ', eventId)
-        if forceInsert :
-            deleteCount = adapter.deleteTimeseries(eventId)
-            print('%s rows deleted.' % deleteCount)
-            for l in timeseries[:3] + timeseries[-2:] :
-                print(l)
-            eventId = adapter.createEventId(metaData)
-            rowCount = adapter.insertTimeseries(eventId, timeseries)
-            print('%s rows inserted.' % rowCount)
+    dischargeMeta = dict(metaData)
+    dischargeMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
+    dischargeMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
+
+    for i in range(0, 6) :
+        dischargeMeta['type'] = types[i]
+        eventId = adapter.getEventId(dischargeMeta)
+        if eventId is None :
+            eventId = adapter.createEventId(dischargeMeta)
+            print('HASH SHA256 created: ', eventId)
         else :
-            print('Timeseries already exists. User -f arg to override existing timeseries.')
+            print('HASH SHA256 exists: ', eventId)
+        
+        # for l in timeseries[:3] + timeseries[-2:] :
+        #     print(l)
+        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DAY_INTERVAL:(i+1)*DAY_INTERVAL], True)
+        print('%s rows inserted.' % rowCount)
+
 
 def storeRainfall(adapter):
     for guage in RAIN_GUAGES :
