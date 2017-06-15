@@ -11,6 +11,8 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 -r  --rainfall      Store rainfall specifically. Ignore others if not mentioned.
 -e  --discharge     Store discharge(emission) specifically. Ignore others if not mentioned.
 -w  --waterlevel    Store waterlevel specifically. Ignore others if not mentioned.
+    --wl_out_suffix Suffix for 'water_level-<SUFFIX>' output directories. 
+                    Default is 'water_level-<YYYY-MM-DD>' same as -d option value.
 """
     print(usageText)
 
@@ -21,6 +23,7 @@ try :
     DISCHARGE_NUM_METADATA_LINES = 2
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     RAIN_CSV_FILE = 'DailyRain.csv'
+    WATER_LEVEL_DIR_NAME = 'water_level'
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
     RAIN_GUAGES = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
@@ -54,8 +57,9 @@ try :
     rainfallInsert = False
     dischargeInsert = False
     waterlevelInsert = False
+    waterlevelOutSuffix = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:frew", ["help", "date=", "force", "rainfall", "discharge", "waterlevel"])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:frew", ["help", "date=", "force", "rainfall", "discharge", "waterlevel", "wl_out_suffix="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -73,6 +77,8 @@ try :
             dischargeInsert = True
         elif opt in ("-w", "--waterlevel"):
             waterlevelInsert = True
+        elif opt in ("--wl_out_suffix"):
+            waterlevelOutSuffix = arg
 
     if rainfallInsert or dischargeInsert or waterlevelInsert :
         allInsert = False
@@ -82,6 +88,9 @@ try :
     if date :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
+
+    if not waterlevelOutSuffix :
+        waterlevelOutSuffix = date
 
     print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 except Exception as e :
@@ -185,7 +194,17 @@ def storeRainfall(adapter):
                     print('Timeseries already exists. User -f arg to override existing timeseries.')
 
 def storeWaterlevel(adapter):
-    print('')
+    print('\nStoring Waterlevels :::')
+    WATER_LEVEL_DIR_PATH = os.path.join(OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_DIR_NAME, waterlevelOutSuffix))
+    if not os.path.exists(WATER_LEVEL_DIR_PATH):
+        print('Discharge > Unable to find dir : ', WATER_LEVEL_DIR_PATH)
+        return
+
+    for filename in glob.glob(os.path.join(WATER_LEVEL_DIR_PATH, '*')):
+            if not os.path.exists(filename):
+                print('Discharge > Unable to find file : ', filename)
+                break
+            print('>>>>', filename)
 
 
 adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
