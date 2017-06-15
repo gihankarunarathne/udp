@@ -27,7 +27,9 @@ try :
     WATER_LEVEL_DIR_NAME = 'water_level'
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
-    DAY_INTERVAL = 24 # In hours
+    DIS_RESOLUTION = 24 # In 1 hours
+    RF_RESOLUTION = 24 # In 1 hours
+    WL_RESOLUTION = 24 * 4 # In 15 mins
 
     MYSQL_HOST="localhost"
     MYSQL_USER="root"
@@ -152,7 +154,7 @@ def storeDischarge(adapter):
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DAY_INTERVAL:(i+1)*DAY_INTERVAL], True)
+        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DIS_RESOLUTION:(i+1)*DIS_RESOLUTION], True)
         print('%s rows inserted.' % rowCount)
 
 
@@ -201,22 +203,97 @@ def storeRainfall(adapter):
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
                 #     print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries[i*DAY_INTERVAL:(i+1)*DAY_INTERVAL], True)
+                rowCount = adapter.insertTimeseries(eventId, timeseries[i*RF_RESOLUTION:(i+1)*RF_RESOLUTION], True)
                 print('%s rows inserted.' % rowCount)
 
 
 def storeWaterlevel(adapter):
     print('\nStoring Waterlevels :::')
+    stations = [
+        "Ambathale",
+        "Madiwela Out",
+        "Salalihini Out",
+        "Salalihini Out 2",
+        "Kittampahuwa Bridge",
+        "Kittampahuwa Out",
+        "Kittampahuwa Out 2",
+        "N Street",
+        "N Street 2",
+        "Kolonnawa CNL 1",
+        "Kolonnawa CNL 2",
+        "Kolonnawa CNL 3",
+        "Kolonnawa CNL 4",
+        "Parliament Lake Out",
+        "Parliament Lake",
+        "Parliament Lake 2",
+        "Parliament Upstream",
+        "Ahangama",
+        "Madiwela US",
+        "Heen Ela",
+        "Torington",
+        "Wellawatta 1",
+        "Wellawatta 2",
+        "Wellawatta 3",
+        "Dehiwala 1",
+        "Dehiwala 2"
+    ]
+    types = [
+        'Forecast-0-d', 
+        'Forecast-1-d-after', 
+        'Forecast-2-d-after', 
+        'Forecast-3-d-after',
+        'Forecast-4-d-after',
+        'Forecast-5-d-after'
+    ]
+    metaData = {
+        'station': 'Ambathale',
+        'variable': 'Precipitation',
+        'unit': 'mm',
+        'type': 'Forecast-0-d',
+        'source': 'WRF',
+        'name': 'Cloud-1',
+        'start_date': '2017-05-01 00:00:00',
+        'end_date': '2017-05-03 23:00:00'
+    }
+
     WATER_LEVEL_DIR_PATH = os.path.join(OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_DIR_NAME, waterlevelOutSuffix))
     if not os.path.exists(WATER_LEVEL_DIR_PATH):
         print('Discharge > Unable to find dir : ', WATER_LEVEL_DIR_PATH)
         return
 
-    for filename in glob.glob(os.path.join(WATER_LEVEL_DIR_PATH, '*')):
+    for station in stations :
+        for filename in glob.glob(os.path.join(WATER_LEVEL_DIR_PATH, '%s-%s-*.txt' % (WATER_LEVEL_DIR_NAME, station.replace(' ', '_')))):
             if not os.path.exists(filename):
                 print('Discharge > Unable to find file : ', filename)
                 break
-            print('>>>>', filename)
+
+            print('Waterlevel > store %s on startTime: %s' % (filename, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            csvReader = csv.reader(open(filename, 'r'), delimiter=',', quotechar='|')
+            timeseries = list(csvReader)
+
+            print('Start Date :', timeseries[0][0])
+            print('End Date :', timeseries[-1][0])
+            startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
+            endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d %H:%M:%S')
+
+            waterlevelMeta = dict(metaData)
+            waterlevelMeta['station'] = station.replace(' ', '-')
+            waterlevelMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
+            waterlevelMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
+
+            for i in range(0, 6) :
+                waterlevelMeta['type'] = types[i]
+                eventId = adapter.getEventId(waterlevelMeta)
+                if eventId is None :
+                    eventId = adapter.createEventId(waterlevelMeta)
+                    print('HASH SHA256 created: ', eventId)
+                else :
+                    print('HASH SHA256 exists: ', eventId)
+                
+                # for l in timeseries[:3] + timeseries[-2:] :
+                #     print(l)
+                rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], True)
+                print('%s rows inserted.' % rowCount)
 
 
 adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
