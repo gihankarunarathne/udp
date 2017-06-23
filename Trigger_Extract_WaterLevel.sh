@@ -1,16 +1,15 @@
 #!/bin/bash
 
 #
-# ./Forecast.sh -d <FORECAST_DATE>
-#	e.g. ./Forecast.sh -d 2017-03-22
+# ./Trigger_Extract_WaterLevel.sh -d <FORECAST_DATE>
+#	e.g. ./Trigger_Extract_WaterLevel.sh -d 2017-03-22
 #
 usage() {
 cat <<EOF
-Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
+Usage: ./Trigger_Extract_WaterLevel.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
     -h 	Show usage
     -d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
-    -c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
     -b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
 		When specified -d option will be ignored.
     -p  Path of FLO2D Model folder
@@ -18,6 +17,9 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_
         Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
     -S  Base Date of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
     -T  Base Time of FLO2D model output in HH:MM:SS format. Default is set to 00:00:00
+    -H  Host ADDRESS of `FLO2D Server` is running. Default is `HOST_ADDRESS` taken from CONFIG.json
+    -P  Host PORT of `FLO2D Server` is running. Default is `HOST_PORT` taken from CONFIG.json
+    -c  Location of CONFIG.json. Default is Forecast.sh exist directory.
 EOF
 }
 
@@ -38,9 +40,11 @@ FLO2D_PATH=""
 FLO2D_OUTPUT_SUFFIX=""
 START_DATE=""
 START_TIME=""
+CUSTOM_HOST_ADDRESS=""
+CUSTOM_HOST_PORT=""
 
 # Extract user arguments
-while getopts hd:c:b:p:o:S:T: opt; do
+while getopts hd:c:b:p:o:S:T:H:P: opt; do
     case $opt in
         h)
             usage
@@ -59,6 +63,10 @@ while getopts hd:c:b:p:o:S:T: opt; do
         S)  START_DATE=$OPTARG
             ;;
         T)  START_TIME=$OPTARG
+            ;;
+        H)  CUSTOM_HOST_ADDRESS=$OPTARG
+            ;;
+        P)  CUSTOM_HOST_PORT=$OPTARG
             ;;
         *)
             usage >&2
@@ -82,8 +90,8 @@ then
 	exit 1
 fi
 
-HOST_ADDRESS=$(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))
-HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
+HOST_ADDRESS=`[[ $CUSTOM_HOST_ADDRESS != "" ]] && echo $CUSTOM_HOST_ADDRESS || echo $(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))`
+HOST_PORT=`[[ $CUSTOM_HOST_PORT != "" ]] && echo $CUSTOM_HOST_PORT || echo $(cat CONFIG.json | jq '.HOST_PORT')`
 WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";

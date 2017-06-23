@@ -27,6 +27,8 @@ try :
     WATER_LEVEL_DIR_NAME = 'water_level'
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
     OUTPUT_DIR = './OUTPUT'
+    WL_OUTPUT_DIR = './OUTPUT'
+
     DIS_RESOLUTION = 24 # In 1 hours
     RF_RESOLUTION = 24 # In 1 hours
     WL_RESOLUTION = 24 * 4 # In 15 mins
