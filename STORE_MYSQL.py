@@ -320,9 +320,13 @@ def storeWaterlevel(adapter):
                     print('HASH SHA256 exists: ', eventId)
                     waterlevelMetaQuery = copy.deepcopy(metaData)
                     waterlevelMetaQuery['station'] = station.replace(' ', '-')
+                    
+                    dailyTimeseries = timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION]
+                    dailyStartDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
+                    dailyEndDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d %H:%M:%S')
                     opts = {
-                        'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
-                        'to': endDateTime.strftime("%Y-%m-%d %H:%M:%S")
+                        'from': dailyStartDateTime.strftime("%Y-%m-%d %H:%M:%S"),
+                        'to': dailyEndDateTime.strftime("%Y-%m-%d %H:%M:%S")
                     }
                     existingTimeseries = adapter.retrieveTimeseries(waterlevelMetaQuery, opts)
                     if len(existingTimeseries[0]['timeseries']) > 0 and not forceInsert:
