@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from curwmysqladapter import mysqladapter
 import sys, traceback, csv, json, datetime, getopt, glob, os, copy
 
