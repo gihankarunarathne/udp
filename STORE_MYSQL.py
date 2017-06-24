@@ -26,7 +26,7 @@ try :
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
 
-    newLine = '\n'
+    NEW_LINE = '\n'
     DISCHARGE_NUM_METADATA_LINES = 2
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     RAIN_CSV_FILE = 'DailyRain.csv'
@@ -111,7 +111,7 @@ try :
             WL_OUTPUT_DIR = arg
             print('WARN: Using custom WaterLevel Path :', WL_OUTPUT_DIR)
         elif opt in ("-n"):
-            newLine = arg
+            NEW_LINE = arg
 
     if rainfallInsert or dischargeInsert or waterlevelInsert :
         allInsert = False
@@ -303,7 +303,7 @@ def storeWaterlevel(adapter):
                 break
 
             print('Waterlevel > store %s on startTime: %s' % (filename, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            csvReader = csv.reader(open(filename, 'r', newline=newLine), delimiter=',', quotechar='|')
+            csvReader = csv.reader(open(filename, 'r', newline=NEW_LINE), delimiter=',', quotechar='|')
             timeseries = list(csvReader)
 
             print('Start Date :', timeseries[0][0])
@@ -324,7 +324,12 @@ def storeWaterlevel(adapter):
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
-                    if not forceInsert :
+                    opts = {
+                        'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
+                        'to': endDateTime.strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    existingTimeseries = adapter.retrieveTimeseries(waterlevelMeta, opts)
+                    if len(existingTimeseries[0]['timeseries']) > 0 and not forceInsert:
                         print('\n')
                         continue
                 
