@@ -25,6 +25,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
+    INIT_DIR = os.getcwd()
 
     NEW_LINE = '\n'
     DISCHARGE_NUM_METADATA_LINES = 2
@@ -125,7 +126,10 @@ try :
     if not waterlevelOutSuffix :
         waterlevelOutSuffix = date
 
-    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(ROOT_DIR)
+
+    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'on', ROOT_DIR)
     if forceInsert :
         print('WARNING: Force Insert enabled')
 except Exception as e :
