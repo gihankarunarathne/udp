@@ -18,6 +18,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
     --discharge-path    Directory path which contains the Discharge timeseries.
     --waterlevel-path   Directory path which contains the WaterLevel timeseries directories.
                         E.g: '<waterlevel-path>/water_level-2017-05-27'.
+-n                  New Line character -> None, '', '\n', '\r', and '\r\n'. Default is '\n'.
 """
     print(usageText)
 
@@ -25,6 +26,7 @@ try :
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
 
+    newLine = '\n'
     DISCHARGE_NUM_METADATA_LINES = 2
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     RAIN_CSV_FILE = 'DailyRain.csv'
@@ -73,7 +75,7 @@ try :
     waterlevelInsert = False
     waterlevelOutSuffix = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:frew", [
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:frewn:", [
             "help", "date=", "time=", "force",
             "rainfall", "discharge", "waterlevel",
             "wl-out-suffix=", "rainfall-path=", "discharge-path=", "waterlevel-path="
@@ -108,6 +110,8 @@ try :
         elif opt in ("--waterlevel-path"):
             WL_OUTPUT_DIR = arg
             print('WARN: Using custom WaterLevel Path :', WL_OUTPUT_DIR)
+        elif opt in ("-n"):
+            newLine = arg
 
     if rainfallInsert or dischargeInsert or waterlevelInsert :
         allInsert = False
@@ -299,7 +303,7 @@ def storeWaterlevel(adapter):
                 break
 
             print('Waterlevel > store %s on startTime: %s' % (filename, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-            csvReader = csv.reader(open(filename, 'r'), delimiter=',', quotechar='|')
+            csvReader = csv.reader(open(filename, 'r', newline=newLine), delimiter=',', quotechar='|')
             timeseries = list(csvReader)
 
             print('Start Date :', timeseries[0][0])
