@@ -1,5 +1,5 @@
 from curwmysqladapter import mysqladapter
-import sys, traceback, csv, json, datetime, getopt, glob, os
+import sys, traceback, csv, json, datetime, getopt, glob, os, copy
 
 def usage() :
     usageText = """
@@ -168,7 +168,7 @@ def storeDischarge(adapter):
     startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y:%m:%d %H:%M:%S')
     endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y:%m:%d %H:%M:%S')
 
-    dischargeMeta = dict(metaData)
+    dischargeMeta = copy.deepcopy(metaData)
     dischargeMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
     dischargeMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -219,7 +219,7 @@ def storeRainfall(adapter):
             startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d_%H:%M:%S')
             endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d_%H:%M:%S')
 
-            rainfallMeta = dict(metaData)
+            rainfallMeta = copy.deepcopy(metaData)
             rainfallMeta['station'] = station
             rainfallMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
             rainfallMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
@@ -311,7 +311,7 @@ def storeWaterlevel(adapter):
             startDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
             endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d %H:%M:%S')
 
-            waterlevelMeta = dict(metaData)
+            waterlevelMeta = copy.deepcopy(metaData)
             waterlevelMeta['station'] = station.replace(' ', '-')
             waterlevelMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
             waterlevelMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
@@ -324,7 +324,7 @@ def storeWaterlevel(adapter):
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
-                    waterlevelMetaQuery = dict(metaData)
+                    waterlevelMetaQuery = copy.deepcopy(metaData)
                     waterlevelMetaQuery['station'] = station.replace(' ', '-')
                     opts = {
                         'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
