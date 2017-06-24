@@ -4,13 +4,14 @@
     "STATUS_FILE"       : "Status.txt",
     "OUTPUT_DIR"        : "./OUTPUT",
 
-    "RAIN_CSV_FILE"     : "DailyRain.csv",
     "TIME_INTERVAL"     : 60,
     "DSS_INPUT_FILE"    : "./2008_2_Events/2008_2_Events_input.dss",
     "DSS_OUTPUT_FILE"   : "./2008_2_Events/2008_2_Events_run.dss",
     "HEC_HMS_CONTROL"   : "./2008_2_Events/Control_1.control",
     "HEC_HMS_RUN"       : "./2008_2_Events/2008_2_Events.run",
     "HEC_HMS_GAGE"      : "./2008_2_Events/2008_2_Events.gage",
+    
+    "RAIN_CSV_FILE"     : "DailyRain.csv",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
     "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
     "KUB_DIR_PATH"      : "/mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin",

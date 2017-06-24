@@ -12,8 +12,12 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 -r  --rainfall      Store rainfall specifically. Ignore others if not mentioned.
 -e  --discharge     Store discharge(emission) specifically. Ignore others if not mentioned.
 -w  --waterlevel    Store waterlevel specifically. Ignore others if not mentioned.
-    --wl_out_suffix Suffix for 'water_level-<SUFFIX>' output directories. 
+    --wl-out-suffix Suffix for 'water_level-<SUFFIX>' output directories. 
                     Default is 'water_level-<YYYY-MM-DD>' same as -d option value.
+    --rainfall-path     Directory path which contains the Rainfall timeseries.
+    --discharge-path    Directory path which contains the Discharge timeseries.
+    --waterlevel-path   Directory path which contains the WaterLevel timeseries directories.
+                        E.g: '<waterlevel-path>/water_level-2017-05-27'.
 """
     print(usageText)
 
@@ -25,9 +29,11 @@ try :
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     RAIN_CSV_FILE = 'DailyRain.csv'
     WATER_LEVEL_DIR_NAME = 'water_level'
-    RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
+    
     OUTPUT_DIR = './OUTPUT'
-    WL_OUTPUT_DIR = './OUTPUT'
+    RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
+    DIS_OUTPUT_DIR = OUTPUT_DIR
+    WL_OUTPUT_DIR = OUTPUT_DIR
 
     DIS_RESOLUTION = 24 # In 1 hours
     RF_RESOLUTION = 24 # In 1 hours
@@ -46,6 +52,8 @@ try :
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
+        DIS_OUTPUT_DIR = OUTPUT_DIR
+        WL_OUTPUT_DIR = OUTPUT_DIR
 
     if 'MYSQL_HOST' in CONFIG :
         MYSQL_HOST = CONFIG['MYSQL_HOST']
@@ -65,7 +73,11 @@ try :
     waterlevelInsert = False
     waterlevelOutSuffix = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:frew", ["help", "date=", "time=", "force", "rainfall", "discharge", "waterlevel", "wl_out_suffix="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:frew", [
+            "help", "date=", "time=", "force",
+            "rainfall", "discharge", "waterlevel",
+            "wl-out-suffix=", "rainfall-path=", "discharge-path=", "waterlevel-path="
+        ])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -85,8 +97,17 @@ try :
             dischargeInsert = True
         elif opt in ("-w", "--waterlevel"):
             waterlevelInsert = True
-        elif opt in ("--wl_out_suffix"):
+        elif opt in ("--wl-out-suffix"):
             waterlevelOutSuffix = arg
+        elif opt in ("--rainfall-path"):
+            RF_DIR_PATH = arg
+            print('WARN: Using custom Rainfall Path :', RF_DIR_PATH)
+        elif opt in ("--discharge-path"):
+            DIS_OUTPUT_DIR = arg
+            print('WARN: Using custom Discharge Path :', DIS_OUTPUT_DIR)
+        elif opt in ("--waterlevel-path"):
+            WL_OUTPUT_DIR = arg
+            print('WARN: Using custom WaterLevel Path :', WL_OUTPUT_DIR)
 
     if rainfallInsert or dischargeInsert or waterlevelInsert :
         allInsert = False
@@ -101,6 +122,8 @@ try :
         waterlevelOutSuffix = date
 
     print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    if forceInsert :
+        print('WARNING: Force Insert enabled')
 except Exception as e :
     traceback.print_exc()
 
@@ -127,7 +150,7 @@ def storeDischarge(adapter):
 
     fileName = DISCHARGE_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-    DISCHARGE_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    DISCHARGE_CSV_FILE_PATH = "%s/%s" % (DIS_OUTPUT_DIR, fileName)
     if not os.path.exists(DISCHARGE_CSV_FILE_PATH):
         print('Discharge > Unable to find file : ', DISCHARGE_CSV_FILE_PATH)
         return None
@@ -153,11 +176,14 @@ def storeDischarge(adapter):
             print('HASH SHA256 created: ', eventId)
         else :
             print('HASH SHA256 exists: ', eventId)
+            if not forceInsert :
+                print('\n')
+                continue
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DIS_RESOLUTION:(i+1)*DIS_RESOLUTION], True)
-        print('%s rows inserted.' % rowCount)
+        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DIS_RESOLUTION:(i+1)*DIS_RESOLUTION], forceInsert)
+        print('%s rows inserted.\n' % rowCount)
 
 
 def storeRainfall(adapter):
@@ -202,11 +228,14 @@ def storeRainfall(adapter):
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
+                    if not forceInsert :
+                        print('\n')
+                        continue
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
                 #     print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries[i*RF_RESOLUTION:(i+1)*RF_RESOLUTION], True)
-                print('%s rows inserted.' % rowCount)
+                rowCount = adapter.insertTimeseries(eventId, timeseries[i*RF_RESOLUTION:(i+1)*RF_RESOLUTION], forceInsert)
+                print('%s rows inserted.\n' % rowCount)
 
 
 def storeWaterlevel(adapter):
@@ -258,7 +287,7 @@ def storeWaterlevel(adapter):
         'end_date': '2017-05-03 23:00:00'
     }
 
-    WATER_LEVEL_DIR_PATH = os.path.join(OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_DIR_NAME, waterlevelOutSuffix))
+    WATER_LEVEL_DIR_PATH = os.path.join(WL_OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_DIR_NAME, waterlevelOutSuffix))
     if not os.path.exists(WATER_LEVEL_DIR_PATH):
         print('Discharge > Unable to find dir : ', WATER_LEVEL_DIR_PATH)
         return
@@ -291,11 +320,14 @@ def storeWaterlevel(adapter):
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
+                    if not forceInsert :
+                        print('\n')
+                        continue
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
                 #     print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], True)
-                print('%s rows inserted.' % rowCount)
+                rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], forceInsert)
+                print('%s rows inserted.\n' % rowCount)
 
 
 adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
