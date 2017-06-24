@@ -148,8 +148,6 @@ def storeDischarge(adapter):
         'type': 'Forecast-0-d',
         'source': 'HEC-HMS',
         'name': 'Cloud Continuous',
-        'start_date': '2017-05-01 00:00:00',
-        'end_date': '2017-05-03 23:00:00'
     }
 
     fileName = DISCHARGE_CSV_FILE.split('.', 1)
@@ -200,8 +198,6 @@ def storeRainfall(adapter):
         'type': 'Forecast-0-d',
         'source': 'WRF',
         'name': 'Cloud-1',
-        'start_date': '2017-05-01 00:00:00',
-        'end_date': '2017-05-03 23:00:00'
     }
 
     for station in stations :
@@ -287,8 +283,6 @@ def storeWaterlevel(adapter):
         'type': 'Forecast-0-d',
         'source': 'WRF',
         'name': 'Cloud-1',
-        'start_date': '2017-05-01 00:00:00',
-        'end_date': '2017-05-03 23:00:00'
     }
 
     WATER_LEVEL_DIR_PATH = os.path.join(WL_OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_DIR_NAME, waterlevelOutSuffix))
