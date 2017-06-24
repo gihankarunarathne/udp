@@ -320,7 +320,8 @@ def storeWaterlevel(adapter):
                     print('HASH SHA256 exists: ', eventId)
                     waterlevelMetaQuery = copy.deepcopy(metaData)
                     waterlevelMetaQuery['station'] = station.replace(' ', '-')
-                    
+                    waterlevelMetaQuery['type'] = types[i]
+
                     dailyTimeseries = timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION]
                     dailyStartDateTime = datetime.datetime.strptime(dailyTimeseries[0][0], '%Y-%m-%d %H:%M:%S')
                     dailyEndDateTime = datetime.datetime.strptime(dailyTimeseries[-1][0], '%Y-%m-%d %H:%M:%S')
