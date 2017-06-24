@@ -322,8 +322,8 @@ def storeWaterlevel(adapter):
                     waterlevelMetaQuery['station'] = station.replace(' ', '-')
                     
                     dailyTimeseries = timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION]
-                    dailyStartDateTime = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
-                    dailyEndDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d %H:%M:%S')
+                    dailyStartDateTime = datetime.datetime.strptime(dailyTimeseries[0][0], '%Y-%m-%d %H:%M:%S')
+                    dailyEndDateTime = datetime.datetime.strptime(dailyTimeseries[-1][0], '%Y-%m-%d %H:%M:%S')
                     opts = {
                         'from': dailyStartDateTime.strftime("%Y-%m-%d %H:%M:%S"),
                         'to': dailyEndDateTime.strftime("%Y-%m-%d %H:%M:%S")
