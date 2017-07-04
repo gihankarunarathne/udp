@@ -140,9 +140,9 @@ except Exception as e :
 def storeDischarge(adapter):
     stations = ['Hanwella']
     types = [
-        'Forecast-0-d', 
-        'Forecast-1-d-after', 
-        'Forecast-2-d-after', 
+        'Forecast-0-d',
+        'Forecast-1-d-after',
+        'Forecast-2-d-after',
         'Forecast-3-d-after',
         'Forecast-4-d-after',
         'Forecast-5-d-after'
@@ -158,7 +158,8 @@ def storeDischarge(adapter):
 
     fileName = DISCHARGE_CSV_FILE.split('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-    DISCHARGE_CSV_FILE_PATH = "%s/%s" % (DIS_OUTPUT_DIR, fileName)
+    # DISCHARGE_CSV_FILE_PATH = "%s/%s" % (DIS_OUTPUT_DIR, fileName)
+    DISCHARGE_CSV_FILE_PATH = os.path.join(DIS_OUTPUT_DIR, fileName)
     if not os.path.exists(DISCHARGE_CSV_FILE_PATH):
         print('Discharge > Unable to find file : ', DISCHARGE_CSV_FILE_PATH)
         return None
