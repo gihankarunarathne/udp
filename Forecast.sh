@@ -40,37 +40,71 @@ INIT_STATE=false
 STORE_DATA=false
 FORCE_EXIT=false
 CONTROL_INTERVAL=0
-# Extract user arguments
-while getopts hd:t:c:r:b:fiseC: opt; do
-    case $opt in
-        h)
-            usage
-            exit 0
-            ;;
-        d)  forecast_date=$OPTARG
-            ;;
-        t)  forecast_time=$OPTARG
-            ;;
-        c)  CONFIG_FILE=$OPTARG
-            ;;
-        r)  ROOT_DIR=$OPTARG
-			;;
-		b)  DAYS_BACK=$OPTARG
-			;;
-		f)  FORCE_RUN=true
-			;;
-		i)  INIT_STATE=true
-			;;
-		s)  STORE_DATA=true
-			;;
-		e)  FORCE_EXIT=true
-			;;
-		C)  CONTROL_INTERVAL=$OPTARG
-			;;
-        *)
+
+# Read the options
+# Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
+TEMP=`getopt -o hd:t:c:r:b:fiseC: --long arga::,argb,argc: -n 'Forecast.sh' -- "$@"`
+
+# Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
+if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
+
+eval set -- "$TEMP"
+
+# Extract options and their arguments into variables.
+while true ; do
+    case "$1" in
+        # -a|--arga)
+        #     case "$2" in
+        #         "") ARG_A='some default value' ; shift 2 ;;
+        #         *) ARG_A=$2 ; shift 2 ;;
+        #     esac ;;
+        # -b|--argb) ARG_B=1 ; shift ;;
+        # -c|--argc)
+        #     case "$2" in
+        #         "") shift 2 ;;
+        #         *) ARG_C=$2 ; shift 2 ;;
+        #     esac ;;
+
+        -h)
             usage >&2
-            exit 1
-            ;;
+            exit 0
+            shift ;;
+        -d)
+            case "$2" in
+                "") shift 2 ;;
+                *) forecast_date="$2" ; shift 2 ;;
+            esac ;;
+        -t)
+            case "$2" in
+                "") shift 2 ;;
+                *) forecast_time="$2" ; shift 2 ;;
+            esac ;;
+        -c)
+            case "$2" in
+                "") shift 2 ;;
+                *) CONFIG_FILE="$2" ; shift 2 ;;
+            esac ;;
+        -r)
+			case "$2" in
+                "") shift 2 ;;
+                *) ROOT_DIR="$2" ; shift 2 ;;
+            esac ;;
+		-b)
+			case "$2" in
+                "") shift 2 ;;
+                *) DAYS_BACK="$2" ; shift 2 ;;
+            esac ;;
+		-f)  FORCE_RUN=true ; shift ;;
+		-i)  INIT_STATE=true ; shift ;;
+		-s)  STORE_DATA=true ; shift ;;
+		-e)  FORCE_EXIT=true ; shift ;;
+		-C)
+			case "$2" in
+                "") shift 2 ;;
+                *) CONTROL_INTERVAL="$2" ; shift 2 ;;
+            esac ;;
+        --) shift ; break ;;
+        *) usage >&2 ; exit 1 ;;
     esac
 done
 
