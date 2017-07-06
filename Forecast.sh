@@ -8,18 +8,20 @@ usage() {
 cat <<EOF
 Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
-	-h 	Show usage
-	-d 	Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
-	-t 	Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
-	-c 	Location of CONFIG.json. Default is Forecast.sh exist directory.
-	-r 	ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
-	-b 	Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
-		When specified -d option will be ignored.
-	-f 	Force run forecast. Even the forecast already run for the particular day, run again. Default is false.
-	-i 	Initiate a State at the end of HEC-HMS run.
-	-s 	Store Timeseries data on MySQL database.
-	-e  Exit without executing models which run on Windows.
-	-C  (Control Interval in minutes) Time period that HEC-HMS model should run
+	-h 		Show usage
+	-d 		Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
+	-t 		Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
+	-c 		Location of CONFIG.json. Default is Forecast.sh exist directory.
+	-r 		ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
+	-b 		Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
+			When specified -d option will be ignored.
+	-f 		Force run forecast. Even the forecast already run for the particular day, run again. Default is false.
+	-i 		Initiate a State at the end of HEC-HMS run.
+	-s 		Store Timeseries data on MySQL database.
+	-e  	Exit without executing models which run on Windows.
+	-C  	(Control Interval in minutes) Time period that HEC-HMS model should run
+
+	-T|--tag 	Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
 EOF
 }
 
@@ -40,10 +42,11 @@ INIT_STATE=false
 STORE_DATA=false
 FORCE_EXIT=false
 CONTROL_INTERVAL=0
+TAG=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-TEMP=`getopt -o hd:t:c:r:b:fiseC: --long arga::,argb,argc: -n 'Forecast.sh' -- "$@"`
+TEMP=`getopt -o hd:t:c:r:b:fiseC:T: --long arga::,argb,argc:,tag: -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
 if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
@@ -103,6 +106,11 @@ while true ; do
                 "") shift 2 ;;
                 *) CONTROL_INTERVAL="$2" ; shift 2 ;;
             esac ;;
+        -T|--tag)
+			case "$2" in
+                "") shift 2 ;;
+                *) TAG="$2" ; shift 2 ;;
+            esac ;;
         --) shift ; break ;;
         *) usage >&2 ; exit 1 ;;
     esac
@@ -116,7 +124,7 @@ fi
 
 # cd into bash script's root directory
 cd $ROOT_DIR
-echo $(pwd)
+echo "Current Working Directory set to -> $(pwd)"
 if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
 then
 	echo "Unable to find $CONFIG_FILE file"
@@ -140,6 +148,11 @@ DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
 main() {
+	if [[ "$TAG" =~ [^a-zA-Z0-9\ ] ]]; then
+		echo "Parameter for -T|--tag is \"$TAG\" invalid. It can onaly contain alphanumberic values."
+		exit 1;
+	fi
+
 	echo "Start at $current_date_time $FORCE_EXIT"
 	echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
