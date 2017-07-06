@@ -183,7 +183,7 @@ main() {
 		rm $DSS_INPUT_FILE
 		rm $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
-		./dssvue/hec-dssvue.sh CSVTODSS.py $forecast_date
+		./dssvue/hec-dssvue.sh CSVTODSS.py -t $forecast_date
 
 		# Change HEC-HMS running time window
 		./Update_HECHMS.py -d $forecast_date \

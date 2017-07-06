@@ -9,12 +9,14 @@ from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
 
+from optparse import OptionParser
+
 sys.path.append("./simplejson-2.5.2")
 import simplejson as json
 
 try :
     try :
-        #print 'Jython version: ', sys.version
+        # print 'Jython version: ', sys.version
 
         CONFIG = json.loads(open('CONFIG.json').read())
         # print('Config :: ', CONFIG)
@@ -31,10 +33,25 @@ try :
         if 'OUTPUT_DIR' in CONFIG :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+        date = ''
+
+        # Passing Commandline Options to Jython. Not same as getopt in python.
+        # Ref: http://www.jython.org/jythonbook/en/1.0/Scripting.html#parsing-commandline-options
+        # Doc : https://docs.python.org/2/library/optparse.html
+        parser = OptionParser(description='Upload CSV data into HEC-HMS DSS storage')
+        # ERROR: Unable to use `-d` or `-D` option with OptionParser
+        parser.add_option("-t", "--date", help="Date in YYYY-MM. Default is current date.")
+
+        (options, args) = parser.parse_args()
+        print 'Commandline Options:', options
+
+        if options.date :
+            date = options.date
+
         # Default run for current day
         now = datetime.datetime.now()
-        if len(sys.argv) > 1 : # Or taken from first arg for the program
-            now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+        if date :
+            now = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
         print 'Start CSVTODSS.py on ', date
 
@@ -86,3 +103,4 @@ try :
 finally :
     myDss.done()
     print '\nCompleted converting ', RAIN_CSV_FILE_PATH, ' to ', DSS_INPUT_FILE
+    print 'done'
