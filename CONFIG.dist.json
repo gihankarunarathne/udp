@@ -13,11 +13,11 @@
     
     "RAIN_CSV_FILE"     : "DailyRain.csv",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
-    "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
+    "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF",
     "KUB_DIR_PATH"      : "/mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin",
-    "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo/",
+    "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo",
 
-    "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin/",
+    "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin",
     "INFLOW_DAT_FILE"   : "INFLOW.DAT",
     "BASE_OUT_FILE"     : "BASE.OUT",
     "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
