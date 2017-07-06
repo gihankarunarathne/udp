@@ -16,7 +16,7 @@ import simplejson as json
 
 try :
     try :
-        # print 'Jython version: ', sys.version
+        print 'Jython version: ', sys.version
 
         CONFIG = json.loads(open('CONFIG.json').read())
         # print('Config :: ', CONFIG)
