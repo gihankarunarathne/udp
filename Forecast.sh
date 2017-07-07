@@ -226,7 +226,8 @@ main() {
         cd $ROOT_DIR
 
         # Read HEC-HMS result, then extract Discharge into .csv
-        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date
+        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date \
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # Read Discharge .csv, then create INFLOW.DAT file for FLO2D
         ./CSVTODAT.py  -d $forecast_date
