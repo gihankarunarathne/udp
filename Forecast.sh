@@ -25,14 +25,15 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
 
     --wrf-out       Path of WRF_OUTPUT directory. If this is set, then 
                         <WRF_OUT>/RF                    (<-RF_DIR_PATH)
-                        <WRF_OUT>/kelani-upper-basin    (<-)
-                        <WRF_OUT>/colombo
-                        <WRF_OUT>/kelani-basin will use respectively instead of CONFIG.json.
+                        <WRF_OUT>/kelani-upper-basin    (<-KUB_DIR_PATH)
+                        <WRF_OUT>/colombo               (<-RF_GRID_DIR_PATH)
+                        <WRF_OUT>/kelani-basin          (<-FLO2D_RAINCELL_DIR_PATH)
+                    will use respectively instead of CONFIG.json.
                     Otherwise using the values from CONFIG.json
-    --wrf-rf        
-    --wrf-kub
-    --wrf-rf-grid
-    --wrf-raincell
+    --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
+    --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
+    --wrf-rf-grid   Path of WRF colombo(RF_GRID) Directory. Otherwise using the `RF_GRID_DIR_PATH` from CONFIG.json
+    --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
 EOF
 }
 
@@ -195,7 +196,7 @@ main() {
         
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
         # using Theissen Polygen
-        ./RFTOCSV.py -d $forecast_date -t $forecast_time
+        ./RFTOCSV.py -d $forecast_date -t $forecast_time --wrf-rf $RF_DIR_PATH --wrf-kub $KUB_DIR_PATH
 
         # HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
         # We discovered that, this issue on 3.5 version, hence upgrade into 4.1

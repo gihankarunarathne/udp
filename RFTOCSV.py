@@ -12,6 +12,8 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
 -t  --time          Time in HH:MM:SS. Default is current time.
+    --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
+    --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
 """
     print(usageText)
 
@@ -49,7 +51,7 @@ try :
     date = ''
     time = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:", ["help", "date=", "time="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:", ["help", "date=", "time=", "wrf-rf=", "wrf-kub="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -61,6 +63,10 @@ try :
             date = arg
         elif opt in ("-t", "--time"):
             time = arg
+        elif opt in ("--wrf-rf"):
+            RF_DIR_PATH = arg
+        elif opt in ("--wrf-kub"):
+            KUB_DIR_PATH = arg
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
