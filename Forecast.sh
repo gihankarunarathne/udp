@@ -22,6 +22,17 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
 	-C  	(Control Interval in minutes) Time period that HEC-HMS model should run
 
 	-T|--tag 	Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
+
+	--wrf-out		Path of WRF_OUTPUT directory. If this is set, then 
+						<WRF_OUT>/RF 					(<-RF_DIR_PATH)
+						<WRF_OUT>/kelani-upper-basin	(<-)
+						<WRF_OUT>/colombo
+						<WRF_OUT>/kelani-basin will use respectively instead of CONFIG.json.
+					Otherwise using the values from CONFIG.json
+	--wrf-rf 		
+	--wrf-kub
+	--wrf-rf-grid
+	--wrf-raincell
 EOF
 }
 
@@ -33,7 +44,7 @@ trimQuotes() {
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
-ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
 DAYS_BACK=0
@@ -43,10 +54,13 @@ STORE_DATA=false
 FORCE_EXIT=false
 CONTROL_INTERVAL=0
 TAG=""
+WRF_OUT=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-TEMP=`getopt -o hd:t:c:r:b:fiseC:T: --long arga::,argb,argc:,tag: -n 'Forecast.sh' -- "$@"`
+TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
+		--long arga::,argb,argc:,tag:,wrf-out: \
+		-n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
 if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
@@ -111,13 +125,18 @@ while true ; do
                 "") shift 2 ;;
                 *) TAG="$2" ; shift 2 ;;
             esac ;;
+        --wrf-out)
+			case "$2" in
+                "") shift 2 ;;
+                *) WRF_OUT="$2" ; shift 2 ;;
+            esac ;;
+
         --) shift ; break ;;
         *) usage >&2 ; exit 1 ;;
     esac
 done
 
-if [ "$DAYS_BACK" -gt 0 ]
-then
+if [ "$DAYS_BACK" -gt 0 ]; then
 	#TODO: Try to back date base on user given date
 	forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
@@ -125,8 +144,7 @@ fi
 # cd into bash script's root directory
 cd $ROOT_DIR
 echo "Current Working Directory set to -> $(pwd)"
-if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
-then
+if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]; then
 	echo "Unable to find $CONFIG_FILE file"
 	exit 1
 fi
@@ -136,6 +154,7 @@ HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
 WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
 
 RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
 RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
 FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
 OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
@@ -153,19 +172,25 @@ main() {
 		exit 1;
 	fi
 
+	if [ ! -z $WRF_OUT ] && [ -d $WRF_OUT ]; then
+		RF_DIR_PATH=$WRF_OUT/RF
+		KUB_DIR_PATH=$WRF_OUT/kelani-upper-basin
+		RF_GRID_DIR_PATH=$WRF_OUT/colombo
+		FLO2D_RAINCELL_DIR_PATH=$WRF_OUT/kelani-basin
+		echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
+	fi
+
 	echo "Start at $current_date_time $FORCE_EXIT"
 	echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
 	local isWRF=$(isWRFAvailable)
 	local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
-	if [ $FORCE_RUN == true ]
-	then
+	if [ $FORCE_RUN == true ]; then
 		forecastStatus=0
 	fi
 	echo "isWRF $isWRF forecastStatus $forecastStatus"
 
-	if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]
-	then
+	if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]; then
 		mkdir $OUTPUT_DIR
 		
 		# Read WRF forecast data, then create precipitation .csv for Upper Catchment 
@@ -183,7 +208,7 @@ main() {
 		rm $DSS_INPUT_FILE
 		rm $DSS_OUTPUT_FILE
 		# Read Avg precipitation, then create .dss input file for HEC-HMS model
-		./dssvue/hec-dssvue.sh CSVTODSS.py -t $forecast_date
+		./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date
 
 		# Change HEC-HMS running time window
 		./Update_HECHMS.py -d $forecast_date \
@@ -201,8 +226,7 @@ main() {
 		# Read Discharge .csv, then create INFLOW.DAT file for FLO2D
 		./CSVTODAT.py  -d $forecast_date
 
-		if [ $FORCE_EXIT == false ]
-		then
+		if [ $FORCE_EXIT == false ]; then
 			# Send INFLOW.DAT file into Windows
 			echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
 			curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
@@ -220,8 +244,7 @@ main() {
 		fi
 	
 		local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
-		if [ $writeStatus == 0 ]
-		then
+		if [ $writeStatus == 0 ]; then
 			writeForecastStatus $forecast_date $STATUS_FILE
 		fi
 	else
@@ -232,8 +255,7 @@ main() {
 
 isWRFAvailable() {
 	local File_Pattern="*$forecast_date*.txt"
-	if [ -z "$(find $RF_DIR_PATH -name $File_Pattern)" ]
-	then
+	if [ -z "$(find $RF_DIR_PATH -name $File_Pattern)" ]; then
 	  # echo "empty (Unable find files $File_Pattern)"
 	  echo 0
 	else
@@ -250,8 +272,7 @@ alreadyForecast() {
 	local forecasted=0
 
 	while IFS='' read -r line || [[ -n "$line" ]]; do
-    	if [ $2 == $line ] 
-    	then
+    	if [ $2 == $line ]; then
     		forecasted=1
     		break
     	fi
