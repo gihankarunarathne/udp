@@ -158,6 +158,7 @@ RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
 KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
 RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
 FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
+INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
 OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
 STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
 HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
@@ -171,6 +172,9 @@ main() {
     if [[ "$TAG" =~ [^a-zA-Z0-9\ ] ]]; then
         echo "Parameter for -T|--tag is \"$TAG\" invalid. It can onaly contain alphanumberic values."
         exit 1;
+    fi
+    if [ ! -z $TAG ]; then
+        INFLOW_DAT_FILE=${INFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
     fi
 
     if [ ! -z $WRF_OUT ] && [ -d $WRF_OUT ]; then
@@ -236,7 +240,7 @@ main() {
         if [ $FORCE_EXIT == false ]; then
             # Send INFLOW.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
-            curl -X POST --data-binary @./FLO2D/INFLOW.DAT  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
+            curl -X POST --data-binary @$INFLOW_DAT_FILE  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
 
             # Send RAINCELL.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
