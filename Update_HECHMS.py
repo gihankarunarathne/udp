@@ -105,7 +105,7 @@ try :
     print('Update_HECHMS startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
     print('Control Interval:', CONTROL_INTERVAL/60, 'hours')
     # Extract Start and End times
-    fileName = RAIN_CSV_FILE.split('.', 1)
+    fileName = RAIN_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
     RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     csvReader = csv.reader(open(RAIN_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')

@@ -64,14 +64,14 @@ try :
 
     print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")), tag
 
-    fileName = DISCHARGE_CSV_FILE.split('.', 1)
+    fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
     DISCHARGE_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     print('Open Discharge CSV ::', DISCHARGE_CSV_FILE_PATH)
     csvReader = csv.reader(open(DISCHARGE_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
 
-    fileName2 = INFLOW_DAT_FILE.split('.', 1)
+    fileName2 = INFLOW_DAT_FILE.rsplit('.', 1)
     INFLOW_DAT_FILE_PATH = '{name}{tag}.{extention}'.format(name=fileName2[0], tag='.'+tag if tag else '', extention=fileName2[1])
     print('Open FLO2D INFLOW ::', INFLOW_DAT_FILE_PATH)
     f = open(INFLOW_DAT_FILE_PATH, 'w')

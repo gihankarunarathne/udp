@@ -151,7 +151,7 @@ try :
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
-    fileName = RAIN_CSV_FILE.split('.', 1)
+    fileName = RAIN_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
     RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     csvWriter = csv.writer(open(RAIN_CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')

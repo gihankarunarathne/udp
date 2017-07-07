@@ -61,7 +61,7 @@ try :
 
         myDss = HecDss.open(DSS_INPUT_FILE)
         
-        fileName = RAIN_CSV_FILE.split('.', 1)
+        fileName = RAIN_CSV_FILE.rsplit('.', 1)
         # str .format not working on this version
         fileName = '%s-%s%s.%s' % (fileName[0], date, '.'+tag if tag else '', fileName[1])
         RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)

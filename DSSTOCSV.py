@@ -57,7 +57,7 @@ try :
         date = now.strftime("%Y-%m-%d")
 
         myDss = HecDss.open(DSS_OUTPUT_FILE)
-        fileName = DISCHARGE_CSV_FILE.split('.', 1)
+        fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
         # str .format not working on this version
         fileName = '%s-%s%s.%s' % (fileName[0], date, '.'+tag if tag else '', fileName[1])
         DISCHARGE_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)

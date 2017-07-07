@@ -156,7 +156,7 @@ def storeDischarge(adapter):
         'name': 'Cloud Continuous',
     }
 
-    fileName = DISCHARGE_CSV_FILE.split('.', 1)
+    fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
     # DISCHARGE_CSV_FILE_PATH = "%s/%s" % (DIS_OUTPUT_DIR, fileName)
     DISCHARGE_CSV_FILE_PATH = os.path.join(DIS_OUTPUT_DIR, fileName)
