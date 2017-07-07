@@ -12,6 +12,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
 -t  --time          Time in HH:MM:SS. Default is current time.
+-T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
     --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
     --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
 """
@@ -50,8 +51,11 @@ try :
 
     date = ''
     time = ''
+    tag=''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:", ["help", "date=", "time=", "wrf-rf=", "wrf-kub="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:", [
+            "help", "date=", "time=", "wrf-rf=", "wrf-kub=", "tag="
+        ])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -67,6 +71,8 @@ try :
             RF_DIR_PATH = arg
         elif opt in ("--wrf-kub"):
             KUB_DIR_PATH = arg
+        elif opt in ("-T", "--tag"):
+            tag = arg
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
@@ -99,11 +105,11 @@ try :
     time = now.strftime("%H:%M:%S")
 
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    print(' RFTOCSV run for', date, '@', time)
+    print(' RFTOCSV run for', date, '@', time, tag)
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, catchment+'-'+date+'*.txt')):
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, date) )):
             print('Start Operating on (Upper) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
@@ -146,8 +152,8 @@ try :
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
     fileName = RAIN_CSV_FILE.split('.', 1)
-    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-    RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
+    RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     csvWriter = csv.writer(open(RAIN_CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
     # Write Metadata https://publicwiki.deltares.nl/display/FEWSDOC/CSV
     csvWriter.writerow(['Location Names', 'Awissawella', 'Colombo'])

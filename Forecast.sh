@@ -196,7 +196,9 @@ main() {
         
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
         # using Theissen Polygen
-        ./RFTOCSV.py -d $forecast_date -t $forecast_time --wrf-rf $RF_DIR_PATH --wrf-kub $KUB_DIR_PATH
+        ./RFTOCSV.py -d $forecast_date -t $forecast_time \
+            --wrf-rf $RF_DIR_PATH --wrf-kub $KUB_DIR_PATH \
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
         # We discovered that, this issue on 3.5 version, hence upgrade into 4.1
