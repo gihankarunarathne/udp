@@ -34,6 +34,7 @@ try :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
         date = ''
+        tag = ''
 
         # Passing Commandline Options to Jython. Not same as getopt in python.
         # Ref: http://www.jython.org/jythonbook/en/1.0/Scripting.html#parsing-commandline-options
@@ -41,26 +42,33 @@ try :
         parser = OptionParser(description='Upload CSV data into HEC-HMS DSS storage')
         # ERROR: Unable to use `-d` or `-D` option with OptionParser
         parser.add_option("-t", "--date", help="Date in YYYY-MM. Default is current date.")
+        parser.add_option("-T", "--tag", help="Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...")
 
         (options, args) = parser.parse_args()
         print 'Commandline Options:', options
 
         if options.date :
             date = options.date
+        if options.tag :
+            tag = options.tag
 
         # Default run for current day
         now = datetime.datetime.now()
         if date :
             now = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
-        print 'Start CSVTODSS.py on ', date
+        print 'Start CSVTODSS.py on ', date, tag
 
         myDss = HecDss.open(DSS_INPUT_FILE)
+        
         fileName = RAIN_CSV_FILE.split('.', 1)
-        fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-        RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+        # str .format not working on this version
+        fileName = '%s-%s%s.%s' % (fileName[0], date, '.'+tag if tag else '', fileName[1])
+        RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
+        print 'Open Rainfall CSV ::', RAIN_CSV_FILE_PATH
         csvReader = csv.reader(open(RAIN_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
         csvList = list(csvReader)
+        
         
         numLocations = len(csvList[0]) - 1
         numValues = len(csvList) - NUM_METADATA_LINES # Ignore Metadata

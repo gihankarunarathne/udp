@@ -193,7 +193,7 @@ main() {
 
     if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]; then
         mkdir $OUTPUT_DIR
-        
+
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
         # using Theissen Polygen
         ./RFTOCSV.py -d $forecast_date -t $forecast_time \
@@ -211,7 +211,8 @@ main() {
         rm $DSS_INPUT_FILE
         rm $DSS_OUTPUT_FILE
         # Read Avg precipitation, then create .dss input file for HEC-HMS model
-        ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date
+        ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date \
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # Change HEC-HMS running time window
         ./Update_HECHMS.py -d $forecast_date \
