@@ -13,6 +13,7 @@ Usage: ./Update_HECHMS.py [-d date] [-h -i] [-s sInterval] [-c cInterval]
 -i  --init          Create a State while running the HEC-HMS model
 -s  --sInterval     (State Interval in minutes) Time period that state should create after start time
 -c  --cInterval     (Control Interval in minutes) Time period that HEC-HMS model should run
+-T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
 """
     print(usageText)
 
@@ -71,8 +72,12 @@ try :
 
     date = ''
     initState = False
+    tag = ''
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:is:c:", ["help", "date=", "backDays=", "init", "sInterval", "cInterval"])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:is:c:T:", [
+            "help", "date=", "backDays=", "init", "sInterval=", "cInterval=", "tag="
+        ])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -88,6 +93,8 @@ try :
             STATE_INTERVAL = int(arg)
         elif opt in ("-c", "--cInterval"):
             CONTROL_INTERVAL = int(arg)
+        elif opt in ("-T", "--tag"):
+            tag = arg
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -99,8 +106,8 @@ try :
     print('Control Interval:', CONTROL_INTERVAL/60, 'hours')
     # Extract Start and End times
     fileName = RAIN_CSV_FILE.split('.', 1)
-    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-    RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
+    RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     csvReader = csv.reader(open(RAIN_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
 

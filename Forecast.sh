@@ -217,7 +217,8 @@ main() {
         # Change HEC-HMS running time window
         ./Update_HECHMS.py -d $forecast_date \
             `[[ $INIT_STATE == true ]] && echo "-i" || echo ""` \
-            `[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"`
+            `[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"` \
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # Run HEC-HMS model
         cd $ROOT_DIR/$HEC_HMS_DIR
