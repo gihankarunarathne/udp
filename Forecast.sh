@@ -230,7 +230,8 @@ main() {
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # Read Discharge .csv, then create INFLOW.DAT file for FLO2D
-        ./CSVTODAT.py  -d $forecast_date
+        ./CSVTODAT.py  -d $forecast_date \
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         if [ $FORCE_EXIT == false ]; then
             # Send INFLOW.DAT file into Windows
