@@ -42,6 +42,21 @@ trimQuotes() {
     tmp="${tmp#\"}"
     echo $tmp
 }
+# replaceStringVariable <variableName> <replacingVariableName> <replacingVariableValue>
+replaceStringVariable() {
+    # E.g. Working example of replacing "${HEC_HMS_MODEL_DIR}/2008_2_Events_input.dss"
+    # with HEC_HMS_MODEL_DIR="./2008_2_Events"
+    #
+    # if [[ "$DSS_INPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
+    #     DSS_INPUT_FILE=${DSS_INPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
+    # fi
+
+    if [[ "$1" =~ ^\$\{("$2")\} ]]; then
+        echo ${1/\$\{$2\}/"$3"}
+    else
+        echo $1
+    fi
+}
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
@@ -189,14 +204,16 @@ main() {
         echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
     fi
 
-    if [[ "$DSS_INPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
-        DSS_INPUT_FILE=${DSS_INPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
-        echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
-    fi
-    if [[ "$DSS_OUTPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
-        DSS_OUTPUT_FILE=${DSS_OUTPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
-        echo "Set DSS_OUTPUT_FILE=$DSS_OUTPUT_FILE"
-    fi
+    # if [[ "$DSS_INPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
+    #     DSS_INPUT_FILE=${DSS_INPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
+    # fi
+    # if [[ "$DSS_OUTPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
+    #     DSS_OUTPUT_FILE=${DSS_OUTPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
+    # fi
+    DSS_INPUT_FILE=$(replaceStringVariable $DSS_INPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
+    echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
+    DSS_OUTPUT_FILE=$(replaceStringVariable $DSS_OUTPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
+    echo "Set DSS_OUTPUT_FILE=$DSS_OUTPUT_FILE"
 
     echo "Start at $current_date_time $FORCE_EXIT"
     echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
