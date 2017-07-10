@@ -5,6 +5,7 @@
     "OUTPUT_DIR"        : "./OUTPUT",
 
     "TIME_INTERVAL"     : 60,
+    "HEC_HMS_MODEL_DIR" : "./2008_2_Events",
     "DSS_INPUT_FILE"    : "./2008_2_Events/2008_2_Events_input.dss",
     "DSS_OUTPUT_FILE"   : "./2008_2_Events/2008_2_Events_run.dss",
     "HEC_HMS_CONTROL"   : "./2008_2_Events/Control_1.control",

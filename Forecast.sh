@@ -158,13 +158,17 @@ RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
 KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
 RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
 FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
-INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
+
 OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
 STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
+
+HEC_HMS_MODEL_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_MODEL_DIR'))
 HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
 HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
 DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
 DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
+
+INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
@@ -183,6 +187,15 @@ main() {
         RF_GRID_DIR_PATH=$WRF_OUT/colombo
         FLO2D_RAINCELL_DIR_PATH=$WRF_OUT/kelani-basin
         echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
+    fi
+
+    if [[ "$DSS_INPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
+        DSS_INPUT_FILE=${DSS_INPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
+        echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
+    fi
+    if [[ "$DSS_OUTPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
+        DSS_OUTPUT_FILE=${DSS_OUTPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
+        echo "Set DSS_OUTPUT_FILE=$DSS_OUTPUT_FILE"
     fi
 
     echo "Start at $current_date_time $FORCE_EXIT"
