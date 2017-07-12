@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, traceback, csv, json, datetime, collections, getopt
+import sys, traceback, csv, json, datetime, collections, getopt, re, os
 
 DSSDateTime = collections.namedtuple('DSSDateTime', ['dateTime', 'date', 'time'])
 
@@ -48,21 +48,24 @@ try :
     # print('Config :: ', CONFIG)
 
     NUM_METADATA_LINES = 3;
-    HEC_HMS_CONTROL_FILE = './2008_2_Events/Control_1.control'
-    HEC_HMS_RUN_FILE = './2008_2_Events/2008_2_Events.run'
-    HEC_HMS_GAGE_FILE = './2008_2_Events/2008_2_Events.gage'
+    HEC_HMS_MODEL_DIR = './2008_2_Events'
+    HEC_HMS_CONTROL = './2008_2_Events/Control_1.control'
+    HEC_HMS_RUN = './2008_2_Events/2008_2_Events.run'
+    HEC_HMS_GAGE = './2008_2_Events/2008_2_Events.gage'
     RAIN_CSV_FILE = 'DailyRain.csv'
     TIME_INTERVAL = 60 # In minutes
     OUTPUT_DIR = './OUTPUT'
     STATE_INTERVAL = 1 * 24 * 60 # In minutes
     CONTROL_INTERVAL = 6 * 24 * 60 # In minutes
 
+    if 'HEC_HMS_MODEL_DIR' in CONFIG :
+        HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
     if 'HEC_HMS_CONTROL' in CONFIG :
-        HEC_HMS_CONTROL_FILE = CONFIG['HEC_HMS_CONTROL']
+        HEC_HMS_CONTROL = CONFIG['HEC_HMS_CONTROL']
     if 'HEC_HMS_RUN' in CONFIG :
-        HEC_HMS_RUN_FILE = CONFIG['HEC_HMS_RUN']
+        HEC_HMS_RUN = CONFIG['HEC_HMS_RUN']
     if 'HEC_HMS_GAGE' in CONFIG :
-        HEC_HMS_GAGE_FILE = CONFIG['HEC_HMS_GAGE']
+        HEC_HMS_GAGE = CONFIG['HEC_HMS_GAGE']
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'TIME_INTERVAL' in CONFIG :
@@ -95,6 +98,22 @@ try :
             CONTROL_INTERVAL = int(arg)
         elif opt in ("-T", "--tag"):
             tag = arg
+
+    # Replace CONFIG.json variables
+    if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_CONTROL) :
+        HEC_HMS_CONTROL = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', HEC_HMS_CONTROL).strip("/\\")
+        HEC_HMS_CONTROL = os.path.join(HEC_HMS_MODEL_DIR, HEC_HMS_CONTROL)
+        print('Set HEC_HMS_CONTROL=', HEC_HMS_CONTROL)
+
+    if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_RUN) :
+        HEC_HMS_RUN = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', HEC_HMS_RUN).strip("/\\")
+        HEC_HMS_RUN = os.path.join(HEC_HMS_MODEL_DIR, HEC_HMS_RUN)
+        print('Set HEC_HMS_RUN=', HEC_HMS_RUN)
+
+    if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_GAGE) :
+        HEC_HMS_GAGE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', HEC_HMS_GAGE).strip("/\\")
+        HEC_HMS_GAGE = os.path.join(HEC_HMS_MODEL_DIR, HEC_HMS_GAGE)
+        print('Set HEC_HMS_GAGE=', HEC_HMS_GAGE)
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -131,11 +150,11 @@ try :
     #############################################
     # Update Control file                       #
     #############################################
-    controlFile = open(HEC_HMS_CONTROL_FILE, 'r')
+    controlFile = open(HEC_HMS_CONTROL, 'r')
     controlData = controlFile.readlines()
     controlFile.close()
 
-    controlFile = open(HEC_HMS_CONTROL_FILE, 'w')
+    controlFile = open(HEC_HMS_CONTROL, 'w')
     for line in controlData :
         if 'Start Date:' in line :
             s = line[:line.rfind('Start Date:')+11]
@@ -163,11 +182,11 @@ try :
     #############################################
     # Update Run file                           #
     #############################################
-    runFile = open(HEC_HMS_RUN_FILE, 'r')
+    runFile = open(HEC_HMS_RUN, 'r')
     runData = runFile.readlines()
     runFile.close()
 
-    runFile = open(HEC_HMS_RUN_FILE, 'w')
+    runFile = open(HEC_HMS_RUN, 'w')
     for line in runData :
         if 'Control:' in line :
             runFile.write(line)
@@ -202,11 +221,11 @@ try :
     #############################################
     #Update Gage file                           #
     #############################################
-    gageFile = open(HEC_HMS_GAGE_FILE, 'r')
+    gageFile = open(HEC_HMS_GAGE, 'r')
     gageData = gageFile.readlines()
     gageFile.close()
 
-    gageFile = open(HEC_HMS_GAGE_FILE, 'w')
+    gageFile = open(HEC_HMS_GAGE, 'w')
     for line in gageData :
         if 'Start Time:' in line :
             s = line[:line.rfind('Start Time:')+11]
@@ -224,4 +243,4 @@ except Exception as e :
     traceback.print_exc()
 finally:
     controlFile.close()
-    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL_FILE, HEC_HMS_RUN_FILE, HEC_HMS_GAGE_FILE)
+    print('Updated HEC-HMS Control file ', HEC_HMS_CONTROL, HEC_HMS_RUN, HEC_HMS_GAGE)
