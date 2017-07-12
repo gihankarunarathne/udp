@@ -56,7 +56,8 @@ try :
 
         # Replace CONFIG.json variables
         if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_INPUT_FILE) :
-            DSS_INPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_MODEL_DIR, DSS_INPUT_FILE)
+            DSS_INPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', DSS_INPUT_FILE).strip("/\\")
+            DSS_INPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, DSS_INPUT_FILE)
             print '"Set DSS_INPUT_FILE=', DSS_INPUT_FILE
 
         # Default run for current day
