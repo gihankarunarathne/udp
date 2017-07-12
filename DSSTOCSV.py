@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import java, csv, sys, datetime
+import java, csv, sys, datetime, os, re
 
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
@@ -20,10 +20,13 @@ try :
         # print('Config :: ', CONFIG)
 
         NUM_METADATA_LINES = 2;
+        HEC_HMS_MODEL_DIR = './2008_2_Events'
         DSS_OUTPUT_FILE = './2008_2_Events/2008_2_Events.dss'
         DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
         OUTPUT_DIR = './OUTPUT'
 
+        if 'HEC_HMS_MODEL_DIR' in CONFIG :
+            HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
         if 'DSS_OUTPUT_FILE' in CONFIG :
             DSS_OUTPUT_FILE = CONFIG['DSS_OUTPUT_FILE']
         if 'DISCHARGE_CSV_FILE' in CONFIG :
@@ -49,6 +52,12 @@ try :
             date = options.date
         if options.tag :
             tag = options.tag
+
+        # Replace CONFIG.json variables
+        if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_OUTPUT_FILE) :
+            DSS_OUTPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', DSS_OUTPUT_FILE).strip("/\\")
+            DSS_OUTPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, DSS_OUTPUT_FILE)
+            print '"Set DSS_OUTPUT_FILE=', DSS_OUTPUT_FILE
 
         # Default run for current day
         now = datetime.datetime.now()
