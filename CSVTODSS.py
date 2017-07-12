@@ -3,7 +3,7 @@
 # Rainfall CSV file format should follow as 
 # https://publicwiki.deltares.nl/display/FEWSDOC/CSV 
 
-import java, csv, sys, datetime
+import java, csv, sys, datetime, re
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
@@ -26,6 +26,8 @@ try :
         RAIN_CSV_FILE = 'DailyRain.csv'
         OUTPUT_DIR = './OUTPUT'
 
+        if 'HEC_HMS_MODEL_DIR' in CONFIG :
+            HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
         if 'DSS_INPUT_FILE' in CONFIG :
             DSS_INPUT_FILE = CONFIG['DSS_INPUT_FILE']
         if 'RAIN_CSV_FILE' in CONFIG :
@@ -51,6 +53,11 @@ try :
             date = options.date
         if options.tag :
             tag = options.tag
+
+        # Replace CONFIG.json variables
+        if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_INPUT_FILE) :
+            DSS_INPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_MODEL_DIR, DSS_INPUT_FILE)
+            print '"Set DSS_INPUT_FILE=', DSS_INPUT_FILE
 
         # Default run for current day
         now = datetime.datetime.now()
