@@ -34,6 +34,8 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
     --wrf-rf-grid   Path of WRF colombo(RF_GRID) Directory. Otherwise using the `RF_GRID_DIR_PATH` from CONFIG.json
     --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
+
+    --hec-hms-model-dir  Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json
 EOF
 }
 
@@ -58,11 +60,43 @@ replaceStringVariable() {
     fi
 }
 
-forecast_date="`date +%Y-%m-%d`";
-forecast_time="`date +%H:00:00`";
+
 ROOT_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
+
+# cd into bash script's root directory
+cd $ROOT_DIR
+echo "Current Working Directory set to -> $(pwd)"
+if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]; then
+    echo "Unable to find $CONFIG_FILE file"
+    exit 1
+fi
+
+HOST_ADDRESS=$(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))
+HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
+WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
+
+RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
+RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
+FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
+
+OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
+STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
+
+HEC_HMS_MODEL_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_MODEL_DIR'))
+HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
+HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
+DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
+DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
+
+INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
+
+
+forecast_date="`date +%Y-%m-%d`";
+forecast_time="`date +%H:00:00`";
+
 DAYS_BACK=0
 FORCE_RUN=false
 INIT_STATE=false
@@ -75,7 +109,7 @@ WRF_OUT=""
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
 TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
-        --long arga::,argb,argc:,tag:,wrf-out: \
+        --long arga::,argb,argc:,tag:,wrf-out:,hec-hms-model-dir: \
         -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
@@ -146,6 +180,11 @@ while true ; do
                 "") shift 2 ;;
                 *) WRF_OUT="$2" ; shift 2 ;;
             esac ;;
+        --hec-hms-model-dir)
+            case "$2" in
+                "") shift 2 ;;
+                *) HEC_HMS_MODEL_DIR123="$2" ; shift 2 ;;
+            esac ;;
 
         --) shift ; break ;;
         *) usage >&2 ; exit 1 ;;
@@ -157,34 +196,6 @@ if [ "$DAYS_BACK" -gt 0 ]; then
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
 
-# cd into bash script's root directory
-cd $ROOT_DIR
-echo "Current Working Directory set to -> $(pwd)"
-if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]; then
-    echo "Unable to find $CONFIG_FILE file"
-    exit 1
-fi
-
-HOST_ADDRESS=$(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))
-HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
-WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
-
-RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
-KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
-RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
-FLO2D_RAINCELL_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.FLO2D_RAINCELL_DIR_PATH'))
-
-OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
-STATUS_FILE=$(trimQuotes $(cat CONFIG.json | jq '.STATUS_FILE'))
-
-HEC_HMS_MODEL_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_MODEL_DIR'))
-HEC_HMS_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_HMS_DIR'))
-HEC_DSSVUE_DIR=$(trimQuotes $(cat CONFIG.json | jq '.HEC_DSSVUE_DIR'))
-DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
-DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
-
-INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
-
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
 main() {
@@ -192,6 +203,7 @@ main() {
         echo "Parameter for -T|--tag is \"$TAG\" invalid. It can onaly contain alphanumberic values."
         exit 1;
     fi
+
     if [ ! -z $TAG ]; then
         INFLOW_DAT_FILE=${INFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
     fi
@@ -204,12 +216,6 @@ main() {
         echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
     fi
 
-    # if [[ "$DSS_INPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
-    #     DSS_INPUT_FILE=${DSS_INPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
-    # fi
-    # if [[ "$DSS_OUTPUT_FILE" =~ ^\$\{(HEC_HMS_MODEL_DIR)\} ]]; then
-    #     DSS_OUTPUT_FILE=${DSS_OUTPUT_FILE/\$\{HEC_HMS_MODEL_DIR\}/$HEC_HMS_MODEL_DIR}
-    # fi
     DSS_INPUT_FILE=$(replaceStringVariable $DSS_INPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
     echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
     DSS_OUTPUT_FILE=$(replaceStringVariable $DSS_OUTPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
