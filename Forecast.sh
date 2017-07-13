@@ -206,6 +206,7 @@ main() {
 
     if [ ! -z $TAG ]; then
         INFLOW_DAT_FILE=${INFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
+        HEC_HMS_MODEL_DIR=$HEC_HMS_MODEL_DIR.$TAG
     fi
 
     if [ ! -z $WRF_OUT ] && [ -d $WRF_OUT ]; then
@@ -216,6 +217,7 @@ main() {
         echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
     fi
 
+    echo "HEC_HMS_MODEL_DIR=$HEC_HMS_MODEL_DIR"
     DSS_INPUT_FILE=$(replaceStringVariable $DSS_INPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
     echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
     DSS_OUTPUT_FILE=$(replaceStringVariable $DSS_OUTPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
@@ -245,6 +247,9 @@ main() {
         # But with 4.1, it runs correctly when the data are saved by the HEC-HMS program
         # After run the model using the script, it can't reuse for a correct run again
         # Here we reuse a corrected model which can run using the script
+        if [ ! -d "$HEC_HMS_MODEL_DIR" ]; then
+            mkdir $HEC_HMS_MODEL_DIR
+        fi
         yes | cp -R 2008_2_Events_Hack/* $HEC_HMS_MODEL_DIR
 
         # Remove .dss files in order to remove previous results
@@ -265,15 +270,21 @@ main() {
         # Run HEC-HMS model
         HEC_HMS_SCRIPT_PATH=$HEC_HMS_MODEL_DIR/2008_2_Events.script
         # TODO: Check python3 availability
-        HEC_HMS_SCRIPT_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_SCRIPT_PATH', '$HEC_HMS_DIR'))")
+        HEC_HMS_SCRIPT_RELATIVE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_SCRIPT_PATH', '$HEC_HMS_DIR'))")
         cd $HEC_HMS_DIR
-        if [ -z "$(find $HEC_HMS_SCRIPT_PATH -name 2008_2_Events.script)" ]; then
-            echo "Unable to find $HEC_HMS_SCRIPT_PATH file"
+        if [ -z "$(find $HEC_HMS_SCRIPT_RELATIVE_PATH -name 2008_2_Events.script)" ]; then
+            echo "Unable to find $HEC_HMS_SCRIPT_RELATIVE_PATH file"
             exit 1
         fi
-        ./HEC-HMS.sh -s $HEC_HMS_SCRIPT_PATH
-        cd $ROOT_DIR
+        # Set FLO2D model path
+        HEC_HMS_PROJECT_RELATIVE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_MODEL_DIR', '$HEC_HMS_DIR'))")
+        HEC_HMS_PROJECT_NAME="2008_2_Events$([[ -z $TAG ]] && echo "" || echo "")" # Do nothing
+        HEC_HMS_PROJECT_TXT="OpenProject(\"$HEC_HMS_PROJECT_NAME\", \"$HEC_HMS_PROJECT_RELATIVE_PATH\")"
+        
+        sed -i "/OpenProject/c\\$HEC_HMS_PROJECT_TXT" $HEC_HMS_SCRIPT_RELATIVE_PATH
 
+        ./HEC-HMS.sh -s $HEC_HMS_SCRIPT_RELATIVE_PATH
+        cd $ROOT_DIR
         # Read HEC-HMS result, then extract Discharge into .csv
         ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
