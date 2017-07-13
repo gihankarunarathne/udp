@@ -245,7 +245,7 @@ main() {
         # But with 4.1, it runs correctly when the data are saved by the HEC-HMS program
         # After run the model using the script, it can't reuse for a correct run again
         # Here we reuse a corrected model which can run using the script
-        yes | cp -R 2008_2_Events_Hack/* 2008_2_Events/
+        yes | cp -R 2008_2_Events_Hack/* $HEC_HMS_MODEL_DIR
 
         # Remove .dss files in order to remove previous results
         rm $DSS_INPUT_FILE
@@ -261,8 +261,15 @@ main() {
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         # Run HEC-HMS model
-        cd $ROOT_DIR/$HEC_HMS_DIR
-        ./HEC-HMS.sh -s ../2008_2_Events/2008_2_Events.script
+        HEC_HMS_SCRIPT_PATH=$HEC_HMS_MODEL_DIR/2008_2_Events.script
+        # TODO: Check python3 availability
+        HEC_HMS_SCRIPT_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_SCRIPT_PATH', '$HEC_HMS_DIR'))")
+        cd $HEC_HMS_DIR
+        if [ -z "$(find $HEC_HMS_SCRIPT_PATH -name 2008_2_Events.script)" ]; then
+            echo "Unable to find $HEC_HMS_SCRIPT_PATH file"
+            exit 1
+        fi
+        ./HEC-HMS.sh -s $HEC_HMS_SCRIPT_PATH
         cd $ROOT_DIR
 
         # Read HEC-HMS result, then extract Discharge into .csv
