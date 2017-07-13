@@ -14,6 +14,8 @@ Usage: ./Update_HECHMS.py [-d date] [-h -i] [-s sInterval] [-c cInterval]
 -s  --sInterval     (State Interval in minutes) Time period that state should create after start time
 -c  --cInterval     (Control Interval in minutes) Time period that HEC-HMS model should run
 -T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
+    --hec-hms-model-dir Path of HEC_HMS_MODEL_DIR directory. 
+                        Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json
 """
     print(usageText)
 
@@ -79,7 +81,7 @@ try :
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:is:c:T:", [
-            "help", "date=", "backDays=", "init", "sInterval=", "cInterval=", "tag="
+            "help", "date=", "backDays=", "init", "sInterval=", "cInterval=", "tag=", "hec-hms-model-dir="
         ])
     except getopt.GetoptError:          
         usage()                        
@@ -98,6 +100,8 @@ try :
             CONTROL_INTERVAL = int(arg)
         elif opt in ("-T", "--tag"):
             tag = arg
+        elif opt in ("--hec-hms-model-dir"):
+            HEC_HMS_MODEL_DIR = arg
 
     # Replace CONFIG.json variables
     if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', HEC_HMS_CONTROL) :

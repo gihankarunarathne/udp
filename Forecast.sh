@@ -259,7 +259,8 @@ main() {
         ./Update_HECHMS.py -d $forecast_date \
             `[[ $INIT_STATE == true ]] && echo "-i" || echo ""` \
             `[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"` \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Run HEC-HMS model
         HEC_HMS_SCRIPT_PATH=$HEC_HMS_MODEL_DIR/2008_2_Events.script
