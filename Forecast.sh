@@ -183,7 +183,7 @@ while true ; do
         --hec-hms-model-dir)
             case "$2" in
                 "") shift 2 ;;
-                *) HEC_HMS_MODEL_DIR123="$2" ; shift 2 ;;
+                *) HEC_HMS_MODEL_DIR="$2" ; shift 2 ;;
             esac ;;
 
         --) shift ; break ;;
@@ -252,7 +252,8 @@ main() {
         rm $DSS_OUTPUT_FILE
         # Read Avg precipitation, then create .dss input file for HEC-HMS model
         ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Change HEC-HMS running time window
         ./Update_HECHMS.py -d $forecast_date \
