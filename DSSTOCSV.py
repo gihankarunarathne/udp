@@ -44,6 +44,7 @@ try :
         # ERROR: Unable to use `-d` or `-D` option with OptionParser
         parser.add_option("-t", "--date", help="Date in YYYY-MM. Default is current date.")
         parser.add_option("-T", "--tag", help="Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...")
+        parser.add_option("--hec-hms-model-dir", help="Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json")
 
         (options, args) = parser.parse_args()
         print 'Commandline Options:', options
@@ -52,6 +53,8 @@ try :
             date = options.date
         if options.tag :
             tag = options.tag
+        if options.hec_hms_model_dir :
+            HEC_HMS_MODEL_DIR = options.hec_hms_model_dir
 
         # Replace CONFIG.json variables
         if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_OUTPUT_FILE) :
