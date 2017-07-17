@@ -12,7 +12,7 @@ try :
     parser.add_argument("-d", "--date", help="Date in YYYY-MM. Default is current date.")
     parser.add_argument("--model-dir", help="FLO2D model directory.")
     args = parser.parse_args()
-    print 'Commandline Options:', args
+    print('Commandline Options:', args)
 
     # Default run for current day
     now = datetime.datetime.now()

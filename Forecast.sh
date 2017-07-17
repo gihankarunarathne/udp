@@ -320,7 +320,7 @@ main() {
             sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" $FLO2D_RUN_FILE
             curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 
-           ./CopyToCMS.sh -d $forecast_date
+            ./CopyToCMS.sh -d $forecast_date
         fi
     
         local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)

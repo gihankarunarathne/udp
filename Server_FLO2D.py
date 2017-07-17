@@ -100,19 +100,14 @@ class StoreHandler(BaseHTTPRequestHandler):
                 # Execute FLO2D
                 print('Execute FLO2D ...')
                 execList = [executable, 'Run_FLO2D.py']
-                # if len(date) > 0 :
-                #      Popen([executable, 'Run_FLO2D.py', date], creationflags=subprocess.CREATE_NEW_CONSOLE)
-                # else :
-                #     Popen([executable, 'Run_FLO2D.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
                 if len(date) > 0 :
                     execList = execList + ['-d' , date]
                 if runConfig.get('FLO2D_PATH') :
                     execList = execList + ['--model-dir' , runConfig.get('FLO2D_PATH')]
                 Popen(execList, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                # Popen(execList, stdout=sys.stdout)
                 #os.system('python Run_FLO2D.py'+ date)
-                #os.system('python Run_FLO2D.py')
-
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
                 self.end_headers()
