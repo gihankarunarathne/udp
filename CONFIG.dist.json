@@ -19,7 +19,7 @@
     "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo",
 
     "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin",
-    "INFLOW_DAT_FILE"   : "INFLOW.DAT",
+    "INFLOW_DAT_FILE"   : "./FLO2D/INFLOW.DAT",
     "BASE_OUT_FILE"     : "BASE.OUT",
     "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
 

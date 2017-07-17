@@ -92,7 +92,8 @@ DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
 DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 
 INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
-
+META_FLO2D_DIR=$ROOT_DIR/META_FLO2D
+FLO2D_DIR=$ROOT_DIR/FLO2D
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
@@ -306,9 +307,20 @@ main() {
 
             # Send RUN_FLO2D.json file into Windows, and run FLO2D
             echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
-            curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/RUN_FLO2D?$forecast_date
+            FLO2D_MODEL_PATH=""
+            FLO2D_RUN_FILE=$FLO2D_DIR/RUN_FLO2D.json
 
-            ./CopyToCMS.sh -d $forecast_date
+            if [ ! -z $TAG ]; then
+                FLO2D_RUN_FILE=${FLO2D_RUN_FILE/.json/".$TAG.json"}
+                FLO2D_MODEL_PATH=${forecast_date}_Kelani.$TAG
+            fi
+            cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_RUN_FILE
+            # Set FLO2D model path
+            FLO2D_MODEL_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_MODEL_PATH\","
+            sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" $FLO2D_RUN_FILE
+            curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
+
+           ./CopyToCMS.sh -d $forecast_date
         fi
     
         local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
