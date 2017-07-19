@@ -276,9 +276,9 @@ def storeWaterlevel(adapter):
     metaData = {
         'station': stations[0],
         'variable': 'Waterlevel',
-        'unit': 'mm',
+        'unit': 'm',
         'type': types[0],
-        'source': 'WRF',
+        'source': 'FLO2D',
         'name': 'Cloud-1',
     }
 
