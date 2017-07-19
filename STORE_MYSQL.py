@@ -148,10 +148,10 @@ def storeDischarge(adapter):
         'Forecast-5-d-after'
     ]
     metaData = {
-        'station': 'Hanwella',
+        'station': stations[0],
         'variable': 'Discharge',
         'unit': 'm3/s',
-        'type': 'Forecast-0-d',
+        'type': types[0],
         'source': 'HEC-HMS',
         'name': 'Cloud Continuous',
     }
@@ -199,10 +199,10 @@ def storeRainfall(adapter):
     stations = ['Attanagalla', 'Colombo', 'Daraniyagala', 'Glencourse', 'Hanwella', 'Holombuwa', 'Kitulgala', 'Norwood']
     types = ['Forecast-0-d', 'Forecast-1-d-after', 'Forecast-2-d-after']
     metaData = {
-        'station': 'Hanwella',
+        'station': stations[0],
         'variable': 'Precipitation',
         'unit': 'mm',
-        'type': 'Forecast-0-d',
+        'type': types[0],
         'source': 'WRF',
         'name': 'Cloud-1',
     }
@@ -274,10 +274,10 @@ def storeWaterlevel(adapter):
         'Forecast-5-d-after'
     ]
     metaData = {
-        'station': 'Ambathale',
-        'variable': 'Precipitation',
+        'station': stations[0],
+        'variable': 'Waterlevel',
         'unit': 'mm',
-        'type': 'Forecast-0-d',
+        'type': types[0],
         'source': 'WRF',
         'name': 'Cloud-1',
     }
