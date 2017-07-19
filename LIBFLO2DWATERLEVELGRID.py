@@ -119,7 +119,21 @@ def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9) :
 
     return EsriGrid
 
+def getWaterLevelOfChannels(lines, channels=[]) :
+    ''' Get Water Levels of given set of channels
+    '''
+    waterLevels = {}
+    for line in lines[6:] :
+        if line == '\n' :
+            break
+        v = line.split()
+        if int(v[0]) in channels :
+            # Get flood level (Elevation)
+            # waterLevels.append((v[0], v[1]))
+            # Get flood depth (Depth)
+            waterLevels[int(v[0])] = v[2]
 
+    return waterLevels
 
 
 

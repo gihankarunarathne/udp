@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from string import Template
-import sys, traceback, csv, json, datetime, getopt
+import sys, traceback, csv, json, datetime, getopt, os
 
 def usage() :
     usageText = """
@@ -30,8 +30,12 @@ try :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     date = ''
+    tag = ''
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "date="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:T:", [
+            "help", "date=", "tag="
+        ])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -41,6 +45,8 @@ try :
             sys.exit()           
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-T", "--tag"):
+            tag = arg
 
     # FLO-2D parameters
     IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
@@ -56,15 +62,19 @@ try :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
-    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")), tag
 
-    fileName = DISCHARGE_CSV_FILE.split('.', 1)
-    fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-    DISCHARGE_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+    fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
+    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
+    DISCHARGE_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
+    print('Open Discharge CSV ::', DISCHARGE_CSV_FILE_PATH)
     csvReader = csv.reader(open(DISCHARGE_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
 
-    f = open(INFLOW_DAT_FILE, 'w')
+    fileName2 = INFLOW_DAT_FILE.rsplit('.', 1)
+    INFLOW_DAT_FILE_PATH = '{name}{tag}.{extention}'.format(name=fileName2[0], tag='.'+tag if tag else '', extention=fileName2[1])
+    print('Open FLO2D INFLOW ::', INFLOW_DAT_FILE_PATH)
+    f = open(INFLOW_DAT_FILE_PATH, 'w')
     line1 = '{0} {1:{w}{b}}\n'.format(IHOURDAILY, IDEPLT, b='d', w=DAT_WIDTH)
     line2 = '{0} {1:{w}{b}} {2:{w}{b}}\n'.format(IFC, INOUTFC, KHIN, b='d', w=DAT_WIDTH)
     line3 = '{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, 0.0, 0.0, b='.1f', w=DAT_WIDTH)
@@ -81,4 +91,4 @@ except Exception as e :
     traceback.print_exc()
 finally:
     f.close()
-    print('Completed ', DISCHARGE_CSV_FILE_PATH, ' to ', INFLOW_DAT_FILE)
+    print('Completed ', DISCHARGE_CSV_FILE_PATH, ' to ', INFLOW_DAT_FILE_PATH)

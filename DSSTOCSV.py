@@ -1,10 +1,14 @@
 #!/usr/bin/python
 
+import java, csv, sys, datetime, os, re
+
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
-import java, csv, sys, datetime
+
+from optparse import OptionParser
+
 sys.path.append("./simplejson-2.5.2")
 import simplejson as json
 
@@ -16,10 +20,13 @@ try :
         # print('Config :: ', CONFIG)
 
         NUM_METADATA_LINES = 2;
+        HEC_HMS_MODEL_DIR = './2008_2_Events'
         DSS_OUTPUT_FILE = './2008_2_Events/2008_2_Events.dss'
         DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
         OUTPUT_DIR = './OUTPUT'
 
+        if 'HEC_HMS_MODEL_DIR' in CONFIG :
+            HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
         if 'DSS_OUTPUT_FILE' in CONFIG :
             DSS_OUTPUT_FILE = CONFIG['DSS_OUTPUT_FILE']
         if 'DISCHARGE_CSV_FILE' in CONFIG :
@@ -27,16 +34,46 @@ try :
         if 'OUTPUT_DIR' in CONFIG :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+        date = ''
+        tag = ''
+
+        # Passing Commandline Options to Jython. Not same as getopt in python.
+        # Ref: http://www.jython.org/jythonbook/en/1.0/Scripting.html#parsing-commandline-options
+        # Doc : https://docs.python.org/2/library/optparse.html
+        parser = OptionParser(description='Upload CSV data into HEC-HMS DSS storage')
+        # ERROR: Unable to use `-d` or `-D` option with OptionParser
+        parser.add_option("-t", "--date", help="Date in YYYY-MM. Default is current date.")
+        parser.add_option("-T", "--tag", help="Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...")
+        parser.add_option("--hec-hms-model-dir", help="Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json")
+
+        (options, args) = parser.parse_args()
+        print 'Commandline Options:', options
+
+        if options.date :
+            date = options.date
+        if options.tag :
+            tag = options.tag
+        if options.hec_hms_model_dir :
+            HEC_HMS_MODEL_DIR = options.hec_hms_model_dir
+
+        # Replace CONFIG.json variables
+        if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_OUTPUT_FILE) :
+            DSS_OUTPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', DSS_OUTPUT_FILE).strip("/\\")
+            DSS_OUTPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, DSS_OUTPUT_FILE)
+            print '"Set DSS_OUTPUT_FILE=', DSS_OUTPUT_FILE
+
         # Default run for current day
         now = datetime.datetime.now()
-        if len(sys.argv) > 1 : # Or taken from first arg for the program
-            now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+        if date :
+            now = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
 
         myDss = HecDss.open(DSS_OUTPUT_FILE)
-        fileName = DISCHARGE_CSV_FILE.split('.', 1)
-        fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-        DISCHARGE_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+        fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
+        # str .format not working on this version
+        fileName = '%s-%s%s.%s' % (fileName[0], date, '.'+tag if tag else '', fileName[1])
+        DISCHARGE_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
+        print 'Open Discharge CSV ::', DISCHARGE_CSV_FILE_PATH
         csvWriter = csv.writer(open(DISCHARGE_CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
         
         flow = myDss.get('//HANWELLA/FLOW//1HOUR/RUN:RUN 1/', 1)

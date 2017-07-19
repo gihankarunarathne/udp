@@ -5,6 +5,7 @@
     "OUTPUT_DIR"        : "./OUTPUT",
 
     "TIME_INTERVAL"     : 60,
+    "HEC_HMS_MODEL_DIR" : "./2008_2_Events",
     "DSS_INPUT_FILE"    : "./2008_2_Events/2008_2_Events_input.dss",
     "DSS_OUTPUT_FILE"   : "./2008_2_Events/2008_2_Events_run.dss",
     "HEC_HMS_CONTROL"   : "./2008_2_Events/Control_1.control",
@@ -13,12 +14,12 @@
     
     "RAIN_CSV_FILE"     : "DailyRain.csv",
     "DISCHARGE_CSV_FILE": "DailyDischarge.csv",
-    "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF/",
+    "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF",
     "KUB_DIR_PATH"      : "/mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin",
-    "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo/",
+    "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo",
 
-    "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin/",
-    "INFLOW_DAT_FILE"   : "INFLOW.DAT",
+    "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin",
+    "INFLOW_DAT_FILE"   : "./FLO2D/INFLOW.DAT",
     "BASE_OUT_FILE"     : "BASE.OUT",
     "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
 

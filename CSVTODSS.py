@@ -3,27 +3,32 @@
 # Rainfall CSV file format should follow as 
 # https://publicwiki.deltares.nl/display/FEWSDOC/CSV 
 
-import java, csv, sys, datetime
+import java, csv, sys, datetime, re
 from hec.script import MessageBox
 from hec.heclib.dss import HecDss
 from hec.heclib.util import HecTime
 from hec.io import TimeSeriesContainer
+
+from optparse import OptionParser
 
 sys.path.append("./simplejson-2.5.2")
 import simplejson as json
 
 try :
     try :
-        #print 'Jython version: ', sys.version
+        print 'Jython version: ', sys.version
 
         CONFIG = json.loads(open('CONFIG.json').read())
         # print('Config :: ', CONFIG)
 
         NUM_METADATA_LINES = 3;
+        HEC_HMS_MODEL_DIR = './2008_2_Events'
         DSS_INPUT_FILE = './2008_2_Events/2008_2_Events_force.dss'
         RAIN_CSV_FILE = 'DailyRain.csv'
         OUTPUT_DIR = './OUTPUT'
 
+        if 'HEC_HMS_MODEL_DIR' in CONFIG :
+            HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
         if 'DSS_INPUT_FILE' in CONFIG :
             DSS_INPUT_FILE = CONFIG['DSS_INPUT_FILE']
         if 'RAIN_CSV_FILE' in CONFIG :
@@ -31,19 +36,51 @@ try :
         if 'OUTPUT_DIR' in CONFIG :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
+        date = ''
+        tag = ''
+
+        # Passing Commandline Options to Jython. Not same as getopt in python.
+        # Ref: http://www.jython.org/jythonbook/en/1.0/Scripting.html#parsing-commandline-options
+        # Doc : https://docs.python.org/2/library/optparse.html
+        parser = OptionParser(description='Upload CSV data into HEC-HMS DSS storage')
+        # ERROR: Unable to use `-d` or `-D` option with OptionParser
+        parser.add_option("-t", "--date", help="Date in YYYY-MM. Default is current date.")
+        parser.add_option("-T", "--tag", help="Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...")
+        parser.add_option("--hec-hms-model-dir", help="Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json")
+
+        (options, args) = parser.parse_args()
+        print 'Commandline Options:', options
+
+        if options.date :
+            date = options.date
+        if options.tag :
+            tag = options.tag
+        if options.hec_hms_model_dir :
+            HEC_HMS_MODEL_DIR = options.hec_hms_model_dir
+
+        # Replace CONFIG.json variables
+        if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_INPUT_FILE) :
+            DSS_INPUT_FILE = re.sub('^\$\{(HEC_HMS_MODEL_DIR)\}', '', DSS_INPUT_FILE).strip("/\\")
+            DSS_INPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, DSS_INPUT_FILE)
+            print '"Set DSS_INPUT_FILE=', DSS_INPUT_FILE
+
         # Default run for current day
         now = datetime.datetime.now()
-        if len(sys.argv) > 1 : # Or taken from first arg for the program
-            now = datetime.datetime.strptime(sys.argv[1], '%Y-%m-%d')
+        if date :
+            now = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
-        print 'Start CSVTODSS.py on ', date
+        print 'Start CSVTODSS.py on ', date, tag
 
         myDss = HecDss.open(DSS_INPUT_FILE)
-        fileName = RAIN_CSV_FILE.split('.', 1)
-        fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
-        RAIN_CSV_FILE_PATH = "%s/%s" % (OUTPUT_DIR, fileName)
+        
+        fileName = RAIN_CSV_FILE.rsplit('.', 1)
+        # str .format not working on this version
+        fileName = '%s-%s%s.%s' % (fileName[0], date, '.'+tag if tag else '', fileName[1])
+        RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
+        print 'Open Rainfall CSV ::', RAIN_CSV_FILE_PATH
         csvReader = csv.reader(open(RAIN_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
         csvList = list(csvReader)
+        
         
         numLocations = len(csvList[0]) - 1
         numValues = len(csvList) - NUM_METADATA_LINES # Ignore Metadata
@@ -86,3 +123,4 @@ try :
 finally :
     myDss.done()
     print '\nCompleted converting ', RAIN_CSV_FILE_PATH, ' to ', DSS_INPUT_FILE
+    print 'done'

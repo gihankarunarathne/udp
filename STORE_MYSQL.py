@@ -156,7 +156,7 @@ def storeDischarge(adapter):
         'name': 'Cloud Continuous',
     }
 
-    fileName = DISCHARGE_CSV_FILE.split('.', 1)
+    fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
     fileName = "%s-%s.%s" % (fileName[0], date, fileName[1])
     # DISCHARGE_CSV_FILE_PATH = "%s/%s" % (DIS_OUTPUT_DIR, fileName)
     DISCHARGE_CSV_FILE_PATH = os.path.join(DIS_OUTPUT_DIR, fileName)
@@ -248,32 +248,22 @@ def storeRainfall(adapter):
 def storeWaterlevel(adapter):
     print('\nStoring Waterlevels :::')
     stations = [
+        "N'Street-River",
+        "N'Street-Canal",
+        "Wellawatta",
+        "Dehiwala",
+        "Parliment Lake-Out",
+        "Parliment Lake",
+        "Madiwela-US",
         "Ambathale",
-        "Madiwela Out",
-        "Salalihini Out",
-        "Salalihini Out 2",
-        "Kittampahuwa Bridge",
-        "Kittampahuwa Out",
-        "Kittampahuwa Out 2",
-        "N Street",
-        "N Street 2",
-        "Kolonnawa CNL 1",
-        "Kolonnawa CNL 2",
-        "Kolonnawa CNL 3",
-        "Kolonnawa CNL 4",
-        "Parliament Lake Out",
-        "Parliament Lake",
-        "Parliament Lake 2",
-        "Parliament Upstream",
-        "Ahangama",
-        "Madiwela US",
+        "Madiwela-Out",
+        "Salalihini-River",
+        "Salalihini-Canal",
+        "Kittampahuwa-River",
+        "kittampahuwa-Out",
+        "Kolonnawa Canal",
         "Heen Ela",
         "Torington",
-        "Wellawatta 1",
-        "Wellawatta 2",
-        "Wellawatta 3",
-        "Dehiwala 1",
-        "Dehiwala 2"
     ]
     types = [
         'Forecast-0-d', 

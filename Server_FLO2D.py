@@ -33,6 +33,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'text/json')
                 self.end_headers()
                 self.wfile.write(fh.read().encode())
+            return
 
     def do_POST(self):
         # Handle INFLOW.DAT file
@@ -60,6 +61,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/json')
             self.end_headers()
+            return
 
         # Handle RAINCELL.DAT file
         elif self.path.startswith('/'+RAINCELL_DAT_FILE):
@@ -82,25 +84,34 @@ class StoreHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/json')
             self.end_headers()
+            return
 
         # Run FLO2D application
         elif self.path.startswith('/'+RUN_FLO2D):
             date = self.path[len('/'+RUN_FLO2D)+1:]
             print('POST request on ', self.path, date)
 
+            length = self.headers['content-length']
+            data = self.rfile.read(int(length))
+            runConfig = json.loads(data.decode())
+            print('RUN FLO2D: RUN FLO2D options:', runConfig)
+
             try :
                 # Execute FLO2D
                 print('Execute FLO2D ...')
-                if len(date) > 0 :
-                     Popen([executable, 'Run_FLO2D.py', date], creationflags=subprocess.CREATE_NEW_CONSOLE)
-                else :
-                    Popen([executable, 'Run_FLO2D.py'], creationflags=subprocess.CREATE_NEW_CONSOLE)
-                #os.system('python Run_FLO2D.py'+ date)
-                #os.system('python Run_FLO2D.py')
+                execList = [executable, 'Run_FLO2D.py']
 
+                if len(date) > 0 :
+                    execList = execList + ['-d' , date]
+                if runConfig.get('FLO2D_PATH') :
+                    execList = execList + ['--model-dir' , runConfig.get('FLO2D_PATH')]
+                Popen(execList, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                # Popen(execList, stdout=sys.stdout)
+                #os.system('python Run_FLO2D.py'+ date)
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
                 self.end_headers()
+                return
             except Exception as e :
                 traceback.print_exc()
                 self.send_response(500)
@@ -138,6 +149,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
                 self.end_headers()
+                return
             except Exception as e :
                 traceback.print_exc()
                 self.send_response(500)
@@ -175,6 +187,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/json')
                 self.end_headers()
+                return
             except Exception as e :
                 traceback.print_exc()
                 self.send_response(500)

@@ -11,8 +11,19 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_
 EOF
 }
 
+trimQuotes() {
+    tmp="${1%\"}"
+    tmp="${tmp#\"}"
+    echo $tmp
+}
+
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INIT_DIR=$(pwd)
+CONFIG_FILE=$ROOT_DIR/CONFIG.json
+
 forecast_date="`date +%Y-%m-%d`";
 DAYS_BACK=0
+
 # Extract user arguments
 while getopts hd:b:f opt; do
     case $opt in
@@ -37,14 +48,32 @@ then
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
 
+# cd into bash script's root directory
+cd $ROOT_DIR
+echo "Current Working Directory set to -> $(pwd)"
+if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
+then
+    echo "Unable to find $CONFIG_FILE file"
+    exit 1
+fi
+
+RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
+KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
+RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
+OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
+
 # Copy Rainfall data
-scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/RF/*-$forecast_date.*  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
+RF_DIR_PATH=$RF_DIR_PATH/*-$forecast_date.*
+scp -r -i ~/.ssh/id_uwcc_admin $RF_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
 
 # Copy Kelani Upper Basin mean Rainfall data
-scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin/mean-rf-$forecast_date.txt  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-$forecast_date.txt
+KUB_DIR_PATH=$KUB_DIR_PATH/mean-rf-$forecast_date.txt
+scp -r -i ~/.ssh/id_uwcc_admin $KUB_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-$forecast_date.txt
 
 # Copy Rainfall Grid data
-scp -r -i ~/.ssh/id_uwcc_admin /mnt/disks/wrf-mod/OUTPUT/colombo/created-$forecast_date  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
+RF_GRID_DIR_PATH=$RF_GRID_DIR_PATH/created-$forecast_date
+scp -r -i ~/.ssh/id_uwcc_admin $RF_GRID_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
 
 # Copy HEC-HMS Discharge
-scp -r -i ~/.ssh/id_uwcc_admin ~/udp/OUTPUT/DailyDischarge-$forecast_date.*  uwcc-admin@10.138.0.6:~/cfcwm/data/DIS
+OUTPUT_DIR=$OUTPUT_DIR/DailyDischarge-$forecast_date.*
+scp -r -i ~/.ssh/id_uwcc_admin $OUTPUT_DIR  uwcc-admin@10.138.0.6:~/cfcwm/data/DIS

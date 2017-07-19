@@ -6,6 +6,8 @@ from os.path import join as pjoin
 from sys import executable
 from subprocess import Popen
 
+from LIBFLO2DWATERLEVELGRID import getWaterLevelOfChannels
+
 def usage() :
     usageText = """
 Usage: ./FLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-S YYYY-MM-DD] [-T HH:MM:SS]
@@ -33,45 +35,42 @@ try :
 
     CWD = os.getcwd()
     HYCHAN_OUT_FILE = 'HYCHAN.OUT'
+    BASE_OUT_FILE = 'BASE.OUT'
     WATER_LEVEL_FILE = 'water_level.txt'
     WATER_LEVEL_DIR = 'water_level'
     OUTPUT_DIR = 'OUTPUT'
     if 'HYCHAN_OUT_FILE' in CONFIG :
         HYCHAN_OUT_FILE = CONFIG['HYCHAN_OUT_FILE']
+    if 'BASE_OUT_FILE' in CONFIG :
+        BASE_OUT_FILE = CONFIG['BASE_OUT_FILE']
     if 'WATER_LEVEL_FILE' in CONFIG :
         WATER_LEVEL_FILE = CONFIG['WATER_LEVEL_FILE']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
-    CELL_MAP = {
-        3627 : "Ambathale",
-        3626 : "Madiwela Out",
-        2438 : "Salalihini Out",
-        2439 : "Salalihini Out 2",
-        1365 : "Kittampahuwa Bridge",
-        1102 : "Kittampahuwa Out",
-        1103 : "Kittampahuwa Out 2",
-        645  : "N Street",
-        720  : "N Street 2",
-        713  : "Kolonnawa CNL 1",
-        1089 : "Kolonnawa CNL 2",
-        1458 : "Kolonnawa CNL 3",
-        1664 : "Kolonnawa CNL 4",
-        1879 : "Parliament Lake Out",
-        2308 : "Parliament Lake",
-        2305 : "Parliament Lake 2",
-        2712 : "Parliament Upstream",
-        2516 : "Ahangama",
-        4327 : "Madiwela US",
+    CHANNEL_CELL_MAP = {
+        720  : "N'Street-River",
+        646  : "N'Street-Canal",
+        148  : "Wellawatta",
+        238  : "Dehiwala",
+        1771 : "Parliment Lake-Out",
+        3785 : "Madiwela-US",
+        3535 : "Ambathale",
+        3626 : "Madiwela-Out",
+        2332 : "Salalihini-River",
+        2438 : "Salalihini-Canal",
+        1020 : "Kittampahuwa-River",
+        1102 : "kittampahuwa-Out",
+        1559 : "Kolonnawa Canal",
         1000 : "Heen Ela",
         621  : "Torington",
-        912  : "Wellawatta 1",
-        763  : "Wellawatta 2",
-        195  : "Wellawatta 3",
-        470  : "Dehiwala 1",
-        238  : "Dehiwala 2",
     }
-    ELEMENT_NUMBERS = CELL_MAP.keys()
+    FLOOD_PLAIN_CELL_MAP = {
+        2307   : "Parliment Lake",
+    }
+
+    ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
+    FLOOD_ELEMENT_NUMBERS = FLOOD_PLAIN_CELL_MAP.keys()
     SERIES_LENGTH = 0
     MISSING_VALUE = -999
 
@@ -173,6 +172,9 @@ try :
 
     print('Series Length is :', SERIES_LENGTH)
     bufsize = 65536
+    #################################################################
+    # Extract Channel Water Level elevations from HYCHAN.OUT file   #
+    #################################################################
     with open(HYCHAN_OUT_FILE_PATH) as infile: 
         isWaterLevelLines = False
         isSeriesComplete = False
@@ -206,7 +208,7 @@ try :
                     baseTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     timeseries = []
                     elementNo = int(waterLevelLines[0].split()[5])
-                    print('Extracted Cell No', elementNo, CELL_MAP[elementNo])
+                    print('Extracted Cell No', elementNo, CHANNEL_CELL_MAP[elementNo])
                     for ts in waterLevelLines[1:] :
                         v = ts.split()
                         if len(v) < 1 :
@@ -234,8 +236,8 @@ try :
                     fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
                     dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
                     # Create files
-                    fileName = WATER_LEVEL_FILE.split('.', 1)
-                    fileName = "%s-%s-%s.%s" % (fileName[0], CELL_MAP[elementNo].replace(' ', '_'), date, fileName[1])
+                    fileName = WATER_LEVEL_FILE.rsplit('.', 1)
+                    fileName = "%s-%s-%s.%s" % (fileName[0], CHANNEL_CELL_MAP[elementNo].replace(' ', '_'), date, fileName[1])
                     WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
                     csvWriter = csv.writer(open(WATER_LEVEL_FILE_PATH, 'w'), delimiter=',', quotechar='|')
                     csvWriter.writerows(timeseries)
@@ -243,7 +245,64 @@ try :
                     isWaterLevelLines = False
                     isSeriesComplete = False
                     waterLevelLines = []
+            # -- END for loop
+        # -- END while loop
 
+    #################################################################
+    # Extract Flood Plain water elevations from BASE.OUT file       #
+    #################################################################
+    BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
+    print('Extract Flood Plain Water Level Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@', start_time)
+    with open(BASE_OUT_FILE_PATH) as infile:
+        isWaterLevelLines = False
+        waterLevelLines = []
+        waterLevelSeriesDict = dict.fromkeys(FLOOD_ELEMENT_NUMBERS, [])
+        while True:
+            lines = infile.readlines(bufsize)
+
+            if not lines:
+                break
+            for line in lines:
+                if line.startswith('MODEL TIME =', 5) :
+                    isWaterLevelLines = True
+                elif isWaterLevelLines and line.startswith('***CHANNEL RESULTS***', 17) :
+                    waterLevels = getWaterLevelOfChannels(waterLevelLines, FLOOD_ELEMENT_NUMBERS)
+
+                    # Create Directory
+                    if not os.path.exists(WATER_LEVEL_DIR_PATH):
+                        os.makedirs(WATER_LEVEL_DIR_PATH)
+                    # Get Time stamp Ref:http://stackoverflow.com/a/13685221/1461060
+                    ModelTime = float(waterLevelLines[0].split()[3])
+                    fileModelTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+                    fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
+                    dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
+
+                    for elementNo in FLOOD_ELEMENT_NUMBERS :
+                        tmpTS = waterLevelSeriesDict[elementNo][:]
+                        if elementNo in waterLevels :
+                            tmpTS.append([dateAndTime, waterLevels[elementNo] ])
+                        else :
+                            tmpTS.append([dateAndTime, MISSING_VALUE ])
+                        waterLevelSeriesDict[elementNo] = tmpTS
+
+                    isWaterLevelLines = False
+                    # for l in waterLevelLines :
+                        # print(l)
+                    waterLevelLines = []
+
+                if isWaterLevelLines :
+                    waterLevelLines.append(line)
+            # -- END for loop
+        # -- END while loop
+
+        # Create files
+        for elementNo in FLOOD_ELEMENT_NUMBERS :
+            fileName = WATER_LEVEL_FILE.rsplit('.', 1)
+            fileName = "%s-%s-%s.%s" % (fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), date, fileName[1])
+            WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
+            csvWriter = csv.writer(open(WATER_LEVEL_FILE_PATH, 'w'), delimiter=',', quotechar='|')
+            csvWriter.writerows(waterLevelSeriesDict[elementNo])
+            print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)
 
 except Exception as e :
     traceback.print_exc()
