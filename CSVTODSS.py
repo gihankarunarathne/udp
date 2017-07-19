@@ -57,6 +57,9 @@ try :
             tag = options.tag
         if options.hec_hms_model_dir :
             HEC_HMS_MODEL_DIR = options.hec_hms_model_dir
+            # Reconstruct DSS_INPUT_FILE path
+            dssFileName = DSS_INPUT_FILE.rsplit('/', 1)
+            DSS_INPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, dssFileName[-1])
 
         # Replace CONFIG.json variables
         if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_INPUT_FILE) :
@@ -69,7 +72,7 @@ try :
         if date :
             now = datetime.datetime.strptime(date, '%Y-%m-%d')
         date = now.strftime("%Y-%m-%d")
-        print 'Start CSVTODSS.py on ', date, tag
+        print 'Start CSVTODSS.py on ', date, tag, HEC_HMS_MODEL_DIR
 
         myDss = HecDss.open(DSS_INPUT_FILE)
         

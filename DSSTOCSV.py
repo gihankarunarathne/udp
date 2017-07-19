@@ -55,6 +55,9 @@ try :
             tag = options.tag
         if options.hec_hms_model_dir :
             HEC_HMS_MODEL_DIR = options.hec_hms_model_dir
+            # Reconstruct DSS_OUTPUT_FILE path
+            dssFileName = DSS_OUTPUT_FILE.rsplit('/', 1)
+            DSS_OUTPUT_FILE = os.path.join(HEC_HMS_MODEL_DIR, dssFileName[-1])
 
         # Replace CONFIG.json variables
         if re.match('^\$\{(HEC_HMS_MODEL_DIR)\}', DSS_OUTPUT_FILE) :
