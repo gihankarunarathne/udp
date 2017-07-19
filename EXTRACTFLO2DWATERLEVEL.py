@@ -66,7 +66,7 @@ try :
         621  : "Torington",
     }
     FLOOD_PLAIN_CELL_MAP = {
-        2307   : "Parliament Lake",
+        2307   : "Parliment Lake",
     }
 
     ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
