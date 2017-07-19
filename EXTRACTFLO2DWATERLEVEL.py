@@ -49,21 +49,21 @@ try :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     CHANNEL_CELL_MAP = {
-        720  : "N'Street-River"
-        646  : "N'Street-Canal"
-        148  : "Wellawatta"
-        238  : "Dehiwala"
-        1771 : "Parliment Lake-Out"
-        3785 : "Madiwela-US"
-        3535 : "Ambathale"
-        3626 : "Madiwela-Out"
-        2332 : "Salalihini-River"
-        2438 : "Salalihini-Canal"
-        1020 : "Kittampahuwa-River"
-        1102 : "kittampahuwa-Out"
-        1559 : "Kolonnawa Canal"
-        1000 : "Heen Ela"
-        621  : "Torington"
+        720  : "N'Street-River",
+        646  : "N'Street-Canal",
+        148  : "Wellawatta",
+        238  : "Dehiwala",
+        1771 : "Parliment Lake-Out",
+        3785 : "Madiwela-US",
+        3535 : "Ambathale",
+        3626 : "Madiwela-Out",
+        2332 : "Salalihini-River",
+        2438 : "Salalihini-Canal",
+        1020 : "Kittampahuwa-River",
+        1102 : "kittampahuwa-Out",
+        1559 : "Kolonnawa Canal",
+        1000 : "Heen Ela",
+        621  : "Torington",
     }
     FLOOD_PLAIN_CELL_MAP = {
         2307   : "Parliament Lake",
