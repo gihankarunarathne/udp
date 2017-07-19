@@ -49,35 +49,24 @@ try :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     CHANNEL_CELL_MAP = {
-        3627 : "Ambathale",
-        3626 : "Madiwela Out",
-        2438 : "Salalihini Out",
-        2439 : "Salalihini Out 2",
-        1365 : "Kittampahuwa Bridge",
-        1102 : "Kittampahuwa Out",
-        1103 : "Kittampahuwa Out 2",
-        645  : "N Street",
-        720  : "N Street 2",
-        713  : "Kolonnawa CNL 1",
-        1089 : "Kolonnawa CNL 2",
-        1458 : "Kolonnawa CNL 3",
-        1664 : "Kolonnawa CNL 4",
-        1879 : "Parliament Lake Out",
-        2308 : "Parliament Lake",
-        2305 : "Parliament Lake 2",
-        2712 : "Parliament Upstream",
-        2516 : "Ahangama",
-        4327 : "Madiwela US",
-        1000 : "Heen Ela",
-        621  : "Torington",
-        912  : "Wellawatta 1",
-        763  : "Wellawatta 2",
-        195  : "Wellawatta 3",
-        470  : "Dehiwala 1",
-        238  : "Dehiwala 2",
+        720  : "N'Street-River"
+        646  : "N'Street-Canal"
+        148  : "Wellawatta"
+        238  : "Dehiwala"
+        1771 : "Parliment Lake-Out"
+        3785 : "Madiwela-US"
+        3535 : "Ambathale"
+        3626 : "Madiwela-Out"
+        2332 : "Salalihini-River"
+        2438 : "Salalihini-Canal"
+        1020 : "Kittampahuwa-River"
+        1102 : "kittampahuwa-Out"
+        1559 : "Kolonnawa Canal"
+        1000 : "Heen Ela"
+        621  : "Torington"
     }
     FLOOD_PLAIN_CELL_MAP = {
-        2307   : "Parliament Lake 1",
+        2307   : "Parliament Lake",
     }
 
     ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
