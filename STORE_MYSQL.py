@@ -20,7 +20,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
     --discharge-path    Directory path which contains the Discharge timeseries.
     --waterlevel-path   Directory path which contains the WaterLevel timeseries directories.
                         E.g: '<waterlevel-path>/water_level-2017-05-27'.
--n                  New Line character -> None, '', '\n', '\r', and '\r\n'. Default is '\n'.
+-n                  New Line character -> None, '', '\\n', '\\r', and '\\r\\n'. Default is '\\n'.
 """
     print(usageText)
 
