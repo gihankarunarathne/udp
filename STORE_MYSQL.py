@@ -208,7 +208,7 @@ def storeDischarge(adapter):
         else :
             print('HASH SHA256 exists: ', eventId)
             if not forceInsert :
-                print('\n')
+                print('Timeseries already exists. User --force to update the existing.\n')
                 continue
         
         # for l in timeseries[:3] + timeseries[-2:] :
@@ -258,7 +258,7 @@ def storeRainfall(adapter):
                 else :
                     print('HASH SHA256 exists: ', eventId)
                     if not forceInsert :
-                        print('\n')
+                        print('Timeseries already exists. User --force to update the existing.\n')
                         continue
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
@@ -350,7 +350,7 @@ def storeWaterlevel(adapter):
                     }
                     existingTimeseries = adapter.retrieveTimeseries(waterlevelMetaQuery, opts)
                     if len(existingTimeseries[0]['timeseries']) > 0 and not forceInsert:
-                        print('\n')
+                        print('Timeseries already exists. User --force to update the existing.\n')
                         continue
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
@@ -373,10 +373,9 @@ def storeFLO2DStations(adapter):
             for line in lines:
                 s = line.split()
                 if len(s) > 0 :
-                    print(line)
                     cellId = int(s[0])
-                    print(cellId, ':', s[1], ':', s[2])
                     stations.append([stationIDOffset + cellId, 'FLO2D %s' % cellId, s[1], s[2]])
+                    print('FLO2D Cell:', cellId, 'with latitude: %s, longitude: %s -> inserted as `FLO2D %s`' % (s[1], s[2], cellId))
 
         # for station in stations[:3] + stations[-2:] :
         #     print(station)
