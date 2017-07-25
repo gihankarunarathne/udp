@@ -27,15 +27,18 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
     --waterlevel-path   Directory path which contains the WaterLevel timeseries directories.
                         E.g: '<waterlevel-path>/water_level-2017-05-27'.
     --waterlevelgrid-path   Directory path which contains the WaterLevel timeseries directories.
-                            E.g: '<waterlevel-path>/water_level_grid-2017-05-27'.
+                            E.g: '<waterlevelgrid-path>/water_level_grid-2017-05-27'.
 -n                  New Line character -> None, '', '\\n', '\\r', and '\\r\\n'. Default is '\\n'.
 """
     print(usageText)
 
 try :
-    CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
     INIT_DIR = os.getcwd()
+    ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(ROOT_DIR)
+
+    CONFIG = json.loads(open(os.path.join(ROOT_DIR, 'CONFIG.json')).read())
 
     NEW_LINE = '\n'
     DISCHARGE_NUM_METADATA_LINES = 2
@@ -149,9 +152,6 @@ try :
 
     if not waterlevelOutSuffix :
         waterlevelOutSuffix = date
-
-    ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-    os.chdir(ROOT_DIR)
 
     print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'on', ROOT_DIR)
     if forceInsert :
