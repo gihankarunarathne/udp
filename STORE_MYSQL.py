@@ -56,7 +56,7 @@ try :
     DIS_RESOLUTION = 24 # In 1 hours
     RF_RESOLUTION = 24 # In 1 hours
     WL_RESOLUTION = 24 * 4 # In 15 mins
-    WL_GRID_RESOLUTION = 24 # In 60 mins
+    WL_GRID_RESOLUTION = 24 * 4 # In 15 mins
     WL_GRID_MISSING_VALUE = -9
 
     MYSQL_HOST="localhost"
