@@ -427,7 +427,7 @@ def storeWaterlevelGrid(adapter):
     CellGrid    = getCellGrid(boundary)
     waterLevelGridSeriesDict = dict.fromkeys(CELLS, [])
 
-    for fileName in glob.glob(os.path.join(WATER_LEVEL_GRID_DIR_PATH, '%s-*.asc' % (WATER_LEVEL_GRID_DIR_NAME))):
+    for fileName in sorted(glob.glob(os.path.join(WATER_LEVEL_GRID_DIR_PATH, '%s-*.asc' % (WATER_LEVEL_GRID_DIR_NAME)))) :
         if not os.path.exists(fileName):
             print('Discharge > Unable to find file : ', fileName)
             break
