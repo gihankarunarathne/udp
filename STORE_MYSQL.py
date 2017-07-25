@@ -14,6 +14,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 -r  --rainfall      Store rainfall specifically. Ignore others if not mentioned.
 -e  --discharge     Store discharge(emission) specifically. Ignore others if not mentioned.
 -w  --waterlevel    Store waterlevel specifically. Ignore others if not mentioned.
+    --flo2d-station Store FLO2D model stations
     --wl-out-suffix Suffix for 'water_level-<SUFFIX>' output directories. 
                     Default is 'water_level-<YYYY-MM-DD>' same as -d option value.
     --rainfall-path     Directory path which contains the Rainfall timeseries.
@@ -76,11 +77,12 @@ try :
     rainfallInsert = False
     dischargeInsert = False
     waterlevelInsert = False
+    flo2dStationInsert = False
     waterlevelOutSuffix = ''
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:t:frewn:", [
             "help", "date=", "time=", "force",
-            "rainfall", "discharge", "waterlevel",
+            "rainfall", "discharge", "waterlevel", "flo2d-station",
             "wl-out-suffix=", "rainfall-path=", "discharge-path=", "waterlevel-path="
         ])
     except getopt.GetoptError:          
@@ -102,6 +104,8 @@ try :
             dischargeInsert = True
         elif opt in ("-w", "--waterlevel"):
             waterlevelInsert = True
+        elif opt in ("--flo2d-station"):
+            flo2dStationInsert = True
         elif opt in ("--wl-out-suffix"):
             waterlevelOutSuffix = arg
         elif opt in ("--rainfall-path"):
@@ -116,7 +120,7 @@ try :
         elif opt in ("-n"):
             NEW_LINE = arg
 
-    if rainfallInsert or dischargeInsert or waterlevelInsert :
+    if rainfallInsert or dischargeInsert or waterlevelInsert or flo2dStationInsert :
         allInsert = False
 
     # Default run for current day
@@ -336,6 +340,31 @@ def storeWaterlevel(adapter):
                 rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], forceInsert)
                 print('%s rows inserted.\n' % rowCount)
 
+def storeFLO2DStations(adapter):
+    print('\nStoring FLO2D Stations :::')
+
+    bufsize = 65536
+    stationIDOffset = 1000
+    with open('./META_FLO2D/CADPTS_SLD.DAT') as infile:
+        stations = []
+        while True:
+            lines = infile.readlines(bufsize)
+
+            if not lines:
+                break
+            for line in lines:
+                s = line.split()
+                if len(s) > 0 :
+                    print(line)
+                    cellId = int(s[0])
+                    print(cellId, ':', s[1], ':', s[2])
+                    stations.append([stationIDOffset + cellId, 'FLO2D %s' % cellId, s[1], s[2]])
+
+        # for station in stations[:3] + stations[-2:] :
+        #     print(station)
+        rowCount = adapter.createStations(stations)
+        print('%s stations inserted.\n' % rowCount)
+
 
 adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
 
@@ -348,3 +377,5 @@ if dischargeInsert or allInsert :
 if waterlevelInsert or allInsert :
     storeWaterlevel(adapter)
 
+if flo2dStationInsert :
+    storeFLO2DStations(adapter)
