@@ -414,7 +414,7 @@ def storeWaterlevelGrid(adapter):
         'unit': 'm',
         'type': types[0],
         'source': 'FLO2D',
-        'name': 'Cloud-1',
+        'name': 'Cloud-WL-Grid',
     }
 
     WATER_LEVEL_GRID_DIR_PATH = os.path.join(WL_GRID_OUTPUT_DIR, '%s-%s' % (WATER_LEVEL_GRID_DIR_NAME, waterlevelOutSuffix))
