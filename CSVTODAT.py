@@ -21,6 +21,7 @@ try :
     DISCHARGE_CSV_FILE = 'DailyDischarge.csv'
     INFLOW_DAT_FILE = './FLO2D/INFLOW.DAT'
     OUTPUT_DIR = './OUTPUT'
+    INIT_WL_CONFIG = './Template/INITWL.CONF'
 
     if 'DISCHARGE_CSV_FILE' in CONFIG :
         DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
@@ -28,6 +29,8 @@ try :
         INFLOW_DAT_FILE = CONFIG['INFLOW_DAT_FILE']
     if 'OUTPUT_DIR' in CONFIG :
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
+    if 'INIT_WL_CONFIG' in CONFIG :
+        INIT_WL_CONFIG = CONFIG['INIT_WL_CONFIG']
 
     date = ''
     tag = ''
@@ -84,6 +87,13 @@ try :
     for value in csvList[CSV_NUM_METADATA_LINES:]:
         lines.append('{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, i, float(value[1]), b='.1f', w=DAT_WIDTH))
         i += 1.0
+
+    print('Inserting Initial Waterlevels...')
+    with open(INIT_WL_CONFIG) as initWLConfFile :
+        initWaterlevels = initWLConfFile.readlines()
+        for initWaterlevel in initWaterlevels :
+            if len(initWaterlevel.split()) :
+                lines.append(initWaterlevel)
 
     f.writelines(lines)
 
