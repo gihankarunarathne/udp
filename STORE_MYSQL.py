@@ -46,6 +46,7 @@ try :
     RAIN_CSV_FILE = 'DailyRain.csv'
     WATER_LEVEL_DIR_NAME = 'water_level'
     WATER_LEVEL_GRID_DIR_NAME = 'water_level_grid'
+    CADPTS_DAT_FILE = './META_FLO2D/CADPTS.DAT'
     
     OUTPUT_DIR = './OUTPUT'
     RF_DIR_PATH = '/mnt/disks/wrf-mod/OUTPUT/'
@@ -361,9 +362,10 @@ def storeWaterlevel(adapter):
 def storeFLO2DStations(adapter):
     print('\nStoring FLO2D Stations :::')
 
+    CADPTS_DAT_FILE_PATH = os.path.join(CADPTS_DAT_FILE)
     bufsize = 65536
     stationIDOffset = 1000
-    with open('./META_FLO2D/CADPTS.DAT') as infile:
+    with open(CADPTS_DAT_FILE_PATH) as infile:
         stations = []
         while True:
             lines = infile.readlines(bufsize)
@@ -385,10 +387,11 @@ def storeFLO2DStations(adapter):
 def storeWaterlevelGrid(adapter):
     print('\nStoring Waterlevel Grid :::')
 
+    CADPTS_DAT_FILE_PATH = os.path.join(CADPTS_DAT_FILE)
     bufsize = 65536
     stationIDOffset = 1000
     CELLS = []
-    with open('./META_FLO2D/CADPTS.DAT') as infile:
+    with open(CADPTS_DAT_FILE_PATH) as infile:
         while True:
             lines = infile.readlines(bufsize)
 
