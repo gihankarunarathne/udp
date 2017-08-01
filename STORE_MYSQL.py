@@ -362,7 +362,7 @@ def storeWaterlevel(adapter):
 def storeFLO2DStations(adapter):
     print('\nStoring FLO2D Stations :::')
 
-    CADPTS_DAT_FILE_PATH = os.path.join(CADPTS_DAT_FILE)
+    CADPTS_DAT_FILE_PATH = os.path.join(ROOT_DIR, CADPTS_DAT_FILE)
     bufsize = 65536
     stationIDOffset = 1000
     with open(CADPTS_DAT_FILE_PATH) as infile:
@@ -387,7 +387,7 @@ def storeFLO2DStations(adapter):
 def storeWaterlevelGrid(adapter):
     print('\nStoring Waterlevel Grid :::')
 
-    CADPTS_DAT_FILE_PATH = os.path.join(CADPTS_DAT_FILE)
+    CADPTS_DAT_FILE_PATH = os.path.join(ROOT_DIR, CADPTS_DAT_FILE)
     bufsize = 65536
     stationIDOffset = 1000
     CELLS = []
