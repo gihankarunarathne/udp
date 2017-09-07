@@ -44,8 +44,8 @@ try :
         sys.exit(2)                     
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            usage()                     
-            sys.exit()           
+            usage()
+            sys.exit()
         elif opt in ("-d", "--date"):
             date = arg
         elif opt in ("-T", "--tag"):
@@ -56,7 +56,7 @@ try :
     IDEPLT      = 0     # Set to 0 on running with Text mode. Otherwise cell number e.g. 8672
     IFC         = 'C'   # foodplain 'F' or a channel 'C'
     INOUTFC     = 0     # 0-inflow, 1-outflow
-    KHIN        = 8672  # inflow nodes
+    KHIN        = 8655  # inflow nodes
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
     # Default run for current day
@@ -83,8 +83,16 @@ try :
     line3 = '{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, 0.0, 0.0, b='.1f', w=DAT_WIDTH)
     f.writelines([line1, line2, line3])
 
+    # HACK: Adding back two days for FLO2D
+    initValue = csvList[CSV_NUM_METADATA_LINES][1]
+    print(initValue)
+    timeseries = [[now.strftime("%Y:%m:%d %H:%M:%S"), initValue]] * 48
+    timeseries = timeseries + csvList[CSV_NUM_METADATA_LINES:]
+    # for tt in timeseries:
+    #     print(tt)
+
     lines = []; i = 1.0
-    for value in csvList[CSV_NUM_METADATA_LINES:]:
+    for value in timeseries :
         lines.append('{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, i, float(value[1]), b='.1f', w=DAT_WIDTH))
         i += 1.0
 
