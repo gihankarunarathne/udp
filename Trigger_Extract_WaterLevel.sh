@@ -47,7 +47,7 @@ CUSTOM_HOST_PORT=""
 while getopts hd:c:b:p:o:S:T:H:P: opt; do
     case $opt in
         h)
-            usage
+            usage >&2
             exit 0
             ;;
         d)  forecast_date=$OPTARG
