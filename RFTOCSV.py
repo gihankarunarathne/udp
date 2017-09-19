@@ -3,7 +3,7 @@
 import sys, traceback, datetime, os, glob, csv, json, getopt
 from string import Template
 from collections import OrderedDict
-# from curwmysqladapter import mysqladapter
+from curwmysqladapter import mysqladapter
 
 def usage() :
     usageText = """
@@ -12,11 +12,31 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
 -t  --time          Time in HH:MM:SS. Default is current time.
+    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
 -T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
     --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
     --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
 """
     print(usageText)
+
+def getObservedTimeseries(adapter, eventId, opts) :
+    existingTimeseries = adapter.retrieveTimeseries([eventId], opts)
+    newTimeseries = []
+    if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0 :
+        existingTimeseries = existingTimeseries[0]['timeseries']
+        prevDateTime = existingTimeseries[1][0]
+        precSum = existingTimeseries[0][1]
+        for tt in existingTimeseries :
+            if prevDateTime.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0, microsecond=0) :
+                precSum += tt[1] # TODO: If missing or minus -> ignore
+                # TODO: Handle End of List
+            else :
+                newTimeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), precSum])
+                prevDateTime = tt[0]
+                precSum = tt[1]
+
+    return newTimeseries
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -25,6 +45,10 @@ try :
     RF_DIR_PATH = './WRF/RF/'
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
+    # Kelani Upper Basin
+    KUB_OBS_ID = 'ecc89f516b7c5aa8d2d06e07f4bdc293aeb957fd5272ad75385e7a2e5b9e3015'
+    # Kelani Basin
+    KB_OBS_ID = '0e7bf64861fe493a7ea9ac4cfafd710d2e5a8f06b9824fb68d26b064babb9800'
 
     MYSQL_HOST="localhost"
     MYSQL_USER="root"
@@ -51,22 +75,28 @@ try :
 
     date = ''
     time = ''
+    startDate = ''
+    startTime = ''
     tag=''
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:", [
-            "help", "date=", "time=", "wrf-rf=", "wrf-kub=", "tag="
+            "help", "date=", "time=", "start-date=", "start-time=", "wrf-rf=", "wrf-kub=", "tag="
         ])
-    except getopt.GetoptError:          
-        usage()                        
-        sys.exit(2)                     
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)            
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            usage()                     
-            sys.exit()           
+            usage()
+            sys.exit()
         elif opt in ("-d", "--date"):
             date = arg
         elif opt in ("-t", "--time"):
             time = arg
+        elif opt in ("--start-date"):
+            startDate = arg
+        elif opt in ("--start-time"):
+            startTime = arg
         elif opt in ("--wrf-rf"):
             RF_DIR_PATH = arg
         elif opt in ("--wrf-kub"):
@@ -96,16 +126,30 @@ try :
     LOWER_CATCHMENTS = LOWER_CATCHMENT_WEIGHTS.keys()
 
     # Default run for current day
-    now = datetime.datetime.now()
+    modelState = datetime.datetime.now()
     if date :
-        now = datetime.datetime.strptime(date, '%Y-%m-%d')
-    date = now.strftime("%Y-%m-%d")
+        modelState = datetime.datetime.strptime(date, '%Y-%m-%d')
+    date = modelState.strftime("%Y-%m-%d")
     if time :
-        now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
-    time = now.strftime("%H:%M:%S")
+        modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = modelState.strftime("%H:%M:%S")
+
+    startDateTime = datetime.datetime.now()
+    if startDate :
+        startDateTime = datetime.datetime.strptime(startDate, '%Y-%m-%d')
+    else :
+        startDateTime = datetime.datetime.strptime(date, '%Y-%m-%d')
+
+    if startTime :
+        startDateTime = datetime.datetime.strptime('%s %s' % (startDate, startTime), '%Y-%m-%d %H:%M:%S')
+
+    startDate = startDateTime.strftime("%Y-%m-%d")
+    startTime = startDateTime.strftime("%H:%M:%S")
+
 
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(' RFTOCSV run for', date, '@', time, tag)
+    print(' With Custom starting', startDate, '@', startTime)
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
@@ -149,6 +193,17 @@ try :
                     LOWER_THEISSEN_VALUES[key] = 0
                 LOWER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * LOWER_CATCHMENT_WEIGHTS[lowerCatchment]
 
+    # Get Observed Data
+    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    opts = {
+        'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
+        'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    KUB_Timeseries = getObservedTimeseries(adapter, KUB_OBS_ID, opts)
+    # print('KUB_Timeseries::', KUB_Timeseries)
+    KB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
+    # print('KB_Timeseries::', KB_Timeseries)
+
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
     fileName = RAIN_CSV_FILE.rsplit('.', 1)
@@ -160,10 +215,25 @@ try :
     csvWriter.writerow(['Location Ids', 'Awissawella', 'Colombo'])
     csvWriter.writerow(['Time', 'Rainfall', 'Rainfall'])
 
+    # Insert available observed data
+    lastObsDateTime = startDateTime
+    for kub_tt in KUB_Timeseries :
+        # look for same time value in Kelani Basin
+        kb_tt = kub_tt # TODO: Better to replace with missing ???
+        for sub_tt in KB_Timeseries :
+            if sub_tt[0] == kub_tt[0] :
+                kb_tt = sub_tt
+                break
+
+        csvWriter.writerow([kub_tt[0].strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % kub_tt[1], "%.2f" % kb_tt[1]])
+        lastObsDateTime = kub_tt[0]
+
+    # Iterate through each timestamp
     for avg in UPPER_THEISSEN_VALUES :
         # print(avg, UPPER_THEISSEN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
-        csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
+        if d > lastObsDateTime :
+            csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
