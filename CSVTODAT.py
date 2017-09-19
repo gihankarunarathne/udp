@@ -33,11 +33,14 @@ try :
         INIT_WL_CONFIG = CONFIG['INIT_WL_CONFIG']
 
     date = ''
+    time = ''
+    startDate = ''
+    startTime = ''
     tag = ''
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:T:", [
-            "help", "date=", "tag="
+            "help", "date=", "time=", "start-date=", "start-time=", "tag="
         ])
     except getopt.GetoptError:          
         usage()                        
@@ -48,6 +51,12 @@ try :
             sys.exit()
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
+        elif opt in ("--start-date"):
+            startDate = arg
+        elif opt in ("--start-time"):
+            startTime = arg
         elif opt in ("-T", "--tag"):
             tag = arg
 
@@ -60,12 +69,28 @@ try :
     HYDCHAR     = 'H'   # Denote line of inflow hydrograph time and discharge pairs
 
     # Default run for current day
-    now = datetime.datetime.now()
+    modelState = datetime.datetime.now()
     if date :
-        now = datetime.datetime.strptime(date, '%Y-%m-%d')
-    date = now.strftime("%Y-%m-%d")
+        modelState = datetime.datetime.strptime(date, '%Y-%m-%d')
+    date = modelState.strftime("%Y-%m-%d")
+    if time :
+        modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = modelState.strftime("%H:%M:%S")
 
-    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")), tag
+    startDateTime = datetime.datetime.now()
+    if startDate :
+        startDateTime = datetime.datetime.strptime(startDate, '%Y-%m-%d')
+    else :
+        startDateTime = datetime.datetime.strptime(date, '%Y-%m-%d')
+    startDate = startDateTime.strftime("%Y-%m-%d")
+
+    if startTime :
+        startDateTime = datetime.datetime.strptime('%s %s' % (startDate, startTime), '%Y-%m-%d %H:%M:%S')
+    startTime = startDateTime.strftime("%H:%M:%S")
+
+    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tag)
+    print(' CSVTODAT run for', date, '@', time, tag)
+    print(' With Custom starting', startDate, '@', startTime)
 
     fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
@@ -83,16 +108,8 @@ try :
     line3 = '{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, 0.0, 0.0, b='.1f', w=DAT_WIDTH)
     f.writelines([line1, line2, line3])
 
-    # HACK: Adding back two days for FLO2D
-    initValue = csvList[CSV_NUM_METADATA_LINES][1]
-    print(initValue)
-    timeseries = [[now.strftime("%Y:%m:%d %H:%M:%S"), initValue]] * 48
-    timeseries = timeseries + csvList[CSV_NUM_METADATA_LINES:]
-    # for tt in timeseries:
-    #     print(tt)
-
     lines = []; i = 1.0
-    for value in timeseries :
+    for value in csvList[CSV_NUM_METADATA_LINES:] :
         lines.append('{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, i, float(value[1]), b='.1f', w=DAT_WIDTH))
         i += 1.0
 

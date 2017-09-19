@@ -10,6 +10,9 @@ Usage: ./Update_HECHMS.py [-d date] [-h -i] [-s sInterval] [-c cInterval]
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM. Default is current date.
+-t  --time          Time in HH:MM:SS. Default is current time.
+    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
 -i  --init          Create a State while running the HEC-HMS model
 -s  --sInterval     (State Interval in minutes) Time period that state should create after start time
 -c  --cInterval     (Control Interval in minutes) Time period that HEC-HMS model should run
@@ -57,8 +60,8 @@ try :
     RAIN_CSV_FILE = 'DailyRain.csv'
     TIME_INTERVAL = 60 # In minutes
     OUTPUT_DIR = './OUTPUT'
-    STATE_INTERVAL = 1 * 24 * 60 # In minutes
-    CONTROL_INTERVAL = 6 * 24 * 60 # In minutes
+    STATE_INTERVAL = 1 * 24 * 60 # In minutes (1 day)
+    CONTROL_INTERVAL = 8 * 24 * 60 # In minutes (8 day)
 
     if 'HEC_HMS_MODEL_DIR' in CONFIG :
         HEC_HMS_MODEL_DIR = CONFIG['HEC_HMS_MODEL_DIR']
@@ -76,12 +79,15 @@ try :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
     date = ''
+    time = ''
+    startDateTS = ''
+    startTimeTS = ''
     initState = False
     tag = ''
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:is:c:T:", [
-            "help", "date=", "backDays=", "init", "sInterval=", "cInterval=", "tag=", "hec-hms-model-dir="
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:is:c:T:", [
+            "help", "date=", "time=", "startDate=", "startTime=", "backDays=", "init", "sInterval=", "cInterval=", "tag=", "hec-hms-model-dir="
         ])
     except getopt.GetoptError:          
         usage()                        
@@ -92,6 +98,12 @@ try :
             sys.exit()           
         elif opt in ("-d", "--date"):
             date = arg
+        elif opt in ("-t", "--time"):
+            time = arg
+        elif opt in ("--start-date"):
+            startDateTS = arg
+        elif opt in ("--start-time"):
+            startTimeTS = arg
         elif opt in ("-i", "--init"):
             initState = True
         elif opt in ("-s", "--sInterval"):
@@ -120,10 +132,24 @@ try :
         print('Set HEC_HMS_GAGE=', HEC_HMS_GAGE)
 
     # Default run for current day
-    now = datetime.datetime.now()
+    modelState = datetime.datetime.now()
     if date :
-        now = datetime.datetime.strptime(date, '%Y-%m-%d')
-    date = now.strftime("%Y-%m-%d")
+        modelState = datetime.datetime.strptime(date, '%Y-%m-%d')
+    date = modelState.strftime("%Y-%m-%d")
+    if time :
+        modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    time = modelState.strftime("%H:%M:%S")
+
+    startDateTimeTS = datetime.datetime.now()
+    if startDateTS :
+        startDateTimeTS = datetime.datetime.strptime(startDateTS, '%Y-%m-%d')
+    else :
+        startDateTimeTS = datetime.datetime.strptime(date, '%Y-%m-%d')
+    startDateTS = startDateTimeTS.strftime("%Y-%m-%d")
+
+    if startTimeTS :
+        startDateTimeTS = datetime.datetime.strptime('%s %s' % (startDateTS, startTimeTS), '%Y-%m-%d %H:%M:%S')
+    startTimeTS = startDateTimeTS.strftime("%H:%M:%S")
 
     print('Update_HECHMS startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), ', initState:', initState)
     print('Control Interval:', CONTROL_INTERVAL/60, 'hours')
@@ -146,6 +172,7 @@ try :
     endDate = endDateTimeDSS.date
     endTime = endDateTimeDSS.time
 
+    # TODO : Increase Control Interval with gap between startDateTimeTS and modelState
     controlEndDateTime = startDateTime + datetime.timedelta(minutes=CONTROL_INTERVAL)
     controlEndDateTimeDSS = getDSSDateTime(controlEndDateTime)
     controlEndDate = controlEndDateTimeDSS.date
@@ -223,7 +250,7 @@ try :
             runFile.write(line)
 
     #############################################
-    #Update Gage file                           #
+    # Update Gage file                          #
     #############################################
     gageFile = open(HEC_HMS_GAGE, 'r')
     gageData = gageFile.readlines()

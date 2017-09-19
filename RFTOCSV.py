@@ -139,11 +139,10 @@ try :
         startDateTime = datetime.datetime.strptime(startDate, '%Y-%m-%d')
     else :
         startDateTime = datetime.datetime.strptime(date, '%Y-%m-%d')
+    startDate = startDateTime.strftime("%Y-%m-%d")
 
     if startTime :
         startDateTime = datetime.datetime.strptime('%s %s' % (startDate, startTime), '%Y-%m-%d %H:%M:%S')
-
-    startDate = startDateTime.strftime("%Y-%m-%d")
     startTime = startDateTime.strftime("%H:%M:%S")
 
 

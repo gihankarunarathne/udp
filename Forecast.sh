@@ -12,7 +12,8 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     -d      Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
     -t      Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
     --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
-    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(time).
+                    NOTE: Not working for the moment. Since Model states are stored in daily basis.
     -c      Location of CONFIG.json. Default is Forecast.sh exist directory.
     -r      ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
     -b      Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
@@ -100,7 +101,8 @@ FLO2D_DIR=$ROOT_DIR/FLO2D
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
 timeseries_start_date="`date +%Y-%m-%d`";
-timeseries_start_time="`date +%H:00:00`";
+# timeseries_start_time="`date +%H:00:00`";
+timeseries_start_time="`date +00:00:00`";
 
 DAYS_BACK=0
 FORCE_RUN=false
