@@ -34,7 +34,7 @@ while getopts hd:t:b:f opt; do
             ;;
         d)  forecast_date=$OPTARG
             ;;
-        d)  forecast_time=$OPTARG
+        t)  forecast_time=$OPTARG
             ;;
         b)  DAYS_BACK=$OPTARG
             ;;

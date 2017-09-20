@@ -116,7 +116,7 @@ WRF_OUT=""
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
 TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
-        --long arga::,argb,argc:,tag:,wrf-out:,hec-hms-model-dir: \
+        --long arga::,argb,argc:,start-date:,start-time:,tag:,wrf-out:,hec-hms-model-dir: \
         -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
