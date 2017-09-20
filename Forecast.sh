@@ -213,7 +213,7 @@ if [ "$DAYS_BACK" -gt 0 ]; then
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
 if [ -z $timeseries_start_date ]; then
-    timeseries_start_date = $forecast_date
+    timeseries_start_date=$forecast_date
 fi
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";

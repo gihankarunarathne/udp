@@ -61,9 +61,9 @@ try :
             date = options.date
         if options.time :
             time = options.time
-        if options.startDate :
+        if options.start_date :
             startDateTS = options.startDate
-        if options.startTime :
+        if options.start_time :
             startTimeTS = options.startTime
         if options.tag :
             tag = options.tag
