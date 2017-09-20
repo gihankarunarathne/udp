@@ -22,16 +22,19 @@ INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
 
 forecast_date="`date +%Y-%m-%d`";
+forecast_time="`date +%H:00:00`";
 DAYS_BACK=0
 
 # Extract user arguments
-while getopts hd:b:f opt; do
+while getopts hd:t:b:f opt; do
     case $opt in
         h)
             usage
             exit 0
             ;;
         d)  forecast_date=$OPTARG
+            ;;
+        d)  forecast_time=$OPTARG
             ;;
         b)  DAYS_BACK=$OPTARG
             ;;

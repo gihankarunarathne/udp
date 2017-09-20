@@ -39,7 +39,7 @@ try :
     tag = ''
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:T:", [
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:", [
             "help", "date=", "time=", "start-date=", "start-time=", "tag="
         ])
     except getopt.GetoptError:          

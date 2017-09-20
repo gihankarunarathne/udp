@@ -87,7 +87,7 @@ try :
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:t:is:c:T:", [
-            "help", "date=", "time=", "startDate=", "startTime=", "backDays=", "init", "sInterval=", "cInterval=", "tag=", "hec-hms-model-dir="
+            "help", "date=", "time=", "start-date=", "start-time=", "backDays=", "init", "sInterval=", "cInterval=", "tag=", "hec-hms-model-dir="
         ])
     except getopt.GetoptError:          
         usage()                        
