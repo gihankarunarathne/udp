@@ -62,9 +62,9 @@ try :
         if options.time :
             time = options.time
         if options.start_date :
-            startDateTS = options.startDate
+            startDateTS = options.start_date
         if options.start_time :
-            startTimeTS = options.startTime
+            startTimeTS = options.start_time
         if options.tag :
             tag = options.tag
         if options.hec_hms_model_dir :
