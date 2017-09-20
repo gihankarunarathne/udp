@@ -95,7 +95,7 @@ try :
         startTimeTS = startDateTimeTS.strftime("%H:%M:%S")
 
         print 'Start DSSTOCSV.py on ', date, '@', time, tag, HEC_HMS_MODEL_DIR
-        print ' With Custom starting', startDate, '@', startTime
+        print ' With Custom starting', startDateTS, '@', startTimeTS
 
         myDss = HecDss.open(DSS_OUTPUT_FILE)
         fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)

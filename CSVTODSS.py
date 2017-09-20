@@ -100,7 +100,7 @@ try :
         startTimeTS = startDateTimeTS.strftime("%H:%M:%S")
 
         print 'Start CSVTODSS.py on ', date, '@', time, tag, HEC_HMS_MODEL_DIR
-        print ' With Custom starting', startDate, '@', startTime
+        print ' With Custom starting', startDateTS, '@', startTimeTS
 
         myDss = HecDss.open(DSS_INPUT_FILE)
         
