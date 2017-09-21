@@ -4,8 +4,8 @@ from string import Template
 import sys, traceback, csv, json, datetime, getopt, os
 
 from curwmysqladapter import mysqladapter
-from Lib.LibForecastTimeseries import extractForecastTimeseries
-from Lib.LibForecastTimeseries import extractForecastTimeseriesInDays
+from Util.LibForecastTimeseries import extractForecastTimeseries
+from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 
 def usage() :
     usageText = """
