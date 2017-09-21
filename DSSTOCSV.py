@@ -128,13 +128,13 @@ try :
                 if(int(t[0]) > 23) :
                     t[0] = '23'
                     dtStr = ':'.join(str(x) for x in d) + ' ' + ':'.join(str(x) for x in t)
-                    dt = datetime.datetime.strptime(dtStr, '%Y:%m:%d %H:%M:%S')
+                    dt = datetime.datetime.strptime(dtStr, '%Y-%m-%d %H:%M:%S')
                     dt = dt + datetime.timedelta(hours=1)
                 else :
                     dtStr = ':'.join(str(x) for x in d) + ' ' + ':'.join(str(x) for x in t)
-                    dt = datetime.datetime.strptime(dtStr, '%Y:%m:%d %H:%M:%S')
+                    dt = datetime.datetime.strptime(dtStr, '%Y-%m-%d %H:%M:%S')
 
-                csvList.append([dt.strftime('%Y:%m:%d %H:%M:%S'), "%.2f" % flow.values[i]])
+                csvList.append([dt.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % flow.values[i]])
                 
             print csvList[:10]
             csvWriter.writerows(csvList)

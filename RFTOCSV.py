@@ -25,7 +25,7 @@ def getObservedTimeseries(adapter, eventId, opts) :
     newTimeseries = []
     if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0 :
         existingTimeseries = existingTimeseries[0]['timeseries']
-        prevDateTime = existingTimeseries[1][0]
+        prevDateTime = existingTimeseries[0][0]
         precSum = existingTimeseries[0][1]
         for tt in existingTimeseries :
             if prevDateTime.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0, microsecond=0) :

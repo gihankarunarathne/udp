@@ -3,6 +3,10 @@
 from string import Template
 import sys, traceback, csv, json, datetime, getopt, os
 
+from curwmysqladapter import mysqladapter
+from Lib.LibForecastTimeseries import extractForecastTimeseries
+from Lib.LibForecastTimeseries import extractForecastTimeseriesInDays
+
 def usage() :
     usageText = """
 Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
@@ -11,6 +15,49 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 -d  --date          Date in YYYY-MM-DD. Default is current date.
 """
     print(usageText)
+
+def saveForecastTimeseries(adapter, timeseries, date, time, forceInsert) :
+    print('CSVTODAT:: saveForecastTimeseries')
+    forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
+    # print(forecastTimeseries[:10])
+    extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
+    # for ll in extractedTimeseries :
+    #     print(ll)
+
+    dateTime = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    types = [
+        'Forecast-0-d',
+        'Forecast-1-d-after',
+        'Forecast-2-d-after',
+        'Forecast-3-d-after',
+        'Forecast-4-d-after',
+        'Forecast-5-d-after'
+    ]
+    metaData = {
+        'station': 'Hanwella',
+        'variable': 'Discharge',
+        'unit': 'm3/s',
+        'type': types[0],
+        'source': 'HEC-HMS',
+        'name': 'Cloud Continuous ' + dateTime.strftime("%H"),
+    }
+    for i in range(0, len(types)) :
+        metaData['type'] = types[i]
+        eventId = adapter.getEventId(metaData)
+        if eventId is None :
+            eventId = adapter.createEventId(metaData)
+            print('HASH SHA256 created: ', eventId)
+        else :
+            print('HASH SHA256 exists: ', eventId)
+            if not forceInsert :
+                print('Timeseries already exists. User --force to update the existing.\n')
+                continue
+        
+        # for l in timeseries[:3] + timeseries[-2:] :
+        #     print(l)
+        rowCount = adapter.insertTimeseries(eventId, extractedTimeseries[i], forceInsert)
+        print('%s rows inserted.\n' % rowCount)
+    # -- END OF SAVEFORECASTTIMESERIES
 
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
@@ -23,6 +70,11 @@ try :
     OUTPUT_DIR = './OUTPUT'
     INIT_WL_CONFIG = './Template/INITWL.CONF'
 
+    MYSQL_HOST="localhost"
+    MYSQL_USER="root"
+    MYSQL_DB="curw"
+    MYSQL_PASSWORD=""
+
     if 'DISCHARGE_CSV_FILE' in CONFIG :
         DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
     if 'INFLOW_DAT_FILE' in CONFIG :
@@ -32,15 +84,25 @@ try :
     if 'INIT_WL_CONFIG' in CONFIG :
         INIT_WL_CONFIG = CONFIG['INIT_WL_CONFIG']
 
+    if 'MYSQL_HOST' in CONFIG :
+        MYSQL_HOST = CONFIG['MYSQL_HOST']
+    if 'MYSQL_USER' in CONFIG :
+        MYSQL_USER = CONFIG['MYSQL_USER']
+    if 'MYSQL_DB' in CONFIG :
+        MYSQL_DB = CONFIG['MYSQL_DB']
+    if 'MYSQL_PASSWORD' in CONFIG :
+        MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
+
     date = ''
     time = ''
     startDate = ''
     startTime = ''
     tag = ''
+    forceInsert = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:", [
-            "help", "date=", "time=", "start-date=", "start-time=", "tag="
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:f", [
+            "help", "date=", "time=", "start-date=", "start-time=", "tag=", "force"
         ])
     except getopt.GetoptError:          
         usage()                        
@@ -48,7 +110,7 @@ try :
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             usage()
-            sys.exit()
+            sys.exit(0)
         elif opt in ("-d", "--date"):
             date = arg
         elif opt in ("-t", "--time"):
@@ -59,6 +121,8 @@ try :
             startTime = arg
         elif opt in ("-T", "--tag"):
             tag = arg
+        elif opt in ("-f", "--force"):
+            forceInsert = True
 
     # FLO-2D parameters
     IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
@@ -121,6 +185,10 @@ try :
                 lines.append(initWaterlevel)
 
     f.writelines(lines)
+
+    # Save Forecast values into Database
+    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    saveForecastTimeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, forceInsert)
 
 except Exception as e :
     traceback.print_exc()
