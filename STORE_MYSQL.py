@@ -9,7 +9,7 @@ from LIBFLO2DWATERLEVELGRID import getCellGrid
 
 def usage() :
     usageText = """
-Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
+Usage: ./STORE_MYSQL.py [-d YYYY-MM-DD] [-h]
 
 -h  --help          Show usage
 -d  --date          Date in YYYY-MM-DD. Default is current date.
@@ -154,7 +154,7 @@ try :
     if not waterlevelOutSuffix :
         waterlevelOutSuffix = date
 
-    print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'on', ROOT_DIR)
+    print('STORE_MYSQL startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'on', ROOT_DIR)
     if forceInsert :
         print('WARNING: Force Insert enabled')
 except Exception as e :
@@ -271,24 +271,24 @@ def storeRainfall(adapter):
 def storeWaterlevel(adapter):
     print('\nStoring Waterlevels :::')
     stations = [
-        'N-Street-River',
-        'N-Street-Canal',
-        'Wellawatta',
-        'Dematagoda-Canal',
-        'Dehiwala',
-        'Parliment Lake Bridge-Kotte Canal',
-        'Parliment Lake-Out',
-        'Madiwela-US',
-        'Ambathale',
-        'Madiwela-Out',
-        'Salalihini-River',
-        'Salalihini-Canal',
-        'Kittampahuwa-River',
-        'kittampahuwa-Out',
-        'Kolonnawa Canal',
-        'Heen Ela',
-        'Torington',
-        'Parliment Lake',
+        "N'Street-River",
+        "N'Street-Canal",
+        "Wellawatta",
+        "Dematagoda-Canal",
+        "Dehiwala",
+        "Parliment Lake Bridge-Kotte Canal",
+        "Parliment Lake-Out",
+        "Madiwela-US",
+        "Ambathale",
+        "Madiwela-Out",
+        "Salalihini-River",
+        "Salalihini-Canal",
+        "Kittampahuwa-River",
+        "kittampahuwa-Out",
+        "Kolonnawa Canal",
+        "Heen Ela",
+        "Torington",
+        "Parliment Lake",
     ]
     types = [
         'Forecast-0-d', 

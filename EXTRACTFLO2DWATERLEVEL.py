@@ -120,7 +120,7 @@ try :
         179  : "Wellawatta",
         684  : "Dematagoda-Canal",
         221  : "Dehiwala",
-        1515 : "Parliment Lake Bridge-Kotte Canal"
+        1515 : "Parliment Lake Bridge-Kotte Canal",
         2158 : "Parliment Lake-Out",
         2742 : "Madiwela-US",
         3582 : "Ambathale",
@@ -148,8 +148,10 @@ try :
     output_suffix = ''
     start_date = ''
     start_time = ''
+    forceInsert = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:o:S:T:", ["help", "date=", "time=", "path=", "out=", "start_date=", "start_time="])
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:p:o:S:T:f", 
+            ["help", "date=", "time=", "path=", "out=", "start_date=", "start_time=", "forceInsert"])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -169,6 +171,8 @@ try :
             start_date = arg.strip()
         elif opt in ("-T", "--start_time"):
             start_time = arg.strip()
+        elif opt in ("-f", "--forceInsert"):
+            forceInsert = True
 
     # Default run for current day
     now = datetime.datetime.now()
@@ -313,8 +317,8 @@ try :
                     csvWriter.writerows(timeseries)
                     # Save Forecast values into Database
                     opts = {
-                        forceInsert: forceInsert,
-                        station: stationName
+                        'forceInsert': forceInsert,
+                        'station': stationName
                     }
                     # adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
                     # saveForecastTimeseries(adapter, timeseries, date, time, opts)
@@ -375,7 +379,7 @@ try :
         # Create files
         for elementNo in FLOOD_ELEMENT_NUMBERS :
             fileName = WATER_LEVEL_FILE.rsplit('.', 1)
-            stationName = CHANNEL_CELL_MAP[elementNo].replace(' ', '_')
+            stationName = FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_')
             fileTimestamp = "%s_%s" % (date, time.replace(':', '-'))
             fileName = "%s-%s-%s.%s" % (fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), fileTimestamp, fileName[1])
             WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
@@ -383,8 +387,8 @@ try :
             csvWriter.writerows(waterLevelSeriesDict[elementNo])
             # Save Forecast values into Database
             opts = {
-                forceInsert: forceInsert,
-                station: stationName
+                'forceInsert': forceInsert,
+                'station': stationName
             }
             # adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
             # saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
