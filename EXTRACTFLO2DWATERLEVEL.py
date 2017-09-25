@@ -63,7 +63,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         'source': 'FLO2D',
         'name': 'Cloud Continuous ' + dateTime.strftime("%H") + ' (Hourly) Test',
     }
-    for i in range(0, len(types)) :
+    for i in range(0, min(len(types), len(extractedTimeseries))) :
         metaData['type'] = types[i]
         eventId = adapter.getEventId(metaData)
         if eventId is None :
@@ -318,10 +318,10 @@ try :
                     # Save Forecast values into Database
                     opts = {
                         'forceInsert': forceInsert,
-                        'station': stationName
+                        'station': CHANNEL_CELL_MAP[elementNo]
                     }
-                    # adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-                    # saveForecastTimeseries(adapter, timeseries, date, time, opts)
+                    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+                    saveForecastTimeseries(adapter, timeseries, date, time, opts)
 
                     isWaterLevelLines = False
                     isSeriesComplete = False
@@ -388,10 +388,10 @@ try :
             # Save Forecast values into Database
             opts = {
                 'forceInsert': forceInsert,
-                'station': stationName
+                'station': FLOOD_PLAIN_CELL_MAP[elementNo]
             }
-            # adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-            # saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
+            adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+            saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
             print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)
 
 except Exception as e :
