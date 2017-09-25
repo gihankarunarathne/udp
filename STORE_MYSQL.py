@@ -284,7 +284,7 @@ def storeWaterlevel(adapter):
         "Salalihini-River",
         "Salalihini-Canal",
         "Kittampahuwa-River",
-        "kittampahuwa-Out",
+        "Kittampahuwa-Out",
         "Kolonnawa Canal",
         "Heen Ela",
         "Torington",
@@ -328,7 +328,7 @@ def storeWaterlevel(adapter):
             endDateTime = datetime.datetime.strptime(timeseries[-1][0], '%Y-%m-%d %H:%M:%S')
 
             waterlevelMeta = copy.deepcopy(metaData)
-            waterlevelMeta['station'] = station.replace(' ', '-')
+            waterlevelMeta['station'] = station
             waterlevelMeta['start_date'] = startDateTime.strftime("%Y-%m-%d %H:%M:%S")
             waterlevelMeta['end_date'] = endDateTime.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -341,7 +341,7 @@ def storeWaterlevel(adapter):
                 else :
                     print('HASH SHA256 exists: ', eventId)
                     waterlevelMetaQuery = copy.deepcopy(metaData)
-                    waterlevelMetaQuery['station'] = station.replace(' ', '-')
+                    waterlevelMetaQuery['station'] = station
                     waterlevelMetaQuery['type'] = types[i]
 
                     dailyTimeseries = timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION]
