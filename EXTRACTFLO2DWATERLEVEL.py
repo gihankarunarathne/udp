@@ -61,7 +61,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         'unit': 'm',
         'type': types[0],
         'source': 'FLO2D',
-        'name': 'Cloud-1 ' + dateTime.strftime("%H") + ' (Hourly) Test',
+        'name': 'Cloud-1 ' + dateTime.strftime("%H:00:00"),
     }
     for i in range(0, min(len(types), len(extractedTimeseries))) :
         metaData['type'] = types[i]
