@@ -11,6 +11,9 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     -h      Show usage
     -d      Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
     -t      Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
+    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(time).
+                    NOTE: Not working for the moment. Since Model states are stored in daily basis.
     -c      Location of CONFIG.json. Default is Forecast.sh exist directory.
     -r      ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
     -b      Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
@@ -97,6 +100,9 @@ FLO2D_DIR=$ROOT_DIR/FLO2D
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
+timeseries_start_date="";
+# timeseries_start_time="`date +%H:00:00`";
+timeseries_start_time="`date +00:00:00`";
 
 DAYS_BACK=0
 FORCE_RUN=false
@@ -110,7 +116,7 @@ WRF_OUT=""
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
 TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
-        --long arga::,argb,argc:,tag:,wrf-out:,hec-hms-model-dir: \
+        --long arga::,argb,argc:,start-date:,start-time:,tag:,wrf-out:,hec-hms-model-dir: \
         -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
@@ -146,6 +152,16 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) forecast_time="$2" ; shift 2 ;;
+            esac ;;
+        --start-date)
+            case "$2" in
+                "") shift 2 ;;
+                *) timeseries_start_date="$2" ; shift 2 ;;
+            esac ;;
+        --start-time)
+            case "$2" in
+                "") shift 2 ;;
+                *) timeseries_start_time="$2" ; shift 2 ;;
             esac ;;
         -c)
             case "$2" in
@@ -196,6 +212,9 @@ if [ "$DAYS_BACK" -gt 0 ]; then
     #TODO: Try to back date base on user given date
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
+if [ -z $timeseries_start_date ]; then
+    timeseries_start_date=$forecast_date
+fi
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
@@ -226,6 +245,7 @@ main() {
 
     echo "Start at $current_date_time $FORCE_EXIT"
     echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
+    echo "With Custom Timeseries Start Date: $timeseries_start_date @ $timeseries_start_time"
 
     local isWRF=$(isWRFAvailable)
     local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
@@ -240,6 +260,7 @@ main() {
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
         # using Theissen Polygen
         ./RFTOCSV.py -d $forecast_date -t $forecast_time \
+            --start-date $timeseries_start_date --start-time $timeseries_start_time \
             --wrf-rf $RF_DIR_PATH --wrf-kub $KUB_DIR_PATH \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
@@ -257,12 +278,14 @@ main() {
         rm $DSS_INPUT_FILE
         rm $DSS_OUTPUT_FILE
         # Read Avg precipitation, then create .dss input file for HEC-HMS model
-        ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date \
+        ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date --time $forecast_time \
+            --start-date $timeseries_start_date --start-time $timeseries_start_time \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
             `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Change HEC-HMS running time window
-        ./Update_HECHMS.py -d $forecast_date \
+        ./Update_HECHMS.py -d $forecast_date -t $forecast_time \
+            --start-date $timeseries_start_date --start-time $timeseries_start_time \
             `[[ $INIT_STATE == true ]] && echo "-i" || echo ""` \
             `[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"` \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
@@ -287,12 +310,14 @@ main() {
         ./HEC-HMS.sh -s $HEC_HMS_SCRIPT_RELATIVE_PATH
         cd $ROOT_DIR
         # Read HEC-HMS result, then extract Discharge into .csv
-        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date \
+        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date --time $forecast_time \
+            --start-date $timeseries_start_date --start-time $timeseries_start_time \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
             `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Read Discharge .csv, then create INFLOW.DAT file for FLO2D
-        ./CSVTODAT.py  -d $forecast_date \
+        ./CSVTODAT.py  -d $forecast_date -t $forecast_time \
+            --start-date $timeseries_start_date --start-time $timeseries_start_time \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
 
         if [ $FORCE_EXIT == false ]; then
@@ -320,8 +345,8 @@ main() {
             sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" $FLO2D_RUN_FILE
             curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 
-            ./CopyToCMS.sh -d $forecast_date
         fi
+        ./CopyToCMS.sh -d $forecast_date -t $forecast_time
     
         local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
         if [ $writeStatus == 0 ]; then
