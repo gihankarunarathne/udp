@@ -61,7 +61,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         'unit': 'm',
         'type': types[0],
         'source': 'FLO2D',
-        'name': 'Cloud Continuous ' + dateTime.strftime("%H") + ' (Hourly) Test',
+        'name': 'Cloud-1 ' + dateTime.strftime("%H") + ' (Hourly) Test',
     }
     for i in range(0, min(len(types), len(extractedTimeseries))) :
         metaData['type'] = types[i]
@@ -129,7 +129,7 @@ try :
         2395 : "Salalihini-Canal",
         1076 : "Kittampahuwa-River",
         1075 : "kittampahuwa-Out",
-        1062 : "Kolonnawa Canal",
+        1062 : "Kolonnawa-Canal",
         814  : "Heen Ela",
         592  : "Torington",
     }

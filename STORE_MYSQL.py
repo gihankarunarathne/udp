@@ -285,7 +285,7 @@ def storeWaterlevel(adapter):
         "Salalihini-Canal",
         "Kittampahuwa-River",
         "Kittampahuwa-Out",
-        "Kolonnawa Canal",
+        "Kolonnawa-Canal",
         "Heen Ela",
         "Torington",
         "Parliment Lake",
