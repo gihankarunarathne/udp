@@ -53,7 +53,16 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         'Forecast-2-d-after',
         'Forecast-3-d-after',
         'Forecast-4-d-after',
-        'Forecast-5-d-after'
+        'Forecast-5-d-after',
+        'Forecast-6-d-after',
+        'Forecast-7-d-after',
+        'Forecast-8-d-after',
+        'Forecast-9-d-after',
+        'Forecast-10-d-after',
+        'Forecast-11-d-after',
+        'Forecast-12-d-after',
+        'Forecast-13-d-after',
+        'Forecast-14-d-after'
     ]
     metaData = {
         'station': station,
