@@ -120,8 +120,8 @@ try :
         179  : "Wellawatta",
         684  : "Dematagoda-Canal",
         221  : "Dehiwala",
-        1515 : "Parliment Lake Bridge-Kotte Canal",
-        2158 : "Parliment Lake-Out",
+        1515 : "Parliament Lake Bridge-Kotte Canal",
+        2158 : "Parliament Lake-Out",
         2742 : "Madiwela-US",
         3582 : "Ambathale",
         3581 : "Madiwela-Out",
@@ -134,7 +134,7 @@ try :
         592  : "Torington",
     }
     FLOOD_PLAIN_CELL_MAP = {
-        2265 : "Parliment Lake",
+        2265 : "Parliament Lake",
     }
 
     ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
