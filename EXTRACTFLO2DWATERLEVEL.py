@@ -131,7 +131,7 @@ try :
         221  : "Dehiwala",
         1515 : "Parliament Lake Bridge-Kotte Canal",
         2158 : "Parliament Lake-Out",
-        2742 : "Madiwela-US",
+        4280 : "Madiwela-US",
         3582 : "Ambathale",
         3581 : "Madiwela-Out",
         2290 : "Salalihini-River",
