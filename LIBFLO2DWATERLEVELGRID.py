@@ -105,8 +105,8 @@ def getEsriGrid(waterLevels, boudary, CellMap, gap=250.0, missingVal=-9) :
 
     EsriGrid.append('%s\t%s\n' % ('ncols', cols))
     EsriGrid.append('%s\t%s\n' % ('nrows', rows))
-    EsriGrid.append('%s\t%s\n' % ('xllcorner', boudary['long_min']))
-    EsriGrid.append('%s\t%s\n' % ('yllcorner', boudary['lat_min']))
+    EsriGrid.append('%s\t%s\n' % ('xllcorner', boudary['long_min'] - 125))
+    EsriGrid.append('%s\t%s\n' % ('yllcorner', boudary['lat_min'] - 125))
     EsriGrid.append('%s\t%s\n' % ('cellsize', gap))
     EsriGrid.append('%s\t%s\n' % ('NODATA_value', missingVal))
 
