@@ -16,9 +16,11 @@ if 'HOST_ADDRESS' in CONFIG :
 if 'HOST_PORT' in CONFIG :
     HOST_PORT = CONFIG['HOST_PORT']
 
+FLO2D_DIR='FLO2D'
 INFLOW_DAT_FILE='INFLOW.DAT'
 RAINCELL_DAT_FILE='RAINCELL.DAT'
 RUN_FLO2D='RUN_FLO2D'
+RUN_FLO2D_FILE='RUN_FLO2D.json'
 EXTRACT_WATERLEVEL_GRID='EXTRACT_WATERLEVEL_GRID'
 EXTRACT_WATERLEVEL='EXTRACT_WATERLEVEL'
 
@@ -52,6 +54,9 @@ class StoreHandler(BaseHTTPRequestHandler):
             # Create FLO2D Directory for new simulation
             if not os.path.exists(FLO2D_DIR_PATH):
                 os.makedirs(FLO2D_DIR_PATH)
+
+            FLO2D_DIR_PATH = os.path.join(curdir, FLO2D_DIR)
+            # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
             INFLOW_DAT_FILE_PATH = pjoin(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
 
             inflowFile = open(INFLOW_DAT_FILE_PATH, 'w')
@@ -75,6 +80,9 @@ class StoreHandler(BaseHTTPRequestHandler):
             # Create FLO2D Directory for new simulation
             if not os.path.exists(FLO2D_DIR_PATH):
                 os.makedirs(FLO2D_DIR_PATH)
+
+            FLO2D_DIR_PATH = os.path.join(curdir, FLO2D_DIR)
+            # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
             RAINCELL_DAT_FILE_PATH = pjoin(FLO2D_DIR_PATH, RAINCELL_DAT_FILE)
 
             raincellFile = open(RAINCELL_DAT_FILE_PATH, 'w')
@@ -95,6 +103,12 @@ class StoreHandler(BaseHTTPRequestHandler):
             data = self.rfile.read(int(length))
             runConfig = json.loads(data.decode())
             print('RUN FLO2D: RUN FLO2D options:', runConfig)
+
+            FLO2D_DIR_PATH = os.path.join(curdir, FLO2D_DIR)
+            # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
+            RUN_FLO2D_FILE_PATH = pjoin(FLO2D_DIR_PATH, RUN_FLO2D_FILE)
+            with open(RUN_FLO2D_FILE_PATH, 'w') as runFLO2DFile:
+                json.dump(data, runFLO2DFile)
 
             try :
                 # Execute FLO2D
@@ -132,15 +146,22 @@ class StoreHandler(BaseHTTPRequestHandler):
                 print('Execute WATERLEVEL GRID extraction ...')
                 execList = ["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1']
                 if len(date) > 0 :
-                    execList = execList + ['-d' , date]
+                    execList = execList + ['--date' , date]
+                if runConfig.get('MODEL_STATE_TIME') :
+                    execList = execList + ['--time' , runConfig.get('MODEL_STATE_TIME')]
+
+                if runConfig.get('TIMESERIES_START_DATE') :
+                    execList = execList + ['--start_date' , runConfig.get('TIMESERIES_START_DATE')]
+                if runConfig.get('TIMESERIES_START_TIME') :
+                    execList = execList + ['--start_time' , runConfig.get('TIMESERIES_START_TIME')]
+
                 if runConfig.get('FLO2D_PATH') :
-                    execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
+                    execList = execList + ['--path' , runConfig.get('FLO2D_PATH')]
                 if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
-                    execList = execList + ['-o' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
-                if runConfig.get('START_DATE') :
-                    execList = execList + ['-S' , runConfig.get('START_DATE')]
-                if runConfig.get('START_TIME') :
-                    execList = execList + ['-T' , runConfig.get('START_TIME')]
+                    execList = execList + ['--out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+
+                if runConfig.get('RUN_NAME') :
+                    execList = execList + ['--name' , runConfig.get('RUN_NAME')]
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)
@@ -171,14 +192,21 @@ class StoreHandler(BaseHTTPRequestHandler):
                 execList = ["powershell.exe", '.\CopyWaterLevelToCMS.ps1']
                 if len(date) > 0 :
                     execList = execList + ['-d' , date]
+                if runConfig.get('MODEL_STATE_TIME') :
+                    execList = execList + ['--time' , runConfig.get('MODEL_STATE_TIME')]
+
+                if runConfig.get('TIMESERIES_START_DATE') :
+                    execList = execList + ['--start_date' , runConfig.get('TIMESERIES_START_DATE')]
+                if runConfig.get('TIMESERIES_START_TIME') :
+                    execList = execList + ['--start_time' , runConfig.get('TIMESERIES_START_TIME')]
+
                 if runConfig.get('FLO2D_PATH') :
-                    execList = execList + ['-p' , runConfig.get('FLO2D_PATH')]
+                    execList = execList + ['--path' , runConfig.get('FLO2D_PATH')]
                 if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
-                    execList = execList + ['-o' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
-                if runConfig.get('START_DATE') :
-                    execList = execList + ['-S' , runConfig.get('START_DATE')]
-                if runConfig.get('START_TIME') :
-                    execList = execList + ['-T' , runConfig.get('START_TIME')]
+                    execList = execList + ['--out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+
+                if runConfig.get('RUN_NAME') :
+                    execList = execList + ['--name' , runConfig.get('RUN_NAME')]
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)
