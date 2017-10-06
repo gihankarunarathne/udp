@@ -126,14 +126,14 @@ main() {
     TIMESERIES_START_DATE_TXT="\"TIMESERIES_START_DATE\"\t : \"$TIMESERIES_START_DATE\","
     sed -i "/TIMESERIES_START_DATE/c\    $TIMESERIES_START_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
     # Set Base Start Time for FLO2D (which maps to 0 step)
-    TIMESERIES_START_TIME_TXT="\"TIMESERIES_START_TIME\"\t : \"$TIMESERIES_START_TIME\""
+    TIMESERIES_START_TIME_TXT="\"TIMESERIES_START_TIME\"\t : \"$TIMESERIES_START_TIME\","
     sed -i "/TIMESERIES_START_TIME/c\    $TIMESERIES_START_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
     # Set Model State Date for FLO2D
     MODEL_STATE_DATE_TXT="\"MODEL_STATE_DATE\"\t : \"$forecast_date\","
     sed -i "/MODEL_STATE_DATE/c\    $MODEL_STATE_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
     # Set Model State Time for FLO2D
-    MODEL_STATE_TIME_TXT="\"MODEL_STATE_TIME\"\t : \"$forecast_time\""
+    MODEL_STATE_TIME_TXT="\"MODEL_STATE_TIME\"\t : \"$forecast_time\","
     sed -i "/MODEL_STATE_TIME/c\    $MODEL_STATE_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
     # Run name/tags of the Timeseries
