@@ -177,14 +177,17 @@ try :
                     fileModelTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
                     dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
-                    # Create files
-                    fileName = WATER_LEVEL_FILE.rsplit('.', 1)
-                    fileName = "%s-%s.%s" % (fileName[0], dateAndTime, fileName[1])
-                    WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
-                    file = open(WATER_LEVEL_FILE_PATH, 'w')
-                    file.writelines(EsriGrid)
-                    file.close()
-                    print('Write to :', fileName)
+                    if fileModelTime >= now :
+                        # Create files
+                        fileName = WATER_LEVEL_FILE.rsplit('.', 1)
+                        fileName = "%s-%s.%s" % (fileName[0], dateAndTime, fileName[1])
+                        WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
+                        file = open(WATER_LEVEL_FILE_PATH, 'w')
+                        file.writelines(EsriGrid)
+                        file.close()
+                        print('Write to :', fileName)
+                    else :
+                        print('Skip. Current model time:' + dateAndTime + ' is not greater than ' + now.strftime("%Y-%m-%d_%H-%M-%S"))
 
                     isWaterLevelLines = False
                     # for l in waterLevelLines :

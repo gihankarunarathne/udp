@@ -142,7 +142,7 @@ main() {
     RUN_NAME_TXT="\"RUN_NAME\"\t : \"$RUN_NAME\""
     sed -i "/RUN_NAME/c\    $RUN_NAME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
-    echo "Trigger FLO2D WaterLevel Extraction on Forecast Date: $forecast_date, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
+    echo "Trigger FLO2D WaterLevel Extraction on Forecast Date: $forecast_date $forecast_time $TIMESERIES_START_DATE $TIMESERIES_START_TIME, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
 
     curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  $WINDOWS_HOST/EXTRACT_WATERLEVEL?$forecast_date
     echo "Send POST request to $WINDOWS_HOST with EXTRACT_WATERLEVEL?$forecast_date"
