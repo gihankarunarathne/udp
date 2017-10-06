@@ -91,10 +91,11 @@ if [ "$DAYS_BACK" -gt 0 ]; then
 	#TODO: Try to back date base on user given date
 	forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
-if [ -z $START_DATE ]; then
+
+if [ -z $TIMESERIES_START_DATE ]; then
     TIMESERIES_START_DATE=$forecast_date
 fi
-if [ -z $START_TIME ]; then
+if [ -z $TIMESERIES_START_TIME ]; then
     TIMESERIES_START_TIME=$forecast_time
 fi
 
