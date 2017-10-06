@@ -6,14 +6,14 @@ if(!$date) {
 
 echo "CopyWaterLevelToCMS:: forecast date : $date $time $start_date $start_time $path $out $name"
 
-python EXTRACTFLO2DWATERLEVEL.py --date $date `
-    $(If ($time) {"--time $time"} Else {""}) `
-    $(If ($start_date) {"--start_date $start_date"} Else {""}) `
-    $(If ($start_time) {"--start_time $start_time"} Else {""}) `
-    $(If ($path) {"--path $path"} Else {""}) `
-    $(If ($out) {"--out $out"} Else {""}) `
-    $(If ($name) {"--name $name"} Else {""}) `
-    $(If ($forceInsert) {"--forceInsert $forceInsert"} Else {""})
+python EXTRACTFLO2DWATERLEVEL.py -d $date `
+    $(If ($time) {"-t $time"} Else {""}) `
+    $(If ($start_date) {"-S $start_date"} Else {""}) `
+    $(If ($start_time) {"-T $start_time"} Else {""}) `
+    $(If ($path) {"-p $path"} Else {""}) `
+    $(If ($out) {"-o $out"} Else {""}) `
+    $(If ($name) {"-n $name"} Else {""}) `
+    $(If ($forceInsert) {"-f $forceInsert"} Else {""})
 
 $output_dir = If ($out) {".\OUTPUT\water_level-$out"} Else {".\OUTPUT\water_level-$date"}
 pscp -i .\ssh\id_lahikos -r $output_dir uwcc-admin@10.138.0.6:/home/uwcc-admin/cfcwm/data/FLO2D/WL

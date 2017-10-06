@@ -146,24 +146,23 @@ class StoreHandler(BaseHTTPRequestHandler):
                 print('Execute WATERLEVEL GRID extraction ...')
                 execList = ["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1']
                 if len(date) > 0 :
-                    execList = execList + ['--date' , date]
+                    execList = execList + ['-date' , date]
                 if runConfig.get('MODEL_STATE_TIME') :
-                    execList = execList + ['--time' , runConfig.get('MODEL_STATE_TIME')]
+                    execList = execList + ['-time' , runConfig.get('MODEL_STATE_TIME')]
 
                 if runConfig.get('TIMESERIES_START_DATE') :
-                    execList = execList + ['--start_date' , runConfig.get('TIMESERIES_START_DATE')]
+                    execList = execList + ['-start_date' , runConfig.get('TIMESERIES_START_DATE')]
                 if runConfig.get('TIMESERIES_START_TIME') :
-                    execList = execList + ['--start_time' , runConfig.get('TIMESERIES_START_TIME')]
+                    execList = execList + ['-start_time' , runConfig.get('TIMESERIES_START_TIME')]
 
                 if runConfig.get('FLO2D_PATH') :
-                    execList = execList + ['--path' , runConfig.get('FLO2D_PATH')]
+                    execList = execList + ['-path' , runConfig.get('FLO2D_PATH')]
                 if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
-                    execList = execList + ['--out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+                    execList = execList + ['-out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
 
                 if runConfig.get('RUN_NAME') :
-                    execList = execList + ['--name' , runConfig.get('RUN_NAME')]
-                # TODO: Handle passing forceInsert
-                execList = execList + ['--forceInsert']
+                    execList = execList + ['-name' , runConfig.get('RUN_NAME')]
+
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)
@@ -193,22 +192,25 @@ class StoreHandler(BaseHTTPRequestHandler):
                 print('Execute WATERLEVEL extraction ...')
                 execList = ["powershell.exe", '.\CopyWaterLevelToCMS.ps1']
                 if len(date) > 0 :
-                    execList = execList + ['-d' , date]
+                    execList = execList + ['-date' , date]
                 if runConfig.get('MODEL_STATE_TIME') :
-                    execList = execList + ['--time' , runConfig.get('MODEL_STATE_TIME')]
+                    execList = execList + ['-time' , runConfig.get('MODEL_STATE_TIME')]
 
                 if runConfig.get('TIMESERIES_START_DATE') :
-                    execList = execList + ['--start_date' , runConfig.get('TIMESERIES_START_DATE')]
+                    execList = execList + ['-start_date' , runConfig.get('TIMESERIES_START_DATE')]
                 if runConfig.get('TIMESERIES_START_TIME') :
-                    execList = execList + ['--start_time' , runConfig.get('TIMESERIES_START_TIME')]
+                    execList = execList + ['-start_time' , runConfig.get('TIMESERIES_START_TIME')]
 
                 if runConfig.get('FLO2D_PATH') :
-                    execList = execList + ['--path' , runConfig.get('FLO2D_PATH')]
+                    execList = execList + ['-path' , runConfig.get('FLO2D_PATH')]
                 if runConfig.get('FLO2D_OUTPUT_SUFFIX') :
-                    execList = execList + ['--out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
+                    execList = execList + ['-out' , runConfig.get('FLO2D_OUTPUT_SUFFIX')]
 
                 if runConfig.get('RUN_NAME') :
-                    execList = execList + ['--name' , runConfig.get('RUN_NAME')]
+                    execList = execList + ['-name' , runConfig.get('RUN_NAME')]
+                # TODO: Handle passing forceInsert
+                execList = execList + ['-forceInsert']
+
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)
