@@ -114,7 +114,7 @@ try :
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        start_date = datetime.datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE']), '%Y-%m-%d')
+        start_date = datetime.datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE'], '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     else :
         start_date = date
