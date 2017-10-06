@@ -209,7 +209,7 @@ class StoreHandler(BaseHTTPRequestHandler):
                 if runConfig.get('RUN_NAME') :
                     execList = execList + ['-name' , runConfig.get('RUN_NAME')]
                 # TODO: Handle passing forceInsert
-                execList = execList + ['-forceInsert']
+                execList = execList + ['-forceInsert', "True"]
 
                 print('exec List:', execList)
 
