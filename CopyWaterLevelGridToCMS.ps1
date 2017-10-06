@@ -1,18 +1,21 @@
-param([string]$d, [string]$p, [string]$o, [string]$S, [string]$T)
+param([string]$date, [string]$time, [string]$start_date, [string]$start_time, [string]$path, [string]$out, [string]$name, [string]$forceInsert)
 
-if(!$d) {
-	$d = (Get-Date).ToString('yyyy-MM-dd')
+if(!$date) {
+	$date = (Get-Date).ToString('yyyy-MM-dd')
 }
 
-echo "CopyWaterLevelGridToCMS:: forecast date : $d $p $o $S $T"
+echo "CopyWaterLevelGridToCMS:: forecast date : $date $time $start_date $start_time $path $out $name"
 
-python EXTRACTFLO2DWATERLEVELGRID.py -d $d `
-    $(If ($p) {"-p $p"} Else {""}) `
-    $(If ($o) {"-o $o"} Else {""}) `
-    $(If ($S) {"-S $S"} Else {""}) `
-    $(If ($T) {"-T $T"} Else {""})
+python EXTRACTFLO2DWATERLEVELGRID.py --date $date `
+    $(If ($time) {"--time $time"} Else {""}) `
+    $(If ($start_date) {"--start_date $start_date"} Else {""}) `
+    $(If ($start_time) {"--start_time $start_time"} Else {""}) `
+    $(If ($path) {"--path $path"} Else {""}) `
+    $(If ($out) {"--out $out"} Else {""}) `
+    $(If ($name) {"--name $name"} Else {""}) `
+    $(If ($forceInsert) {"--forceInsert $forceInsert"} Else {""})
 
-$output_dir = If ($o) {".\OUTPUT\water_level_grid-$o"} Else {".\OUTPUT\water_level_grid-$d"}
+$output_dir = If ($out) {".\OUTPUT\water_level_grid-$out"} Else {".\OUTPUT\water_level_grid-$date"}
 pscp -i .\ssh\id_lahikos -r $output_dir uwcc-admin@10.138.0.6:/home/uwcc-admin/cfcwm/data/FLO2D/WL_GRID
 
 if(Test-Path $output_dir){

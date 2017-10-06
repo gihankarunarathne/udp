@@ -16,7 +16,7 @@ def usage() :
 Usage: ./EXTRACTFLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-S YYYY-MM-DD] [-T HH:MM:SS]
 
 -h  --help          Show usage
--f #TODO
+-f  --forceInsert   Force Insert into the database. May override existing values.
 -F  --flo2d_config  Configuration for FLO2D model run
 -d  --date          Model State Date in YYYY-MM-DD. Default is current date.
 -t  --time          Model State Time in HH:MM:SS. If -d passed, then default is 00:00:00. Otherwise Default is current time.

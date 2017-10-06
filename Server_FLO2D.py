@@ -162,6 +162,8 @@ class StoreHandler(BaseHTTPRequestHandler):
 
                 if runConfig.get('RUN_NAME') :
                     execList = execList + ['--name' , runConfig.get('RUN_NAME')]
+                # TODO: Handle passing forceInsert
+                execList = execList + ['--forceInsert']
                 print('exec List:', execList)
 
                 Popen(execList, stdout=sys.stdout)
