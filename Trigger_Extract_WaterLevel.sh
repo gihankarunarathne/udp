@@ -19,8 +19,8 @@ Usage: ./Trigger_Extract_WaterLevel.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r R
     -p  Path of FLO2D Model folder.
     -o  Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
         Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
-    -H  Host ADDRESS of `FLO2D Server` is running. Default is `HOST_ADDRESS` taken from CONFIG.json
-    -P  Host PORT of `FLO2D Server` is running. Default is `HOST_PORT` taken from CONFIG.json
+    -H  Host ADDRESS of 'FLO2D Server' is running. Default is 'HOST_ADDRESS' taken from CONFIG.json
+    -P  Host PORT of 'FLO2D Server' is running. Default is 'HOST_PORT' taken from CONFIG.json
     -c  Location of CONFIG.json. Default is Forecast.sh exist directory.
     -n  Name field value of the Run table in Database. Use time format such as <%H:%M:%S> to replace with time(t).
 EOF
