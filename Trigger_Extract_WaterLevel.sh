@@ -14,8 +14,8 @@ Usage: ./Trigger_Extract_WaterLevel.sh [-d FORECAST_DATE] [-c CONFIG_FILE] [-r R
         Otherwise Default is current time.
     -b  Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
         When specified -d option will be ignored.
-    -S  Base Date of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
-    -T  Base Time of FLO2D model output in HH:MM:SS format. Default is same as -t option value.
+    -S  Base Date(Timeseries start date) of FLO2D model output in YYYY-MM-DD format. Default is same as -d option value.
+    -T  Base Time(Timeseries start time) of FLO2D model output in HH:MM:SS format. Default is same as -t option value.
     -p  Path of FLO2D Model folder.
     -o  Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
         Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.

@@ -236,7 +236,7 @@ try :
     if start_date :
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    else if 'TIMESERIES_START_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
         start_date = datetime.datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE']), '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     else :
@@ -245,7 +245,7 @@ try :
     if start_time :
         start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    else if 'TIMESERIES_START_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
         start_time = datetime.datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_DATE']), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     else :
