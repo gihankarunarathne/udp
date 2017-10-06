@@ -39,7 +39,8 @@ INIT_DIR=$(pwd)
 CONFIG_FILE=$ROOT_DIR/CONFIG.json
 
 forecast_date="`date +%Y-%m-%d`";
-forecast_time="`date +%H:00:00`";
+forecast_time="00:00:00";
+# forecast_time="`date +%H:00:00`";
 
 DAYS_BACK=0
 FLO2D_PATH=""
