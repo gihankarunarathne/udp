@@ -34,12 +34,12 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
                         <WRF_OUT>/kelani-basin          (<-FLO2D_RAINCELL_DIR_PATH)
                     will use respectively instead of CONFIG.json.
                     Otherwise using the values from CONFIG.json
-    --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
-    --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
-    --wrf-rf-grid   Path of WRF colombo(RF_GRID) Directory. Otherwise using the `RF_GRID_DIR_PATH` from CONFIG.json
-    --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
+    --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the 'RF_DIR_PATH' from CONFIG.json
+    --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the 'KUB_DIR_PATH' from CONFIG.json
+    --wrf-rf-grid   Path of WRF colombo(RF_GRID) Directory. Otherwise using the 'RF_GRID_DIR_PATH' from CONFIG.json
+    --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the 'RF_DIR_PATH' from CONFIG.json
 
-    --hec-hms-model-dir  Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json
+    --hec-hms-model-dir  Path of HEC_HMS_MODEL_DIR directory. Otherwise using the 'HEC_HMS_MODEL_DIR' from CONFIG.json
     --name       Database run table name
 EOF
 }
