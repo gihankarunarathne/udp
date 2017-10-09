@@ -46,9 +46,9 @@ try :
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
     # Kelani Upper Basin
-    KUB_OBS_ID = 'ecc89f516b7c5aa8d2d06e07f4bdc293aeb957fd5272ad75385e7a2e5b9e3015'
+    KUB_OBS_ID = '03dbfdb2c4069aa2985c713bdd2086215b555184bdd4a5a5ffdde37db61c469c'
     # Kelani Basin
-    KB_OBS_ID = '0e7bf64861fe493a7ea9ac4cfafd710d2e5a8f06b9824fb68d26b064babb9800'
+    KB_OBS_ID = '8a1dac3e106c7d0eeaf0b232819fd9d5948c194759378001aeaf60ebc0112453'
 
     MYSQL_HOST="localhost"
     MYSQL_USER="root"

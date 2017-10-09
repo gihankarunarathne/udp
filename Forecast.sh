@@ -14,6 +14,7 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
     --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(time).
                     NOTE: Not working for the moment. Since Model states are stored in daily basis.
+    -m|--mode       Forecast running mode one of 'd'-daily, 'h'-hourly. Default mode is 'd'.
     -c      Location of CONFIG.json. Default is Forecast.sh exist directory.
     -r      ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
     -b      Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
@@ -105,6 +106,7 @@ timeseries_start_date="";
 # timeseries_start_time="`date +%H:00:00`";
 timeseries_start_time="`date +00:00:00`";
 
+MODE="d" # 'd' | 'h'
 DAYS_BACK=0
 FORCE_RUN=false
 INIT_STATE=false
@@ -117,8 +119,8 @@ RUN_NAME=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
-        --long arga::,argb,argc:,start-date:,start-time:,tag:,wrf-out:,hec-hms-model-dir:,name: \
+TEMP=`getopt -o hd:t:m:c:r:b:fiseC:T: \
+        --long arga::,argb,argc:,start-date:,start-time:,mode:,tag:,wrf-out:,hec-hms-model-dir:,name: \
         -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
@@ -164,6 +166,11 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) timeseries_start_time="$2" ; shift 2 ;;
+            esac ;;
+        -m|--mode)
+            case "$2" in
+                "") shift 2 ;;
+                *) MODE="$2" ; shift 2 ;;
             esac ;;
         -c)
             case "$2" in
@@ -221,6 +228,9 @@ if [ "$DAYS_BACK" -gt 0 ]; then
 fi
 if [ -z $timeseries_start_date ]; then
     timeseries_start_date=$forecast_date
+fi
+if [[ "$MODE" == "d" ]]; then
+    forecast_time="`date +00:00:00`";
 fi
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
