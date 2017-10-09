@@ -5,6 +5,12 @@ from distutils.dir_util import copy_tree
 
 try :
     CWD = os.getcwd()
+
+    FLO2D_DIR='FLO2D'
+    INFLOW_DAT_FILE='INFLOW.DAT'
+    RAINCELL_DAT_FILE='RAINCELL.DAT'
+    RUN_FLO2D_FILE='RUN_FLO2D.json'
+
     FLO2D_TEMPLATE = os.path.join(CWD, 'Template')
     FLO2D_RUN_FOR_PROJECT = os.path.join(CWD, 'RunForProjectFolder')
 
@@ -25,12 +31,17 @@ try :
         appDir = os.path.join(CWD, args.model_dir)
 
     try:
-        # if(os.path.isdir(appDir)) :
-        #     shutil.rmtree(appDir)
+        if(os.path.isdir(appDir)) :
+            shutil.rmtree(appDir)
 
-        if args.model_dir :
-            tmpAppDir = os.path.join(CWD, date + '_Kelani')
-            os.rename(tmpAppDir, appDir)
+        FLO2D_DIR_PATH = os.path.join(CWD, FLO2D_DIR)
+        # Move INFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir
+        INFLOW_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
+        shutil.move(INFLOW_DAT_FILE_PATH, appDir)
+        RAINCELL_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, RAINCELL_DAT_FILE)
+        shutil.move(RAINCELL_DAT_FILE_PATH, appDir)
+        RUN_FLO2D_FILE_PATH = os.path.join(FLO2D_DIR_PATH, RUN_FLO2D_FILE)
+        shutil.move(RUN_FLO2D_FILE_PATH, appDir)
 
         copy_tree(FLO2D_TEMPLATE, appDir)
         copy_tree(FLO2D_RUN_FOR_PROJECT, appDir)

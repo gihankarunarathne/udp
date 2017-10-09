@@ -1,18 +1,22 @@
-param([string]$d, [string]$p, [string]$o, [string]$S, [string]$T)
+param([string]$date, [string]$time, [string]$start_date, [string]$start_time, [string]$path, [string]$out, [string]$name, [string]$forceInsert)
 
-if(!$d) {
-	$d = (Get-Date).ToString('yyyy-MM-dd')
+if(!$date) {
+	$date = (Get-Date).ToString('yyyy-MM-dd')
 }
 
-echo "CopyWaterLevelToCMS:: forecast date : $d $p $o $S $T"
+echo "CopyWaterLevelToCMS:: forecast date : $date $time $start_date $start_time $path $out $name"
 
-python EXTRACTFLO2DWATERLEVEL.py -d $d `
-    $(If ($p) {"-p $p"} Else {""}) `
-    $(If ($o) {"-o $o"} Else {""}) `
-    $(If ($S) {"-S $S"} Else {""}) `
-    $(If ($T) {"-T $T"} Else {""})
+$args = @()
+If ($time) { $args += ("--time", $time) }
+If ($start_date) { $args += ("--start_date", $start_date) }
+If ($start_time) { $args += ("--start_time", $start_time) }
+If ($path) { $args += ("--path", $path) }
+If ($out) { $args += ("--out", $out) }
+If ($name) { $args += ("--name", $name) }
+If ($forceInsert) { $args += ("-f", $forceInsert) }
+Invoke-Expression "python EXTRACTFLO2DWATERLEVEL.py -d $date $args"
 
-$output_dir = If ($o) {".\OUTPUT\water_level-$o"} Else {".\OUTPUT\water_level-$d"}
+$output_dir = If ($out) {".\OUTPUT\water_level-$out"} Else {".\OUTPUT\water_level-$date"}
 pscp -i .\ssh\id_lahikos -r $output_dir uwcc-admin@10.138.0.6:/home/uwcc-admin/cfcwm/data/FLO2D/WL
 
 if(Test-Path $output_dir){

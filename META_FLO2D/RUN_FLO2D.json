@@ -1,8 +1,11 @@
 {
-    "INFLOW_DAT_KEY"    : "ABC123",
-    "RAINCELL_DAT_KEY"  : "DEF456",
-    "FLO2D_PATH"        : "",
-    "FLO2D_OUTPUT_SUFFIX": "",
-    "START_DATE"        : "",
-    "START_TIME"        : ""
+    "INFLOW_DAT_KEY"        : "ABC123",
+    "RAINCELL_DAT_KEY"      : "DEF456",
+    "FLO2D_PATH"            : "",
+    "FLO2D_OUTPUT_SUFFIX"   : "",
+    "TIMESERIES_START_DATE" : "",
+    "TIMESERIES_START_TIME" : "",
+    "MODEL_STATE_DATE"      : "",
+    "MODEL_STATE_TIME"      : "",
+    "RUN_NAME"              : ""
 }

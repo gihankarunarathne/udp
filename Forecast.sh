@@ -9,8 +9,8 @@ cat <<EOF
 Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r ROOT_DIR] [-b DAYS_BACK] [-f]
 
     -h      Show usage
-    -d      Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
-    -t      Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
+    -d      Model State Date which need to run the forecast in YYYY-MM-DD format. Default is current date.
+    -t      Model State Time which need to run the forecast in HH:MM:SS format. Default is current hour. Run on hour resolution only.
     --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
     --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(time).
                     NOTE: Not working for the moment. Since Model states are stored in daily basis.
@@ -39,6 +39,7 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
 
     --hec-hms-model-dir  Path of HEC_HMS_MODEL_DIR directory. Otherwise using the `HEC_HMS_MODEL_DIR` from CONFIG.json
+    --name       Database run table name
 EOF
 }
 
@@ -112,11 +113,12 @@ FORCE_EXIT=false
 CONTROL_INTERVAL=0
 TAG=""
 WRF_OUT=""
+RUN_NAME=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
 TEMP=`getopt -o hd:t:c:r:b:fiseC:T: \
-        --long arga::,argb,argc:,start-date:,start-time:,tag:,wrf-out:,hec-hms-model-dir: \
+        --long arga::,argb,argc:,start-date:,start-time:,tag:,wrf-out:,hec-hms-model-dir:,name: \
         -n 'Forecast.sh' -- "$@"`
 
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
@@ -201,6 +203,11 @@ while true ; do
             case "$2" in
                 "") shift 2 ;;
                 *) HEC_HMS_MODEL_DIR="$2" ; shift 2 ;;
+            esac ;;
+        --name)
+            case "$2" in
+                "") shift 2 ;;
+                *) RUN_NAME="$2" ; shift 2 ;;
             esac ;;
 
         --) shift ; break ;;
@@ -340,11 +347,30 @@ main() {
                 FLO2D_MODEL_PATH=${forecast_date}_Kelani.$TAG
             fi
             cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_RUN_FILE
+
             # Set FLO2D model path
             FLO2D_MODEL_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_MODEL_PATH\","
             sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" $FLO2D_RUN_FILE
-            curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
 
+            # Set Base Start Date for FLO2D (which maps to 0 step)
+            TIMESERIES_START_DATE_TXT="\"TIMESERIES_START_DATE\"\t : \"$timeseries_start_date\","
+            sed -i "/TIMESERIES_START_DATE/c\    $TIMESERIES_START_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            # Set Base Start Time for FLO2D (which maps to 0 step)
+            TIMESERIES_START_TIME_TXT="\"TIMESERIES_START_TIME\"\t : \"$timeseries_start_time\","
+            sed -i "/TIMESERIES_START_TIME/c\    $TIMESERIES_START_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+
+            # Set Model State Date for FLO2D
+            MODEL_STATE_DATE_TXT="\"MODEL_STATE_DATE\"\t : \"$forecast_date\","
+            sed -i "/MODEL_STATE_DATE/c\    $MODEL_STATE_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            # Set Model State Time for FLO2D
+            MODEL_STATE_TIME_TXT="\"MODEL_STATE_TIME\"\t : \"$forecast_time\","
+            sed -i "/MODEL_STATE_TIME/c\    $MODEL_STATE_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+
+            # Run name/tags of the Timeseries
+            RUN_NAME_TXT="\"RUN_NAME\"\t : \"$RUN_NAME\""
+            sed -i "/RUN_NAME/c\    $RUN_NAME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+
+            curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
         fi
         ./CopyToCMS.sh -d $forecast_date -t $forecast_time
     
