@@ -12,7 +12,12 @@ def usage() :
 Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 
 -h  --help          Show usage
--d  --date          Date in YYYY-MM-DD. Default is current date.
+-d  --date          Model State Date in YYYY-MM. Default is current date.
+-t  --time          Model State Time in HH:MM:SS. Default is current time.
+    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
+-T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
+-f  --forceInsert   Force Insert into the database. May override existing values.
 """
     print(usageText)
 
@@ -162,6 +167,11 @@ try :
     print('Open Discharge CSV ::', DISCHARGE_CSV_FILE_PATH)
     csvReader = csv.reader(open(DISCHARGE_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
     csvList = list(csvReader)
+
+    # Validate Discharge Timeseries
+    if not len(csvList[CSV_NUM_METADATA_LINES:]) > 0 :
+        print('ERROR: Discharge timeseries length is zero.')
+        sys.exit(1)
 
     fileName2 = INFLOW_DAT_FILE.rsplit('.', 1)
     INFLOW_DAT_FILE_PATH = '{name}{tag}.{extention}'.format(name=fileName2[0], tag='.'+tag if tag else '', extention=fileName2[1])

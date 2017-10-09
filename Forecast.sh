@@ -335,7 +335,13 @@ main() {
         # Read Discharge .csv, then create INFLOW.DAT file for FLO2D
         ./CSVTODAT.py  -d $forecast_date -t $forecast_time \
             --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
+            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z $FORCE_RUN ]] && echo "" || echo "-f"`
+        ret=$?
+        if [ $ret -ne 0 ]; then
+             echo "Error in converting Discharge CSV to FLO2D INFLOW.DAT"
+             exit 1
+        fi
 
         if [ $FORCE_EXIT == false ]; then
             # Send INFLOW.DAT file into Windows

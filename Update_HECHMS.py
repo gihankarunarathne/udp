@@ -9,8 +9,8 @@ def usage() :
 Usage: ./Update_HECHMS.py [-d date] [-h -i] [-s sInterval] [-c cInterval] 
 
 -h  --help          Show usage
--d  --date          Date in YYYY-MM. Default is current date.
--t  --time          Time in HH:MM:SS. Default is current time.
+-d  --date          Model State Date in YYYY-MM. Default is current date.
+-t  --time          Model State Time in HH:MM:SS. Default is current time.
     --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
     --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
 -i  --init          Create a State while running the HEC-HMS model
@@ -94,8 +94,8 @@ try :
         sys.exit(2)                     
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            usage()                     
-            sys.exit()           
+            usage()
+            sys.exit(0)
         elif opt in ("-d", "--date"):
             date = arg
         elif opt in ("-t", "--time"):
