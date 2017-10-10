@@ -199,9 +199,11 @@ try :
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
     }
     KUB_Timeseries = getObservedTimeseries(adapter, KUB_OBS_ID, opts)
-    # print('KUB_Timeseries::', KUB_Timeseries)
+    # print(KUB_Timeseries)
+    print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
     KB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
-    # print('KB_Timeseries::', KB_Timeseries)
+    # print(KB_Timeseries)
+    print('KB_Timeseries::', len(KB_Timeseries), KB_Timeseries[0], KB_Timeseries[-1])
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
