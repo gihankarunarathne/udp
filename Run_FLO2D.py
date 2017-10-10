@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, string, os, datetime, shutil, argparse
+import sys, string, os, datetime, shutil, argparse, traceback
 from distutils.dir_util import copy_tree
 
 try :
@@ -25,14 +25,21 @@ try :
     if args.date :
         now = datetime.datetime.strptime(args.date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
-    print('Run FLO2D on', date)
-    appDir = os.path.join(CWD, date + '_Kelani')
-    if args.model_dir :
-        appDir = os.path.join(CWD, args.model_dir)
 
     try:
+        appDir = os.path.join(CWD, date + '_Kelani')
+        if args.model_dir :
+            appDir = os.path.join(CWD, args.model_dir)
+
+        print('Run FLO2D on', date, ' on dir:', appDir)
+
         if(os.path.isdir(appDir)) :
+            print('Removing Directory:', appDir)
             shutil.rmtree(appDir)
+
+        if not os.path.exists(appDir):
+            print('Creating Dir : ', appDir)
+            os.makedirs(appDir)
 
         FLO2D_DIR_PATH = os.path.join(CWD, FLO2D_DIR)
         # Move INFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir

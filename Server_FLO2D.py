@@ -46,15 +46,6 @@ class StoreHandler(BaseHTTPRequestHandler):
             data = self.rfile.read(int(length))
             # print('DATA:', data)
 
-            FLO2D_DIR_PATH = os.path.join(curdir, date + '_Kelani')
-            # If Dir already exists, cleanup
-            #TODO: Handle in a proper way
-            if(os.path.isdir(FLO2D_DIR_PATH)):
-                shutil.rmtree(FLO2D_DIR_PATH)
-            # Create FLO2D Directory for new simulation
-            if not os.path.exists(FLO2D_DIR_PATH):
-                os.makedirs(FLO2D_DIR_PATH)
-
             FLO2D_DIR_PATH = os.path.join(curdir, FLO2D_DIR)
             # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
             INFLOW_DAT_FILE_PATH = pjoin(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
@@ -75,11 +66,6 @@ class StoreHandler(BaseHTTPRequestHandler):
             length = self.headers['content-length']
             data = self.rfile.read(int(length))
             # print('DATA:', data)
-
-            FLO2D_DIR_PATH = os.path.join(curdir, date + '_Kelani')
-            # Create FLO2D Directory for new simulation
-            if not os.path.exists(FLO2D_DIR_PATH):
-                os.makedirs(FLO2D_DIR_PATH)
 
             FLO2D_DIR_PATH = os.path.join(curdir, FLO2D_DIR)
             # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
@@ -108,7 +94,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
             RUN_FLO2D_FILE_PATH = pjoin(FLO2D_DIR_PATH, RUN_FLO2D_FILE)
             with open(RUN_FLO2D_FILE_PATH, 'w') as runFLO2DFile:
-                json.dump(data, runFLO2DFile)
+                json.dump(runConfig, runFLO2DFile)
 
             try :
                 # Execute FLO2D
@@ -119,6 +105,9 @@ class StoreHandler(BaseHTTPRequestHandler):
                     execList = execList + ['-d' , date]
                 if runConfig.get('FLO2D_PATH') :
                     execList = execList + ['--model-dir' , runConfig.get('FLO2D_PATH')]
+                print('exec List:', execList)
+
+                # Popen(execList, shell=True)
                 Popen(execList, creationflags=subprocess.CREATE_NEW_CONSOLE)
                 # Popen(execList, stdout=sys.stdout)
                 #os.system('python Run_FLO2D.py'+ date)
