@@ -13,11 +13,13 @@ try :
     parser.add_argument("-f", "--force", action='store_true', help="Force insert.")
     parser.add_argument("--exec", help="Executor that going to run the file.script. Default `python`. E.g: python3")
     parser.add_argument("-i", "--interval", help="Time Interval between two events in hours")
+    parser.add_argument("--wait-before", help="Wait time before running the task in seconds")
     parser.add_argument("-w", "--wait", help="Wait time for complete the task before run for next event in seconds")
     args = parser.parse_args()
     print('Commandline Options:', args)
 
     timeInterval = 24
+    waitBeforeTime = 0
     waitTime = 0
 
     if not args.file_path and args.start_date and args.end_date :
@@ -25,6 +27,8 @@ try :
         sys.exit(2)
     if args.interval :
         timeInterval = int(args.interval)
+    if args.wait_before :
+        waitBeforeTime = int(args.wait_before)
     if args.wait :
         waitTime = int(args.wait)
 
@@ -40,6 +44,7 @@ try :
         executor = args.exec
 
     while(startDate <= endDate) :
+        if waitBeforeTime > 0 : time.sleep(waitBeforeTime)
         execList = [executor, args.file_path]
         execList = execList + ['-d' , startDate.strftime("%Y-%m-%d")]
         if args.force :
@@ -48,7 +53,7 @@ try :
         print('>>>', execList, '\n')
         proc = Popen(execList, stdout=sys.stdout)
         proc.wait()
-        time.sleep(waitTime)
+        if waitTime > 0 : time.sleep(waitTime)
         print('\n\n')
 
         startDate = startDate + datetime.timedelta(hours=timeInterval)
