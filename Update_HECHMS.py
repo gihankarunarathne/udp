@@ -223,6 +223,7 @@ try :
             runFile.write(line)
             indent = line[:line.rfind('Control:')]
 
+            # TODO: Handle for Hour mode
             saveStateDateTime = startDateTime + datetime.timedelta(minutes=STATE_INTERVAL)
             saveStateDateTimeDSS = getDSSDateTime(saveStateDateTime)
             startStateDateTime = startDateTime - datetime.timedelta(minutes=STATE_INTERVAL)

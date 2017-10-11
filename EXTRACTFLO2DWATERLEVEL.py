@@ -246,7 +246,7 @@ try :
         start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        start_time = datetime.datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_DATE']), '%Y-%m-%d %H:%M:%S')
+        start_time = datetime.datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_TIME']), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     else :
         start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
