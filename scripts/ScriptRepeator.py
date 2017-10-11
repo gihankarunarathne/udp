@@ -12,9 +12,11 @@ try :
     parser.add_argument("--end-time", help="End Time in HH:MM:SS.")
     parser.add_argument("-f", "--force", action='store_true', help="Force insert.")
     parser.add_argument("--exec", help="Executor that going to run the file.script. Default `python`. E.g: python3")
-    parser.add_argument("-i", "--interval", help="Time Interval between two events in hours")
+    parser.add_argument("-i", "--interval", help="Time Interval between two events in hours. Default 24 hours")
     parser.add_argument("--wait-before", help="Wait time before running the task in seconds")
+    parser.add_argument("--wait-before-min", help="Wait time before running the task in minutes")
     parser.add_argument("-w", "--wait", help="Wait time for complete the task before run for next event in seconds")
+    parser.add_argument("--wait-min", help="Wait time for complete the task before run for next event in minutes")
     args = parser.parse_args()
     print('Commandline Options:', args)
 
@@ -29,8 +31,12 @@ try :
         timeInterval = int(args.interval)
     if args.wait_before :
         waitBeforeTime = int(args.wait_before)
+    if args.wait_before_min :
+        waitBeforeTime = int(args.wait_before_min) * 60
     if args.wait :
         waitTime = int(args.wait)
+    if args.wait_min :
+        waitTime = int(args.wait_min) * 60
 
     startDate = datetime.datetime.strptime(args.start_date, '%Y-%m-%d')
     endDate = datetime.datetime.strptime(args.end_date, '%Y-%m-%d')
