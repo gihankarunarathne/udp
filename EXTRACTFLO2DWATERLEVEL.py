@@ -25,7 +25,7 @@ Usage: ./EXTRACTFLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-
 -p  --path          FLO2D model path which include HYCHAN.OUT
 -o  --out           Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
                     Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
--n  --name          Name field value of the Run table in Database. Use time format such as <%H:%M:%S> to replace with time(t).
+-n  --name          Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
 """
     print(usageText)
 

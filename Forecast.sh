@@ -40,7 +40,7 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     --wrf-raincell  Path of WRF kelani-basin(Raincell) Directory. Otherwise using the 'RF_DIR_PATH' from CONFIG.json
 
     --hec-hms-model-dir  Path of HEC_HMS_MODEL_DIR directory. Otherwise using the 'HEC_HMS_MODEL_DIR' from CONFIG.json
-    --name       Database run table name
+    -n|--name            Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
 EOF
 }
 
@@ -119,7 +119,7 @@ RUN_NAME=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-TEMP=`getopt -o hd:t:m:c:r:b:fiseC:T: \
+TEMP=`getopt -o hd:t:m:c:r:b:fiseC:T:n: \
         --long arga::,argb,argc:,start-date:,start-time:,mode:,tag:,wrf-out:,hec-hms-model-dir:,name: \
         -n 'Forecast.sh' -- "$@"`
 
@@ -211,7 +211,7 @@ while true ; do
                 "") shift 2 ;;
                 *) HEC_HMS_MODEL_DIR="$2" ; shift 2 ;;
             esac ;;
-        --name)
+        -n|--name)
             case "$2" in
                 "") shift 2 ;;
                 *) RUN_NAME="$2" ; shift 2 ;;
@@ -336,7 +336,8 @@ main() {
         ./CSVTODAT.py  -d $forecast_date -t $forecast_time \
             --start-date $timeseries_start_date --start-time $timeseries_start_time \
             `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
-            `[[ -z $FORCE_RUN ]] && echo "" || echo "-f"`
+            `[[ -z $FORCE_RUN ]] && echo "" || echo "-f"` \
+            `[[ -z $RUN_NAME ]] && echo "" || echo "--name $RUN_NAME"`
         ret=$?
         if [ $ret -ne 0 ]; then
              echo "Error in converting Discharge CSV to FLO2D INFLOW.DAT"

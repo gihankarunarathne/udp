@@ -18,11 +18,12 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
     --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
 -T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
 -f  --forceInsert   Force Insert into the database. May override existing values.
+-n  --name          Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
 """
     print(usageText)
 
-def saveForecastTimeseries(adapter, timeseries, date, time, forceInsert) :
-    print('CSVTODAT:: saveForecastTimeseries')
+def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
+    print('CSVTODAT:: saveForecastTimeseries:: len', len(timeseries))
     forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
     # print(forecastTimeseries[:10])
     extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
@@ -30,6 +31,21 @@ def saveForecastTimeseries(adapter, timeseries, date, time, forceInsert) :
     #     print(ll)
 
     dateTime = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    forceInsert = opts.get('forceInsert', False)
+
+    # TODO: Check whether station exist in Database
+    runName = opts.get('runName', 'Cloud-1')
+    lessCharIndex = runName.find('<')
+    greaterCharIndex = runName.find('>')
+    if lessCharIndex > -1 and greaterCharIndex > -1 and lessCharIndex < greaterCharIndex :
+        startStr = runName[:lessCharIndex]
+        dateFormatStr = runName[lessCharIndex+1:greaterCharIndex]
+        endStr = runName[greaterCharIndex+1:]
+        try:
+            dateStr = dateTime.strftime(dateFormatStr)
+            runName = startStr + dateStr + endStr
+        except ValueError:
+            raise ValueError("Incorrect data format " + dateFormatStr)
     types = [
         'Forecast-0-d',
         'Forecast-1-d-after',
@@ -44,7 +60,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, forceInsert) :
         'unit': 'm3/s',
         'type': types[0],
         'source': 'HEC-HMS',
-        'name': 'Cloud Continuous ' + dateTime.strftime("%H"),
+        'name': runName,
     }
     for i in range(0, len(types)) :
         metaData['type'] = types[i]
@@ -104,10 +120,11 @@ try :
     startTime = ''
     tag = ''
     forceInsert = False
+    runName = ''
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:f", [
-            "help", "date=", "time=", "start-date=", "start-time=", "tag=", "force"
+        opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:fn:", [
+            "help", "date=", "time=", "start-date=", "start-time=", "tag=", "force", "runName="
         ])
     except getopt.GetoptError:          
         usage()                        
@@ -128,6 +145,8 @@ try :
             tag = arg
         elif opt in ("-f", "--force"):
             forceInsert = True
+        elif opt in ("-n", "--name"):
+            runName = arg
 
     # FLO-2D parameters
     IHOURDAILY  = 0     # 0-hourly interval, 1-daily interval
@@ -197,8 +216,12 @@ try :
     f.writelines(lines)
 
     # Save Forecast values into Database
+    opts = {
+        'forceInsert': forceInsert,
+        'runName': runName
+    }
     adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-    saveForecastTimeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, forceInsert)
+    saveForecastTimeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, opts)
 
 except Exception as e :
     traceback.print_exc()
