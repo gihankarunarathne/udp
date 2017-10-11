@@ -120,7 +120,7 @@ try :
     startTime = ''
     tag = ''
     forceInsert = False
-    runName = ''
+    runName = 'Cloud-1'
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:fn:", [
@@ -178,7 +178,7 @@ try :
 
     print('CSVTODAT startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), tag)
     print(' CSVTODAT run for', date, '@', time, tag)
-    print(' With Custom starting', startDate, '@', startTime)
+    print(' With Custom starting', startDate, '@', startTime, ' run name:', runName)
 
     fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
