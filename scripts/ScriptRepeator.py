@@ -8,7 +8,7 @@ try :
     parser.add_argument("-p", "--file-path", help="File name to be executed.", required=True)
     parser.add_argument("-s", "--start-date", help="Start Date in YYYY-MM-DD.", required=True)
     parser.add_argument("--start-time", help="Start Time in HH:MM:SS.")
-    parser.add_argument("-e", "--end-date", help="End Date in YYYY-MM.", required=True)
+    parser.add_argument("-e", "--end-date", help="End Date in YYYY-MM.")
     parser.add_argument("--end-time", help="End Time in HH:MM:SS.")
     parser.add_argument("-f", "--force", action='store_true', help="Force insert.")
     parser.add_argument("--exec", help="Executor that going to run the file.script. Default `python`. E.g: python3")
@@ -39,11 +39,14 @@ try :
         waitTime = int(args.wait_min) * 60
 
     startDate = datetime.datetime.strptime(args.start_date, '%Y-%m-%d')
-    endDate = datetime.datetime.strptime(args.end_date, '%Y-%m-%d')
+    # Default End Date is current date
+    endDate = datetime.datetime.now()
+    if args.end_date :
+        endDate = datetime.datetime.strptime(args.end_date, '%Y-%m-%d')
     if args.start_time :
         startDate = datetime.datetime.strptime("%s %s" % (args.start_date, args.start_time), '%Y-%m-%d %H:%M:%S')
     if args.end_time :
-        endDate = datetime.datetime.strptime("%s %s" % (args.end_date, args.end_time), '%Y-%m-%d %H:%M:%S')
+        endDate = datetime.datetime.strptime("%s %s" % (endDate.strftime("%Y-%m-%d"), args.end_time), '%Y-%m-%d %H:%M:%S')
 
     executor = "python"
     if args.exec :
