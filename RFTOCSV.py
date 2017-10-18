@@ -41,6 +41,7 @@ def getObservedTimeseries(adapter, eventId, opts) :
 try :
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
+    RF_FORECASTED_DAYS = 0
     RAIN_CSV_FILE = 'DailyRain.csv'
     RF_DIR_PATH = './WRF/RF/'
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
@@ -55,6 +56,8 @@ try :
     MYSQL_DB="curw"
     MYSQL_PASSWORD=""
 
+    if 'RF_FORECASTED_DAYS' in CONFIG :
+        RF_FORECASTED_DAYS = CONFIG['RF_FORECASTED_DAYS']
     if 'RAIN_CSV_FILE' in CONFIG :
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
     if 'RF_DIR_PATH' in CONFIG :
@@ -133,6 +136,9 @@ try :
     if time :
         modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = modelState.strftime("%H:%M:%S")
+    # Set the RF forecast data available file name pattern
+    rfForecastedDate = datetime.datetime.strptime(date, '%Y-%m-%d') + datetime.timedelta(hours=RF_FORECASTED_DAYS)
+    rfForecastedDate = rfForecastedDate.strftime("%Y-%m-%d")
 
     startDateTime = datetime.datetime.now()
     if startDate :
@@ -148,11 +154,11 @@ try :
 
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(' RFTOCSV run for', date, '@', time, tag)
-    print(' With Custom starting', startDate, '@', startTime)
+    print(' With Custom starting', startDate, '@', startTime, ' using RF data of ', rfForecastedDate)
 
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, date) )):
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, rfForecastedDate) )):
             print('Start Operating on (Upper) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
@@ -166,7 +172,7 @@ try :
 
     KELANI_UPPER_BASIN_VALUES = OrderedDict()
     for catchment in KELANI_UPPER_BASIN :
-        for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment+'-'+date+'*.txt')):
+        for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment+'-'+rfForecastedDate+'*.txt')):
             print('Start Operating on (Kelani Upper Basin) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
@@ -180,7 +186,7 @@ try :
 
     LOWER_THEISSEN_VALUES = OrderedDict()
     for lowerCatchment in LOWER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+'-'+date+'*.txt')):
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+'-'+rfForecastedDate+'*.txt')):
             print('Start Operating on (Lower) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
@@ -202,10 +208,10 @@ try :
     if len(KUB_Timeseries) > 0 :
         # print(KUB_Timeseries)
         print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
-    KB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
-    if len(KB_Timeseries) > 0 :
-        # print(KB_Timeseries)
-        print('KB_Timeseries::', len(KB_Timeseries), KB_Timeseries[0], KB_Timeseries[-1])
+    KLB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
+    if len(KLB_Timeseries) > 0 :
+        # print(KLB_Timeseries)
+        print('KLB_Timeseries::', len(KLB_Timeseries), KLB_Timeseries[0], KLB_Timeseries[-1])
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
@@ -223,7 +229,7 @@ try :
     for kub_tt in KUB_Timeseries :
         # look for same time value in Kelani Basin
         kb_tt = kub_tt # TODO: Better to replace with missing ???
-        for sub_tt in KB_Timeseries :
+        for sub_tt in KLB_Timeseries :
             if sub_tt[0] == kub_tt[0] :
                 kb_tt = sub_tt
                 break

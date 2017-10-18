@@ -17,6 +17,7 @@
     "RF_DIR_PATH"       : "/mnt/disks/wrf-mod/OUTPUT/RF",
     "KUB_DIR_PATH"      : "/mnt/disks/wrf-mod/OUTPUT/kelani-upper-basin",
     "RF_GRID_DIR_PATH"  : "/mnt/disks/wrf-mod/OUTPUT/colombo",
+    "RF_FORECASTED_DAYS": -1,
 
     "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin",
     "INFLOW_DAT_FILE"   : "./FLO2D/INFLOW.DAT",

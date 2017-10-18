@@ -82,6 +82,7 @@ HOST_ADDRESS=$(trimQuotes $(cat CONFIG.json | jq '.HOST_ADDRESS'))
 HOST_PORT=$(cat CONFIG.json | jq '.HOST_PORT')
 WINDOWS_HOST="$HOST_ADDRESS:$HOST_PORT"
 
+RF_FORECASTED_DAYS=$(trimQuotes $(cat CONFIG.json | jq '.RF_FORECASTED_DAYS'))
 RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
 KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
 RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
@@ -105,6 +106,7 @@ forecast_time="`date +%H:00:00`";
 timeseries_start_date="";
 # timeseries_start_time="`date +%H:00:00`";
 timeseries_start_time="`date +00:00:00`";
+rf_forecasted_date="`date -d "${forecast_date} ${RF_FORECASTED_DAYS} days" +'%Y_%m_%d'`";
 
 MODE="d" # 'd' | 'h'
 DAYS_BACK=0
@@ -351,7 +353,7 @@ main() {
 
             # Send RAINCELL.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
-            FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$forecast_date/RAINCELL.DAT
+            FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$rf_forecasted_date/RAINCELL.DAT
             curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
 
             # Send RUN_FLO2D.json file into Windows, and run FLO2D
@@ -402,7 +404,7 @@ main() {
 }
 
 isWRFAvailable() {
-    local File_Pattern="*$forecast_date*.txt"
+    local File_Pattern="*$rf_forecasted_date*.txt"
     if [ -z "$(find $RF_DIR_PATH -name $File_Pattern)" ]; then
       # echo "empty (Unable find files $File_Pattern)"
       echo 0
