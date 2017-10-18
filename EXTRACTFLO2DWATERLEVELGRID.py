@@ -98,13 +98,13 @@ try :
 
     # Default run for current day
     now = datetime.datetime.now()
-    if 'MODEL_STATE_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    if 'MODEL_STATE_DATE' in FLO2D_CONFIG and len(FLO2D_CONFIG['MODEL_STATE_DATE']) : # Use FLO2D Config file data, if available
         now = datetime.datetime.strptime(FLO2D_CONFIG['MODEL_STATE_DATE'], '%Y-%m-%d')
     if date :
         now = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
     
-    if 'MODEL_STATE_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    if 'MODEL_STATE_TIME' in FLO2D_CONFIG and len(FLO2D_CONFIG['MODEL_STATE_TIME']) : # Use FLO2D Config file data, if available
         now = datetime.datetime.strptime('%s %s' % (date, FLO2D_CONFIG['MODEL_STATE_TIME']), '%Y-%m-%d %H:%M:%S')
     if time :
         now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
@@ -113,7 +113,7 @@ try :
     if start_date :
         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG and len(FLO2D_CONFIG['TIMESERIES_START_DATE']) : # Use FLO2D Config file data, if available
         start_date = datetime.datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE'], '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     else :
@@ -122,7 +122,7 @@ try :
     if start_time :
         start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG and len(FLO2D_CONFIG['TIMESERIES_START_DATE']) : # Use FLO2D Config file data, if available
         start_time = datetime.datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_DATE']), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     else :
@@ -135,7 +135,7 @@ try :
     BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
 
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
-    if 'FLO2D_OUTPUT_SUFFIX' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+    if 'FLO2D_OUTPUT_SUFFIX' in FLO2D_CONFIG and len(FLO2D_CONFIG['FLO2D_OUTPUT_SUFFIX']) : # Use FLO2D Config file data, if available
         WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, FLO2D_CONFIG['FLO2D_OUTPUT_SUFFIX']))
     if output_suffix :
             WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, output_suffix))
