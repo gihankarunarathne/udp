@@ -234,6 +234,8 @@ fi
 if [[ "$MODE" == "d" ]]; then
     forecast_time="`date +00:00:00`";
 fi
+# Set the date of RF Forecasts are available for current run
+rf_forecasted_date="`date -d "${forecast_date} ${RF_FORECASTED_DAYS} days" +'%Y_%m_%d'`";
 
 current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
@@ -264,7 +266,7 @@ main() {
 
     echo "Start at $current_date_time $FORCE_EXIT"
     echo "Forecasting with Forecast Date: $forecast_date @ $forecast_time, Config File: $CONFIG_FILE, Root Dir: $ROOT_DIR"
-    echo "With Custom Timeseries Start Date: $timeseries_start_date @ $timeseries_start_time"
+    echo "With Custom Timeseries Start Date: $timeseries_start_date @ $timeseries_start_time using RF data of $rf_forecasted_date)"
 
     local isWRF=$(isWRFAvailable)
     local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
