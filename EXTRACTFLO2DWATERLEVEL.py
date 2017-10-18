@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, datetime, sys, csv, traceback, getopt
+import os, json, subprocess, sys, csv, traceback, getopt
+from datetime import datetime, timedelta
 from os import curdir
 from os.path import join as pjoin
 from sys import executable
 from subprocess import Popen
+import Constants
 
 from curwmysqladapter import mysqladapter
 from Util.LibForecastTimeseries import extractForecastTimeseries
 from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
+from Util.Utils import getUTCOffset
 from LIBFLO2DWATERLEVELGRID import getWaterLevelOfChannels
 
 def usage() :
@@ -26,6 +29,7 @@ Usage: ./EXTRACTFLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-
 -o  --out           Suffix for 'water_level-<SUFFIX>' and 'water_level_grid-<SUFFIX>' output directories.
                     Default is 'water_level-<YYYY-MM-DD>' and 'water_level_grid-<YYYY-MM-DD>' same as -d option value.
 -n  --name          Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
+-u  --utc_offset    UTC offset of current timestamps. "+05:30" or "-10:00". Default value is "+00:00".
 """
     print(usageText)
 
@@ -40,11 +44,20 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     print('EXTRACTFLO2DWATERLEVEL:: saveForecastTimeseries')
     forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
     # print(forecastTimeseries[:10])
-    extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
+    extractedTimeseries = []
+    if 'utcOffset' in opts:
+        for item in forecastTimeseries:
+            extractedTimeseries.append([datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + opts['utcOffset'], item[1]])
+        extractedTimeseries = extractForecastTimeseriesInDays(extractedTimeseries)
+    else:
+        extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
+
     # for ll in extractedTimeseries :
     #     print(ll)
 
-    dateTime = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    dateTime = datetime.strptime('%s %s' % (date, time), Constants.COMMON_DATE_TIME_FORMAT)
+    if 'utcOffset' in opts :
+        dateTime = dateTime + opts['utcOffset']
     
     # Check whether existing station
     forceInsert = opts.get('forceInsert', False)
@@ -53,7 +66,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     runName = opts.get('runName', 'Cloud-1')
     lessCharIndex = runName.find('<')
     greaterCharIndex = runName.find('>')
-    if lessCharIndex > -1 and greaterCharIndex > -1 and lessCharIndex < greaterCharIndex :
+    if -1 < lessCharIndex > -1 < greaterCharIndex:
         startStr = runName[:lessCharIndex]
         dateFormatStr = runName[lessCharIndex+1:greaterCharIndex]
         endStr = runName[greaterCharIndex+1:]
@@ -116,6 +129,7 @@ try :
     WATER_LEVEL_DIR = 'water_level'
     OUTPUT_DIR = 'OUTPUT'
     RUN_FLO2D_FILE='RUN_FLO2D.json'
+    UTC_OFFSET='+00:00:00'
 
     MYSQL_HOST="localhost"
     MYSQL_USER="root"
@@ -176,10 +190,11 @@ try :
     start_time = ''
     flo2d_config = ''
     run_name = 'Cloud-1'
+    utc_offset = ''
     forceInsert = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hF:d:t:p:o:S:T:fn:", 
-            ["help", "flo2d_config=", "date=", "time=", "path=", "out=", "start_date=", "start_time=", "name=", "forceInsert"])
+        opts, args = getopt.getopt(sys.argv[1:], "hF:d:t:p:o:S:T:fn:u:", 
+            ["help", "flo2d_config=", "date=", "time=", "path=", "out=", "start_date=", "start_time=", "name=", "forceInsert", "utc_offset="])
     except getopt.GetoptError:          
         usage()                        
         sys.exit(2)                     
@@ -205,6 +220,8 @@ try :
             run_name = arg.strip()
         elif opt in ("-f", "--forceInsert"):
             forceInsert = True
+        elif opt in ("-u", "--utc_offset"):
+            utc_offset = arg.strip()
 
     appDir = pjoin(CWD, date + '_Kelani')
     if path :
@@ -220,39 +237,47 @@ try :
         FLO2D_CONFIG = json.loads(open(FLO2D_CONFIG_FILE).read())
 
     # Default run for current day
-    now = datetime.datetime.now()
+    now = datetime.now()
     if 'MODEL_STATE_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        now = datetime.datetime.strptime(FLO2D_CONFIG['MODEL_STATE_DATE'], '%Y-%m-%d')
+        now = datetime.strptime(FLO2D_CONFIG['MODEL_STATE_DATE'], '%Y-%m-%d')
     if date :
-        now = datetime.datetime.strptime(date, '%Y-%m-%d')
+        now = datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
     if 'MODEL_STATE_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        now = datetime.datetime.strptime('%s %s' % (date, FLO2D_CONFIG['MODEL_STATE_TIME']), '%Y-%m-%d %H:%M:%S')
+        now = datetime.strptime('%s %s' % (date, FLO2D_CONFIG['MODEL_STATE_TIME']), '%Y-%m-%d %H:%M:%S')
     if time :
-        now = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+        now = datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = now.strftime("%H:%M:%S")
 
     if start_date :
-        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        start_date = datetime.datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE'], '%Y-%m-%d')
+        start_date = datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE'], '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
     else :
         start_date = date
 
     if start_time :
-        start_time = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+        start_time = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
-        start_time = datetime.datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_TIME']), '%Y-%m-%d %H:%M:%S')
+        start_time = datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_TIME']), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
     else :
-        start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
+        start_time = datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
         start_time = start_time.strftime("%H:%M:%S")
 
+    # UTC Offset
+    if 'UTC_OFFSET' in FLO2D_CONFIG : # Use FLO2D Config file data, if available
+        UTC_OFFSET = FLO2D_CONFIG['UTC_OFFSET']
+    if utc_offset :
+        UTC_OFFSET = utc_offset
+    utcOffset = getUTCOffset(UTC_OFFSET, default=True)
+
     print('Extract Water Level Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@', start_time)
+    print('With UTC Offset of ', str(utcOffset), ' <= ', UTC_OFFSET)
 
     OUTPUT_DIR_PATH = pjoin(CWD, OUTPUT_DIR)
     HYCHAN_OUT_FILE_PATH = pjoin(appDir, HYCHAN_OUT_FILE)
@@ -331,7 +356,7 @@ try :
                             isSeriesComplete = True
 
                 if isSeriesComplete :
-                    baseTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+                    baseTime = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     timeseries = []
                     elementNo = int(waterLevelLines[0].split()[5])
                     print('Extracted Cell No', elementNo, CHANNEL_CELL_MAP[elementNo])
@@ -349,7 +374,7 @@ try :
                         if value == 'NaN' :
                             continue # If value is NaN, skip
                         timeStep = float(v[0])
-                        currentStepTime = baseTime + datetime.timedelta(hours=timeStep)
+                        currentStepTime = baseTime + timedelta(hours=timeStep)
                         dateAndTime = currentStepTime.strftime("%Y-%m-%d %H:%M:%S")
                         timeseries.append([dateAndTime, value])
 
@@ -358,8 +383,8 @@ try :
                         os.makedirs(WATER_LEVEL_DIR_PATH)
                     # Get Time stamp Ref:http://stackoverflow.com/a/13685221/1461060
                     ModelTime = float(waterLevelLines[1].split()[3])
-                    fileModelTime = datetime.datetime.strptime(date, '%Y-%m-%d')
-                    fileModelTime = fileModelTime + datetime.timedelta(hours=ModelTime)
+                    fileModelTime = datetime.strptime(date, '%Y-%m-%d')
+                    fileModelTime = fileModelTime + timedelta(hours=ModelTime)
                     dateAndTime = fileModelTime.strftime("%Y-%m-%d_%H-%M-%S")
                     # Create files
                     fileName = WATER_LEVEL_FILE.rsplit('.', 1)
@@ -375,6 +400,8 @@ try :
                         'station': CHANNEL_CELL_MAP[elementNo],
                         'runName': run_name
                     }
+                    if utcOffset != timedelta() :
+                        opts['utcOffset'] = utcOffset
                     adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
                     saveForecastTimeseries(adapter, timeseries, date, time, opts)
 
@@ -409,8 +436,8 @@ try :
                         os.makedirs(WATER_LEVEL_DIR_PATH)
                     # Get Time stamp Ref:http://stackoverflow.com/a/13685221/1461060
                     ModelTime = float(waterLevelLines[0].split()[3])
-                    baseTime = datetime.datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
-                    currentStepTime = baseTime + datetime.timedelta(hours=ModelTime)
+                    baseTime = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
+                    currentStepTime = baseTime + timedelta(hours=ModelTime)
                     dateAndTime = currentStepTime.strftime("%Y-%m-%d %H:%M:%S")
 
                     for elementNo in FLOOD_ELEMENT_NUMBERS :
@@ -446,6 +473,8 @@ try :
                 'station': FLOOD_PLAIN_CELL_MAP[elementNo],
                 'runName': run_name
             }
+            if utcOffset != timedelta() :
+                opts['utcOffset'] = utcOffset
             adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
             saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
             print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)

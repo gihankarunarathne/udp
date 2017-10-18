@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys, traceback, csv, json, datetime, getopt, os
+from datetime import datetime
 
 def extractForecastTimeseries(timeseries, date, time) :
     '''
@@ -9,10 +10,10 @@ def extractForecastTimeseries(timeseries, date, time) :
     values that timestamp onwards
     '''
     print('LibForecastTimeseries:: extractForecastTimeseries')
-    dateTime = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
+    dateTime = datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     newTimeseries = []
     for i, tt in enumerate(timeseries) :
-        ttDateTime = datetime.datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
+        ttDateTime = datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
         if ttDateTime > dateTime :
             newTimeseries = timeseries[i:]
             break
@@ -33,11 +34,12 @@ def extractForecastTimeseriesInDays(timeseries) :
     newTimeseries = []
     if len(timeseries) > 0 :
         groupTimeseries = []
-        prevDate = datetime.datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
+        isDateTimeObs = isinstance(timeseries[0][0], datetime)
+        prevDate = timeseries[0][0] if isDateTimeObs else datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
         prevDate = prevDate.replace(hour=0, minute=0, second=0, microsecond=0)
         for tt in timeseries :
             # Match Daily
-            ttDateTime = datetime.datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
+            ttDateTime = tt[0] if isDateTimeObs else datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
             if prevDate == ttDateTime.replace(hour=0, minute=0, second=0, microsecond=0) :
                 groupTimeseries.append(tt)
             else :
