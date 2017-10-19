@@ -64,17 +64,20 @@ RF_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_DIR_PATH'))
 KUB_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.KUB_DIR_PATH'))
 RF_GRID_DIR_PATH=$(trimQuotes $(cat CONFIG.json | jq '.RF_GRID_DIR_PATH'))
 OUTPUT_DIR=$(trimQuotes $(cat CONFIG.json | jq '.OUTPUT_DIR'))
+RF_FORECASTED_DAYS=$(trimQuotes $(cat CONFIG.json | jq '.RF_FORECASTED_DAYS'))
+
+rf_forecasted_date="`date -d "${forecast_date} ${RF_FORECASTED_DAYS} days" +'%Y-%m-%d'`";
 
 # Copy Rainfall data
-RF_DIR_PATH=$RF_DIR_PATH/*-$forecast_date.*
+RF_DIR_PATH=$RF_DIR_PATH/*-$rf_forecasted_date.*
 scp -r -i ~/.ssh/id_uwcc_admin $RF_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
 
 # Copy Kelani Upper Basin mean Rainfall data
-KUB_DIR_PATH=$KUB_DIR_PATH/mean-rf-$forecast_date.txt
+KUB_DIR_PATH=$KUB_DIR_PATH/mean-rf-$rf_forecasted_date.txt
 scp -r -i ~/.ssh/id_uwcc_admin $KUB_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-$forecast_date.txt
 
 # Copy Rainfall Grid data
-RF_GRID_DIR_PATH=$RF_GRID_DIR_PATH/created-$forecast_date
+RF_GRID_DIR_PATH=$RF_GRID_DIR_PATH/created-$rf_forecasted_date
 scp -r -i ~/.ssh/id_uwcc_admin $RF_GRID_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
 
 # Copy HEC-HMS Discharge
