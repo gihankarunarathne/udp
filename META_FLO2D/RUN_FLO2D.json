@@ -7,5 +7,6 @@
     "TIMESERIES_START_TIME" : "",
     "MODEL_STATE_DATE"      : "",
     "MODEL_STATE_TIME"      : "",
-    "RUN_NAME"              : ""
+    "RUN_NAME"              : "",
+    "TIME_ZONE"             : ""
 }

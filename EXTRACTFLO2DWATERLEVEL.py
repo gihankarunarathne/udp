@@ -189,7 +189,8 @@ try :
     start_date = ''
     start_time = ''
     flo2d_config = ''
-    run_name = 'Cloud-1'
+    run_name_default = 'Cloud-1'
+    run_name = ''
     utc_offset = ''
     forceInsert = False
     try:
@@ -268,6 +269,12 @@ try :
     else :
         start_time = datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
         start_time = start_time.strftime("%H:%M:%S")
+
+    # Run Name of DB
+    if 'RUN_NAME' in FLO2D_CONFIG and len(FLO2D_CONFIG['RUN_NAME']) : # Use FLO2D Config file data, if available
+        run_name = FLO2D_CONFIG['RUN_NAME']
+    if not run_name :
+        run_name = run_name_default
 
     # UTC Offset
     if 'UTC_OFFSET' in FLO2D_CONFIG and len(FLO2D_CONFIG['UTC_OFFSET']) : # Use FLO2D Config file data, if available
