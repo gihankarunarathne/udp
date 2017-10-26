@@ -47,7 +47,7 @@ done
 
 if [ "$DAYS_BACK" -gt 0 ]
 then
-    #TODO: Try to back date base on user given date
+    # TODO: Try to back date base on user given date
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
 

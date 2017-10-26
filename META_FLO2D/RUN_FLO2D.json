@@ -8,5 +8,5 @@
     "MODEL_STATE_DATE"      : "",
     "MODEL_STATE_TIME"      : "",
     "RUN_NAME"              : "",
-    "TIME_ZONE"             : ""
+    "UTC_OFFSET"             : ""
 }
