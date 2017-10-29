@@ -388,7 +388,7 @@ main() {
             sed -i "/MODEL_STATE_TIME/c\    $MODEL_STATE_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
             # Run name/tags of the Timeseries
-            RUN_NAME_TXT="\"RUN_NAME\"\t : \"$RUN_NAME\""
+            RUN_NAME_TXT="\"RUN_NAME\"\t : \"$RUN_NAME\","
             sed -i "/RUN_NAME/c\    $RUN_NAME_TXT" $FLO2D_DIR/RUN_FLO2D.json
 
             curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
