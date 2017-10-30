@@ -8,7 +8,7 @@ from sys import executable
 from subprocess import Popen
 import Constants
 
-from curwmysqladapter import mysqladapter
+from curwmysqladapter import MySQLAdapter
 from Util.LibForecastTimeseries import extractForecastTimeseries
 from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 from Util.Utils import getUTCOffset
@@ -103,9 +103,9 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     }
     for i in range(0, min(len(types), len(extractedTimeseries))) :
         metaData['type'] = types[i]
-        eventId = adapter.getEventId(metaData)
+        eventId = adapter.get_event_id(metaData)
         if eventId is None :
-            eventId = adapter.createEventId(metaData)
+            eventId = adapter.create_event_id(metaData)
             print('HASH SHA256 created: ', eventId)
         else :
             print('HASH SHA256 exists: ', eventId)
@@ -115,7 +115,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insertTimeseries(eventId, extractedTimeseries[i], forceInsert)
+        rowCount = adapter.insert_timeseries(eventId, extractedTimeseries[i], forceInsert)
         print('%s rows inserted.\n' % rowCount)
     # -- END OF SAVEFORECASTTIMESERIES
 
@@ -409,7 +409,7 @@ try :
                     }
                     if utcOffset != timedelta() :
                         opts['utcOffset'] = utcOffset
-                    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+                    adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
                     saveForecastTimeseries(adapter, timeseries, date, time, opts)
 
                     isWaterLevelLines = False
@@ -482,7 +482,7 @@ try :
             }
             if utcOffset != timedelta() :
                 opts['utcOffset'] = utcOffset
-            adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+            adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
             saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
             print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)
 

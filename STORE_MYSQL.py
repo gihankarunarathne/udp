@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from curwmysqladapter import mysqladapter
+from curwmysqladapter import MySQLAdapter, Station
 import sys, traceback, csv, json, datetime, getopt, glob, os, copy
 import numpy as np
 
@@ -202,9 +202,9 @@ def storeDischarge(adapter):
 
     for i in range(0, 6) :
         dischargeMeta['type'] = types[i]
-        eventId = adapter.getEventId(dischargeMeta)
+        eventId = adapter.get_event_id(dischargeMeta)
         if eventId is None :
-            eventId = adapter.createEventId(dischargeMeta)
+            eventId = adapter.create_event_id(dischargeMeta)
             print('HASH SHA256 created: ', eventId)
         else :
             print('HASH SHA256 exists: ', eventId)
@@ -214,7 +214,7 @@ def storeDischarge(adapter):
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insertTimeseries(eventId, timeseries[i*DIS_RESOLUTION:(i+1)*DIS_RESOLUTION], forceInsert)
+        rowCount = adapter.insert_timeseries(eventId, timeseries[i*DIS_RESOLUTION:(i+1)*DIS_RESOLUTION], forceInsert)
         print('%s rows inserted.\n' % rowCount)
 
 
@@ -252,9 +252,9 @@ def storeRainfall(adapter):
 
             for i in range(0, 3) :
                 rainfallMeta['type'] = types[i]
-                eventId = adapter.getEventId(rainfallMeta)
+                eventId = adapter.get_event_id(rainfallMeta)
                 if eventId is None :
-                    eventId = adapter.createEventId(rainfallMeta)
+                    eventId = adapter.create_event_id(rainfallMeta)
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
@@ -264,7 +264,7 @@ def storeRainfall(adapter):
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
                 #     print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries[i*RF_RESOLUTION:(i+1)*RF_RESOLUTION], forceInsert)
+                rowCount = adapter.insert_timeseries(eventId, timeseries[i*RF_RESOLUTION:(i+1)*RF_RESOLUTION], forceInsert)
                 print('%s rows inserted.\n' % rowCount)
 
 
@@ -334,9 +334,9 @@ def storeWaterlevel(adapter):
 
             for i in range(0, 6) :
                 waterlevelMeta['type'] = types[i]
-                eventId = adapter.getEventId(waterlevelMeta)
+                eventId = adapter.get_event_id(waterlevelMeta)
                 if eventId is None :
-                    eventId = adapter.createEventId(waterlevelMeta)
+                    eventId = adapter.create_event_id(waterlevelMeta)
                     print('HASH SHA256 created: ', eventId)
                 else :
                     print('HASH SHA256 exists: ', eventId)
@@ -351,14 +351,14 @@ def storeWaterlevel(adapter):
                         'from': dailyStartDateTime.strftime("%Y-%m-%d %H:%M:%S"),
                         'to': dailyEndDateTime.strftime("%Y-%m-%d %H:%M:%S")
                     }
-                    existingTimeseries = adapter.retrieveTimeseries(waterlevelMetaQuery, opts)
+                    existingTimeseries = adapter.retrieve_timeseries(waterlevelMetaQuery, opts)
                     if len(existingTimeseries[0]['timeseries']) > 0 and not forceInsert:
                         print('Timeseries already exists. User --force to update the existing.\n')
                         continue
                 
                 # for l in timeseries[:3] + timeseries[-2:] :
                 #     print(l)
-                rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], forceInsert)
+                rowCount = adapter.insert_timeseries(eventId, timeseries[i*WL_RESOLUTION:(i+1)*WL_RESOLUTION], forceInsert)
                 print('%s rows inserted.\n' % rowCount)
 
 def storeFLO2DStations(adapter):
@@ -368,7 +368,7 @@ def storeFLO2DStations(adapter):
     bufsize = 65536
     stationIDOffset = 1000
     with open(CADPTS_DAT_FILE_PATH) as infile:
-        stations = []
+        num_stations = 0
         while True:
             lines = infile.readlines(bufsize)
 
@@ -378,13 +378,15 @@ def storeFLO2DStations(adapter):
                 s = line.split()
                 if len(s) > 0 :
                     cellId = int(s[0])
-                    stations.append([stationIDOffset + cellId, 'FLO2D %s' % cellId, s[1], s[2]])
+                    station = [Station.FLO2D, 'flo2d_%s' % (stationIDOffset + cellId), 'FLO2D %s' % cellId, s[1], s[2], 0, 'FLO2D Virtual Station']
                     print('FLO2D Cell:', cellId, 'with latitude: %s, longitude: %s -> inserted as `FLO2D %s`' % (s[1], s[2], cellId))
 
-        # for station in stations[:3] + stations[-2:] :
-        #     print(station)
-        rowCount = adapter.createStations(stations)
-        print('%s stations inserted.\n' % rowCount)
+                    is_station_exists = adapter.get_station({'name': 'flo2d_%s' % (stationIDOffset + cellId)})
+                    if is_station_exists is None:
+                        adapter.create_station(station)
+                        num_stations += 1
+
+        print('%s stations inserted.\n' % num_stations)
 
 def storeWaterlevelGrid(adapter):
     print('\nStoring Waterlevel Grid :::')
@@ -470,9 +472,9 @@ def storeWaterlevelGrid(adapter):
 
         for i in range(0, 6) :
             waterlevelGridMeta['type'] = types[i]
-            eventId = adapter.getEventId(waterlevelGridMeta)
+            eventId = adapter.get_event_id(waterlevelGridMeta)
             if eventId is None :
-                eventId = adapter.createEventId(waterlevelGridMeta)
+                eventId = adapter.create_event_id(waterlevelGridMeta)
                 print('HASH SHA256 created: ', eventId)
             else :
                 print('HASH SHA256 exists: ', eventId)
@@ -487,19 +489,19 @@ def storeWaterlevelGrid(adapter):
                     'from': dailyStartDateTime.strftime("%Y-%m-%d %H:%M:%S"),
                     'to': dailyEndDateTime.strftime("%Y-%m-%d %H:%M:%S")
                 }
-                existingTimeseries = adapter.retrieveTimeseries(waterlevelGridMetaQuery, opts)
+                existingTimeseries = adapter.retrieve_timeseries(waterlevelGridMetaQuery, opts)
                 if len(existingTimeseries[0]['timeseries']) > 0 and not forceInsert:
                     print('Timeseries already exists. User --force to update the existing.\n')
                     continue
 
             # for l in timeseries[:3] + timeseries[-2:] :
             #     print(l)
-            rowCount = adapter.insertTimeseries(eventId, timeseries[i*WL_GRID_RESOLUTION:(i+1)*WL_GRID_RESOLUTION], forceInsert)
+            rowCount = adapter.insert_timeseries(eventId, timeseries[i*WL_GRID_RESOLUTION:(i+1)*WL_GRID_RESOLUTION], forceInsert)
             print('%s rows inserted.\n' % rowCount)
 
 
 
-adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
 
 if rainfallInsert or allInsert :
     storeRainfall(adapter)

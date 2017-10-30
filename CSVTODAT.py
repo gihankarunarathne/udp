@@ -3,7 +3,7 @@
 from string import Template
 import sys, traceback, csv, json, datetime, getopt, os
 
-from curwmysqladapter import mysqladapter
+from curwmysqladapter import MySQLAdapter
 from Util.LibForecastTimeseries import extractForecastTimeseries
 from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 
@@ -21,6 +21,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 -n  --name          Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
 """
     print(usageText)
+
 
 def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     print('CSVTODAT:: saveForecastTimeseries:: len', len(timeseries))
@@ -64,9 +65,9 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     }
     for i in range(0, len(types)) :
         metaData['type'] = types[i]
-        eventId = adapter.getEventId(metaData)
+        eventId = adapter.get_event_id(metaData)
         if eventId is None :
-            eventId = adapter.createEventId(metaData)
+            eventId = adapter.create_event_id(metaData)
             print('HASH SHA256 created: ', eventId)
         else :
             print('HASH SHA256 exists: ', eventId)
@@ -76,7 +77,7 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insertTimeseries(eventId, extractedTimeseries[i], forceInsert)
+        rowCount = adapter.insert_timeseries(eventId, extractedTimeseries[i], forceInsert)
         print('%s rows inserted.\n' % rowCount)
     # -- END OF SAVEFORECASTTIMESERIES
 
@@ -220,7 +221,7 @@ try :
         'forceInsert': forceInsert,
         'runName': runName
     }
-    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     saveForecastTimeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, opts)
 
 except Exception as e :

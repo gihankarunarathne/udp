@@ -3,7 +3,7 @@
 import sys, traceback, datetime, os, glob, csv, json, getopt
 from string import Template
 from collections import OrderedDict
-from curwmysqladapter import mysqladapter
+from curwmysqladapter import MySQLAdapter
 
 def usage() :
     usageText = """
@@ -21,7 +21,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
     print(usageText)
 
 def getObservedTimeseries(adapter, eventId, opts) :
-    existingTimeseries = adapter.retrieveTimeseries([eventId], opts)
+    existingTimeseries = adapter.retrieve_timeseries([eventId], opts)
     newTimeseries = []
     if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0 :
         existingTimeseries = existingTimeseries[0]['timeseries']
@@ -199,7 +199,7 @@ try :
                 LOWER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * LOWER_CATCHMENT_WEIGHTS[lowerCatchment]
 
     # Get Observed Data
-    adapter = mysqladapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     opts = {
         'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
