@@ -14,7 +14,8 @@ from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 from Util.Utils import getUTCOffset
 from LIBFLO2DWATERLEVELGRID import getWaterLevelOfChannels
 
-def usage() :
+
+def usage():
     usageText = """
 Usage: ./EXTRACTFLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-S YYYY-MM-DD] [-T HH:MM:SS]
 
@@ -33,21 +34,24 @@ Usage: ./EXTRACTFLO2DTOWATERLEVEL.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-p -o -h] [-
 """
     print(usageText)
 
-def isfloat(value):
-  try:
-    float(value)
-    return True
-  except ValueError:
-    return False
 
-def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
+def isfloat(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def saveForecastTimeseries(adapter, timeseries, date, time, opts):
     print('EXTRACTFLO2DWATERLEVEL:: saveForecastTimeseries')
     forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
     # print(forecastTimeseries[:10])
     extractedTimeseries = []
     if 'utcOffset' in opts:
         for item in forecastTimeseries:
-            extractedTimeseries.append([datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + opts['utcOffset'], item[1]])
+            extractedTimeseries.append(
+                [datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + opts['utcOffset'], item[1]])
         extractedTimeseries = extractForecastTimeseriesInDays(extractedTimeseries)
     else:
         extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
@@ -56,9 +60,9 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     #     print(ll)
 
     dateTime = datetime.strptime('%s %s' % (date, time), Constants.COMMON_DATE_TIME_FORMAT)
-    if 'utcOffset' in opts :
+    if 'utcOffset' in opts:
         dateTime = dateTime + opts['utcOffset']
-    
+
     # Check whether existing station
     forceInsert = opts.get('forceInsert', False)
     station = opts.get('station', '')
@@ -68,8 +72,8 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
     greaterCharIndex = runName.find('>')
     if -1 < lessCharIndex > -1 < greaterCharIndex:
         startStr = runName[:lessCharIndex]
-        dateFormatStr = runName[lessCharIndex+1:greaterCharIndex]
-        endStr = runName[greaterCharIndex+1:]
+        dateFormatStr = runName[lessCharIndex + 1:greaterCharIndex]
+        endStr = runName[greaterCharIndex + 1:]
         try:
             dateStr = dateTime.strftime(dateFormatStr)
             runName = startStr + dateStr + endStr
@@ -101,25 +105,26 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
         'source': 'FLO2D',
         'name': runName
     }
-    for i in range(0, min(len(types), len(extractedTimeseries))) :
+    for i in range(0, min(len(types), len(extractedTimeseries))):
         metaData['type'] = types[i]
         eventId = adapter.get_event_id(metaData)
-        if eventId is None :
+        if eventId is None:
             eventId = adapter.create_event_id(metaData)
             print('HASH SHA256 created: ', eventId)
-        else :
+        else:
             print('HASH SHA256 exists: ', eventId)
-            if not forceInsert :
+            if not forceInsert:
                 print('Timeseries already exists. User --force to update the existing.\n')
                 continue
-        
+
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
         rowCount = adapter.insert_timeseries(eventId, extractedTimeseries[i], forceInsert)
         print('%s rows inserted.\n' % rowCount)
-    # -- END OF SAVEFORECASTTIMESERIES
+        # -- END OF SAVEFORECASTTIMESERIES
 
-try :
+
+try:
     CONFIG = json.loads(open('CONFIG.json').read())
 
     CWD = os.getcwd()
@@ -128,53 +133,53 @@ try :
     WATER_LEVEL_FILE = 'water_level.txt'
     WATER_LEVEL_DIR = 'water_level'
     OUTPUT_DIR = 'OUTPUT'
-    RUN_FLO2D_FILE='RUN_FLO2D.json'
-    UTC_OFFSET='+00:00:00'
+    RUN_FLO2D_FILE = 'RUN_FLO2D.json'
+    UTC_OFFSET = '+00:00:00'
 
-    MYSQL_HOST="localhost"
-    MYSQL_USER="root"
-    MYSQL_DB="curw"
-    MYSQL_PASSWORD=""
+    MYSQL_HOST = "localhost"
+    MYSQL_USER = "root"
+    MYSQL_DB = "curw"
+    MYSQL_PASSWORD = ""
 
-    if 'HYCHAN_OUT_FILE' in CONFIG :
+    if 'HYCHAN_OUT_FILE' in CONFIG:
         HYCHAN_OUT_FILE = CONFIG['HYCHAN_OUT_FILE']
-    if 'BASE_OUT_FILE' in CONFIG :
+    if 'BASE_OUT_FILE' in CONFIG:
         BASE_OUT_FILE = CONFIG['BASE_OUT_FILE']
-    if 'WATER_LEVEL_FILE' in CONFIG :
+    if 'WATER_LEVEL_FILE' in CONFIG:
         WATER_LEVEL_FILE = CONFIG['WATER_LEVEL_FILE']
-    if 'OUTPUT_DIR' in CONFIG :
+    if 'OUTPUT_DIR' in CONFIG:
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
-    if 'MYSQL_HOST' in CONFIG :
+    if 'MYSQL_HOST' in CONFIG:
         MYSQL_HOST = CONFIG['MYSQL_HOST']
-    if 'MYSQL_USER' in CONFIG :
+    if 'MYSQL_USER' in CONFIG:
         MYSQL_USER = CONFIG['MYSQL_USER']
-    if 'MYSQL_DB' in CONFIG :
+    if 'MYSQL_DB' in CONFIG:
         MYSQL_DB = CONFIG['MYSQL_DB']
-    if 'MYSQL_PASSWORD' in CONFIG :
+    if 'MYSQL_PASSWORD' in CONFIG:
         MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
     CHANNEL_CELL_MAP = {
-        618  : "N'Street-River",
-        616  : "N'Street-Canal",
-        179  : "Wellawatta",
-        684  : "Dematagoda-Canal",
-        221  : "Dehiwala",
-        1515 : "Parliament Lake Bridge-Kotte Canal",
-        2158 : "Parliament Lake-Out",
-        4280 : "Madiwela-US",
-        3582 : "Ambathale",
-        3581 : "Madiwela-Out",
-        2290 : "Salalihini-River",
-        2395 : "Salalihini-Canal",
-        1076 : "Kittampahuwa-River",
-        1075 : "kittampahuwa-Out",
-        1062 : "Kolonnawa-Canal",
-        814  : "Heen Ela",
-        592  : "Torington",
+        618: "N'Street-River",
+        616: "N'Street-Canal",
+        179: "Wellawatta",
+        684: "Dematagoda-Canal",
+        221: "Dehiwala",
+        1515: "Parliament Lake Bridge-Kotte Canal",
+        2158: "Parliament Lake-Out",
+        4280: "Madiwela-US",
+        3582: "Ambathale",
+        3581: "Madiwela-Out",
+        2290: "Salalihini-River",
+        2395: "Salalihini-Canal",
+        1076: "Kittampahuwa-River",
+        1075: "kittampahuwa-Out",
+        1062: "Kolonnawa-Canal",
+        814: "Heen Ela",
+        592: "Torington",
     }
     FLOOD_PLAIN_CELL_MAP = {
-        2265 : "Parliament Lake",
+        2265: "Parliament Lake",
     }
 
     ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
@@ -194,14 +199,15 @@ try :
     utc_offset = ''
     forceInsert = False
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hF:d:t:p:o:S:T:fn:u:", 
-            ["help", "flo2d_config=", "date=", "time=", "path=", "out=", "start_date=", "start_time=", "name=", "forceInsert", "utc_offset="])
-    except getopt.GetoptError:          
-        usage()                        
-        sys.exit(2)                     
+        opts, args = getopt.getopt(sys.argv[1:], "hF:d:t:p:o:S:T:fn:u:",
+                                   ["help", "flo2d_config=", "date=", "time=", "path=", "out=", "start_date=",
+                                    "start_time=", "name=", "forceInsert", "utc_offset="])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            usage()  
+            usage()
             sys.exit()
         elif opt in ("-F", "--flo2d_config"):
             flo2d_config = arg
@@ -225,12 +231,12 @@ try :
             utc_offset = arg.strip()
 
     appDir = pjoin(CWD, date + '_Kelani')
-    if path :
+    if path:
         appDir = pjoin(CWD, path)
 
     # Load FLO2D Configuration file for the Model run if available
     FLO2D_CONFIG_FILE = pjoin(appDir, RUN_FLO2D_FILE)
-    if flo2d_config :
+    if flo2d_config:
         FLO2D_CONFIG_FILE = pjoin(CWD, flo2d_config)
     FLO2D_CONFIG = json.loads('{}')
     # Check FLO2D Config file exists
@@ -239,47 +245,52 @@ try :
 
     # Default run for current day
     now = datetime.now()
-    if 'MODEL_STATE_DATE' in FLO2D_CONFIG and len(FLO2D_CONFIG['MODEL_STATE_DATE']) : # Use FLO2D Config file data, if available
+    if 'MODEL_STATE_DATE' in FLO2D_CONFIG and len(
+            FLO2D_CONFIG['MODEL_STATE_DATE']):  # Use FLO2D Config file data, if available
         now = datetime.strptime(FLO2D_CONFIG['MODEL_STATE_DATE'], '%Y-%m-%d')
-    if date :
+    if date:
         now = datetime.strptime(date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
-    if 'MODEL_STATE_TIME' in FLO2D_CONFIG and len(FLO2D_CONFIG['MODEL_STATE_TIME']) : # Use FLO2D Config file data, if available
+    if 'MODEL_STATE_TIME' in FLO2D_CONFIG and len(
+            FLO2D_CONFIG['MODEL_STATE_TIME']):  # Use FLO2D Config file data, if available
         now = datetime.strptime('%s %s' % (date, FLO2D_CONFIG['MODEL_STATE_TIME']), '%Y-%m-%d %H:%M:%S')
-    if time :
+    if time:
         now = datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = now.strftime("%H:%M:%S")
 
-    if start_date :
+    if start_date:
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG and len(FLO2D_CONFIG['TIMESERIES_START_DATE']) : # Use FLO2D Config file data, if available
+    elif 'TIMESERIES_START_DATE' in FLO2D_CONFIG and len(
+            FLO2D_CONFIG['TIMESERIES_START_DATE']):  # Use FLO2D Config file data, if available
         start_date = datetime.strptime(FLO2D_CONFIG['TIMESERIES_START_DATE'], '%Y-%m-%d')
         start_date = start_date.strftime("%Y-%m-%d")
-    else :
+    else:
         start_date = date
 
-    if start_time :
+    if start_time:
         start_time = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG and len(FLO2D_CONFIG['TIMESERIES_START_TIME']) : # Use FLO2D Config file data, if available
-        start_time = datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_TIME']), '%Y-%m-%d %H:%M:%S')
+    elif 'TIMESERIES_START_TIME' in FLO2D_CONFIG and len(
+            FLO2D_CONFIG['TIMESERIES_START_TIME']):  # Use FLO2D Config file data, if available
+        start_time = datetime.strptime('%s %s' % (start_date, FLO2D_CONFIG['TIMESERIES_START_TIME']),
+                                       '%Y-%m-%d %H:%M:%S')
         start_time = start_time.strftime("%H:%M:%S")
-    else :
-        start_time = datetime.strptime(start_date, '%Y-%m-%d') # Time is set to 00:00:00
+    else:
+        start_time = datetime.strptime(start_date, '%Y-%m-%d')  # Time is set to 00:00:00
         start_time = start_time.strftime("%H:%M:%S")
 
     # Run Name of DB
-    if 'RUN_NAME' in FLO2D_CONFIG and len(FLO2D_CONFIG['RUN_NAME']) : # Use FLO2D Config file data, if available
+    if 'RUN_NAME' in FLO2D_CONFIG and len(FLO2D_CONFIG['RUN_NAME']):  # Use FLO2D Config file data, if available
         run_name = FLO2D_CONFIG['RUN_NAME']
-    if not run_name :
+    if not run_name:
         run_name = run_name_default
 
     # UTC Offset
-    if 'UTC_OFFSET' in FLO2D_CONFIG and len(FLO2D_CONFIG['UTC_OFFSET']) : # Use FLO2D Config file data, if available
+    if 'UTC_OFFSET' in FLO2D_CONFIG and len(FLO2D_CONFIG['UTC_OFFSET']):  # Use FLO2D Config file data, if available
         UTC_OFFSET = FLO2D_CONFIG['UTC_OFFSET']
-    if utc_offset :
+    if utc_offset:
         UTC_OFFSET = utc_offset
     utcOffset = getUTCOffset(UTC_OFFSET, default=True)
 
@@ -290,9 +301,10 @@ try :
     HYCHAN_OUT_FILE_PATH = pjoin(appDir, HYCHAN_OUT_FILE)
 
     WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, date))
-    if 'FLO2D_OUTPUT_SUFFIX' in FLO2D_CONFIG and len(FLO2D_CONFIG['FLO2D_OUTPUT_SUFFIX']) : # Use FLO2D Config file data, if available
+    if 'FLO2D_OUTPUT_SUFFIX' in FLO2D_CONFIG and len(
+            FLO2D_CONFIG['FLO2D_OUTPUT_SUFFIX']):  # Use FLO2D Config file data, if available
         WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, FLO2D_CONFIG['FLO2D_OUTPUT_SUFFIX']))
-    if output_suffix :
+    if output_suffix:
         WATER_LEVEL_DIR_PATH = pjoin(OUTPUT_DIR_PATH, "%s-%s" % (WATER_LEVEL_DIR, output_suffix))
 
     print('Processing FLO2D model on', appDir)
@@ -311,20 +323,20 @@ try :
     with open(HYCHAN_OUT_FILE_PATH) as infile:
         isWaterLevelLines = False
         isCounting = False
-        countSeriesSize = 0 # HACK: When it comes to the end of file, unable to detect end of time series
+        countSeriesSize = 0  # HACK: When it comes to the end of file, unable to detect end of time series
         while True:
             lines = infile.readlines(bufsize)
             if not lines or SERIES_LENGTH:
                 break
             for line in lines:
-                if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5) :
+                if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5):
                     isWaterLevelLines = True
-                elif isWaterLevelLines :
+                elif isWaterLevelLines:
                     cols = line.split()
-                    if len(cols) > 0 and cols[0].replace('.','',1).isdigit() :
+                    if len(cols) > 0 and cols[0].replace('.', '', 1).isdigit():
                         countSeriesSize += 1
                         isCounting = True
-                    elif isWaterLevelLines and isCounting :
+                    elif isWaterLevelLines and isCounting:
                         SERIES_LENGTH = countSeriesSize
                         break
 
@@ -333,53 +345,53 @@ try :
     #################################################################
     # Extract Channel Water Level elevations from HYCHAN.OUT file   #
     #################################################################
-    with open(HYCHAN_OUT_FILE_PATH) as infile: 
+    with open(HYCHAN_OUT_FILE_PATH) as infile:
         isWaterLevelLines = False
         isSeriesComplete = False
         waterLevelLines = []
-        seriesSize = 0 # HACK: When it comes to the end of file, unable to detect end of time series
+        seriesSize = 0  # HACK: When it comes to the end of file, unable to detect end of time series
         while True:
             lines = infile.readlines(bufsize)
             if not lines:
                 break
             for line in lines:
-                if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5) :
+                if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5):
                     seriesSize = 0
                     elementNo = int(line.split()[5])
 
-                    if elementNo in ELEMENT_NUMBERS :
+                    if elementNo in ELEMENT_NUMBERS:
                         isWaterLevelLines = True
                         waterLevelLines.append(line)
-                    else :
+                    else:
                         isWaterLevelLines = False
 
-                elif isWaterLevelLines :
+                elif isWaterLevelLines:
                     cols = line.split()
-                    if len(cols) > 0 and isfloat(cols[0]) :
+                    if len(cols) > 0 and isfloat(cols[0]):
                         seriesSize += 1
                         waterLevelLines.append(line)
 
-                        if seriesSize == SERIES_LENGTH :
+                        if seriesSize == SERIES_LENGTH:
                             isSeriesComplete = True
 
-                if isSeriesComplete :
+                if isSeriesComplete:
                     baseTime = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     timeseries = []
                     elementNo = int(waterLevelLines[0].split()[5])
                     print('Extracted Cell No', elementNo, CHANNEL_CELL_MAP[elementNo])
-                    for ts in waterLevelLines[1:] :
+                    for ts in waterLevelLines[1:]:
                         v = ts.split()
-                        if len(v) < 1 :
+                        if len(v) < 1:
                             continue
                         # Get flood level (Elevation)
                         value = v[1]
                         # Get flood depth (Depth)
                         # value = v[2]
-                        if not isfloat(value) :
+                        if not isfloat(value):
                             value = MISSING_VALUE
-                            continue # If value is not present, skip
-                        if value == 'NaN' :
-                            continue # If value is NaN, skip
+                            continue  # If value is not present, skip
+                        if value == 'NaN':
+                            continue  # If value is NaN, skip
                         timeStep = float(v[0])
                         currentStepTime = baseTime + timedelta(hours=timeStep)
                         dateAndTime = currentStepTime.strftime("%Y-%m-%d %H:%M:%S")
@@ -407,7 +419,7 @@ try :
                         'station': CHANNEL_CELL_MAP[elementNo],
                         'runName': run_name
                     }
-                    if utcOffset != timedelta() :
+                    if utcOffset != timedelta():
                         opts['utcOffset'] = utcOffset
                     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
                     saveForecastTimeseries(adapter, timeseries, date, time, opts)
@@ -415,14 +427,15 @@ try :
                     isWaterLevelLines = False
                     isSeriesComplete = False
                     waterLevelLines = []
-            # -- END for loop
-        # -- END while loop
+                    # -- END for loop
+                    # -- END while loop
 
     #################################################################
     # Extract Flood Plain water elevations from BASE.OUT file       #
     #################################################################
     BASE_OUT_FILE_PATH = pjoin(appDir, BASE_OUT_FILE)
-    print('Extract Flood Plain Water Level Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@', start_time)
+    print('Extract Flood Plain Water Level Result of FLO2D on', date, '@', time, 'with Bast time of', start_date, '@',
+          start_time)
     with open(BASE_OUT_FILE_PATH) as infile:
         isWaterLevelLines = False
         waterLevelLines = []
@@ -433,9 +446,9 @@ try :
             if not lines:
                 break
             for line in lines:
-                if line.startswith('MODEL TIME =', 5) :
+                if line.startswith('MODEL TIME =', 5):
                     isWaterLevelLines = True
-                elif isWaterLevelLines and line.startswith('***CHANNEL RESULTS***', 17) :
+                elif isWaterLevelLines and line.startswith('***CHANNEL RESULTS***', 17):
                     waterLevels = getWaterLevelOfChannels(waterLevelLines, FLOOD_ELEMENT_NUMBERS)
 
                     # Create Directory
@@ -447,30 +460,31 @@ try :
                     currentStepTime = baseTime + timedelta(hours=ModelTime)
                     dateAndTime = currentStepTime.strftime("%Y-%m-%d %H:%M:%S")
 
-                    for elementNo in FLOOD_ELEMENT_NUMBERS :
+                    for elementNo in FLOOD_ELEMENT_NUMBERS:
                         tmpTS = waterLevelSeriesDict[elementNo][:]
-                        if elementNo in waterLevels :
-                            tmpTS.append([dateAndTime, waterLevels[elementNo] ])
-                        else :
-                            tmpTS.append([dateAndTime, MISSING_VALUE ])
+                        if elementNo in waterLevels:
+                            tmpTS.append([dateAndTime, waterLevels[elementNo]])
+                        else:
+                            tmpTS.append([dateAndTime, MISSING_VALUE])
                         waterLevelSeriesDict[elementNo] = tmpTS
 
                     isWaterLevelLines = False
                     # for l in waterLevelLines :
-                        # print(l)
+                    # print(l)
                     waterLevelLines = []
 
-                if isWaterLevelLines :
+                if isWaterLevelLines:
                     waterLevelLines.append(line)
-            # -- END for loop
+                    # -- END for loop
         # -- END while loop
 
         # Create files
-        for elementNo in FLOOD_ELEMENT_NUMBERS :
+        for elementNo in FLOOD_ELEMENT_NUMBERS:
             fileName = WATER_LEVEL_FILE.rsplit('.', 1)
             stationName = FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_')
             fileTimestamp = "%s_%s" % (date, time.replace(':', '-'))
-            fileName = "%s-%s-%s.%s" % (fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), fileTimestamp, fileName[1])
+            fileName = "%s-%s-%s.%s" % (
+            fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), fileTimestamp, fileName[1])
             WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
             csvWriter = csv.writer(open(WATER_LEVEL_FILE_PATH, 'w'), delimiter=',', quotechar='|')
             csvWriter.writerows(waterLevelSeriesDict[elementNo])
@@ -480,13 +494,13 @@ try :
                 'station': FLOOD_PLAIN_CELL_MAP[elementNo],
                 'runName': run_name
             }
-            if utcOffset != timedelta() :
+            if utcOffset != timedelta():
                 opts['utcOffset'] = utcOffset
             adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
             saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
             print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)
 
-except Exception as e :
+except Exception as e:
     traceback.print_exc()
 finally:
     print('Completed processing', HYCHAN_OUT_FILE_PATH, ' to ', WATER_LEVEL_FILE_PATH)
