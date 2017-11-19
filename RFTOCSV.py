@@ -58,9 +58,9 @@ try:
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
     # Kelani Upper Basin
-    KUB_OBS_ID = '03dbfdb2c4069aa2985c713bdd2086215b555184bdd4a5a5ffdde37db61c469c'
-    # Kelani Basin
-    KB_OBS_ID = '8a1dac3e106c7d0eeaf0b232819fd9d5948c194759378001aeaf60ebc0112453'
+    KUB_OBS_ID = 'b0e008522be904bcf71e290b3b0096b33c3e24d9b623dcbe7e58e7d1cc82d0db'
+    # Kelani Lower Basin
+    KLB_OBS_ID = '3fb96706de7433ba6aff4936c9800a28c9599efd46cbc9216a5404aab812d76a'
 
     MYSQL_HOST = "localhost"
     MYSQL_USER = "root"
@@ -218,7 +218,7 @@ try:
     if len(KUB_Timeseries) > 0:
         # print(KUB_Timeseries)
         print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
-    KLB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
+    KLB_Timeseries = getObservedTimeseries(adapter, KLB_OBS_ID, opts)
     if len(KLB_Timeseries) > 0:
         # print(KLB_Timeseries)
         print('KLB_Timeseries::', len(KLB_Timeseries), KLB_Timeseries[0], KLB_Timeseries[-1])
