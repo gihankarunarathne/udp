@@ -47,7 +47,7 @@ EOF
 trimQuotes() {
     tmp="${1%\"}"
     tmp="${tmp#\"}"
-    echo $tmp
+    echo ${tmp}
 }
 # replaceStringVariable <variableName> <replacingVariableName> <replacingVariableValue>
 replaceStringVariable() {
@@ -68,12 +68,12 @@ replaceStringVariable() {
 
 ROOT_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
-CONFIG_FILE=$ROOT_DIR/CONFIG.json
+CONFIG_FILE=${ROOT_DIR}/CONFIG.json
 
 # cd into bash script's root directory
-cd $ROOT_DIR
+cd ${ROOT_DIR}
 echo "Current Working Directory set to -> $(pwd)"
-if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]; then
+if [ -z "$(find ${CONFIG_FILE} -name CONFIG.json)" ]; then
     echo "Unable to find $CONFIG_FILE file"
     exit 1
 fi
@@ -98,8 +98,8 @@ DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
 DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 
 INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
-META_FLO2D_DIR=$ROOT_DIR/META_FLO2D
-FLO2D_DIR=$ROOT_DIR/FLO2D
+META_FLO2D_DIR=${ROOT_DIR}/META_FLO2D
+FLO2D_DIR=${ROOT_DIR}/FLO2D
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
@@ -128,7 +128,7 @@ TEMP=`getopt -o hd:t:m:c:r:b:fiseC:T:n: \
 # Terminate on wrong args. Ref: https://stackoverflow.com/a/7948533/1461060
 if [ $? != 0 ] ; then usage >&2 ; exit 1 ; fi
 
-eval set -- "$TEMP"
+eval set -- "${TEMP}"
 
 # Extract options and their arguments into variables.
 while true ; do
@@ -228,8 +228,8 @@ if [ "$DAYS_BACK" -gt 0 ]; then
     #TODO: Try to back date base on user given date
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
 fi
-if [ -z $timeseries_start_date ]; then
-    timeseries_start_date=$forecast_date
+if [ -z ${timeseries_start_date} ]; then
+    timeseries_start_date=${forecast_date}
 fi
 if [[ "$MODE" == "d" ]]; then
     forecast_time="`date +00:00:00`";
@@ -241,27 +241,27 @@ current_date_time="`date +%Y-%m-%dT%H:%M:%S`";
 
 main() {
     if [[ "$TAG" =~ [^a-zA-Z0-9\ ] ]]; then
-        echo "Parameter for -T|--tag is \"$TAG\" invalid. It can onaly contain alphanumberic values."
+        echo "Parameter for -T|--tag is \"$TAG\" invalid. It can only contain alphanumeric values."
         exit 1;
     fi
 
-    if [ ! -z $TAG ]; then
+    if [ ! -z ${TAG} ]; then
         INFLOW_DAT_FILE=${INFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
-        HEC_HMS_MODEL_DIR=$HEC_HMS_MODEL_DIR.$TAG
+        HEC_HMS_MODEL_DIR=${HEC_HMS_MODEL_DIR}.${TAG}
     fi
 
-    if [ ! -z $WRF_OUT ] && [ -d $WRF_OUT ]; then
-        RF_DIR_PATH=$WRF_OUT/RF
-        KUB_DIR_PATH=$WRF_OUT/kelani-upper-basin
-        RF_GRID_DIR_PATH=$WRF_OUT/colombo
-        FLO2D_RAINCELL_DIR_PATH=$WRF_OUT/kelani-basin
+    if [ ! -z ${WRF_OUT} ] && [ -d ${WRF_OUT} ]; then
+        RF_DIR_PATH=${WRF_OUT}/RF
+        KUB_DIR_PATH=${WRF_OUT}/kelani-upper-basin
+        RF_GRID_DIR_PATH=${WRF_OUT}/colombo
+        FLO2D_RAINCELL_DIR_PATH=${WRF_OUT}/kelani-basin
         echo "WRF OUT paths changed to -> $RF_DIR_PATH, $KUB_DIR_PATH, $RF_GRID_DIR_PATH, $FLO2D_RAINCELL_DIR_PATH"
     fi
 
     echo "HEC_HMS_MODEL_DIR=$HEC_HMS_MODEL_DIR"
-    DSS_INPUT_FILE=$(replaceStringVariable $DSS_INPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
+    DSS_INPUT_FILE=$(replaceStringVariable ${DSS_INPUT_FILE} "HEC_HMS_MODEL_DIR" ${HEC_HMS_MODEL_DIR})
     echo "Set DSS_INPUT_FILE=$DSS_INPUT_FILE"
-    DSS_OUTPUT_FILE=$(replaceStringVariable $DSS_OUTPUT_FILE "HEC_HMS_MODEL_DIR" $HEC_HMS_MODEL_DIR)
+    DSS_OUTPUT_FILE=$(replaceStringVariable ${DSS_OUTPUT_FILE} "HEC_HMS_MODEL_DIR" ${HEC_HMS_MODEL_DIR})
     echo "Set DSS_OUTPUT_FILE=$DSS_OUTPUT_FILE"
 
     echo "Start at $current_date_time $FORCE_EXIT"
@@ -269,21 +269,21 @@ main() {
     echo "With Custom Timeseries Start Date: $timeseries_start_date @ $timeseries_start_time using RF data of $rf_forecasted_date"
 
     local isWRF=$(isWRFAvailable)
-    local forecastStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
-    if [ $FORCE_RUN == true ]; then
+    local forecastStatus=$(alreadyForecast ${ROOT_DIR}/${STATUS_FILE} ${forecast_date})
+    if [ ${FORCE_RUN} == true ]; then
         forecastStatus=0
     fi
     echo "isWRF $isWRF forecastStatus $forecastStatus"
 
-    if [ $isWRF == 1 ] && [ $forecastStatus == 0 ]; then
-        mkdir $OUTPUT_DIR
+    if [ ${isWRF} == 1 ] && [ ${forecastStatus} == 0 ]; then
+        mkdir ${OUTPUT_DIR}
 
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
         # using Theissen Polygen
-        ./RFTOCSV.py -d $forecast_date -t $forecast_time \
-            --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            --wrf-rf $RF_DIR_PATH --wrf-kub $KUB_DIR_PATH \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"`
+        ./RFTOCSV.py -d ${forecast_date} -t ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            --wrf-rf ${RF_DIR_PATH} --wrf-kub ${KUB_DIR_PATH} \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"`
 
         # HACK: There is an issue with running HEC-HMS model, it gave a sudden value change after 1 day
         # We discovered that, this issue on 3.5 version, hence upgrade into 4.1
@@ -291,113 +291,113 @@ main() {
         # After run the model using the script, it can't reuse for a correct run again
         # Here we reuse a corrected model which can run using the script
         if [ ! -d "$HEC_HMS_MODEL_DIR" ]; then
-            mkdir $HEC_HMS_MODEL_DIR
+            mkdir ${HEC_HMS_MODEL_DIR}
         fi
-        yes | cp -R 2008_2_Events_Hack/* $HEC_HMS_MODEL_DIR
+        yes | cp -R 2008_2_Events_Hack/* ${HEC_HMS_MODEL_DIR}
 
         # Remove .dss files in order to remove previous results
-        rm $DSS_INPUT_FILE
-        rm $DSS_OUTPUT_FILE
+        rm ${DSS_INPUT_FILE}
+        rm ${DSS_OUTPUT_FILE}
         # Read Avg precipitation, then create .dss input file for HEC-HMS model
-        ./dssvue/hec-dssvue.sh CSVTODSS.py --date $forecast_date --time $forecast_time \
-            --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
-            `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
+        ./dssvue/hec-dssvue.sh CSVTODSS.py --date ${forecast_date} --time ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z ${HEC_HMS_MODEL_DIR} ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Change HEC-HMS running time window
-        ./Update_HECHMS.py -d $forecast_date -t $forecast_time \
-            --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            `[[ $INIT_STATE == true ]] && echo "-i" || echo ""` \
-            `[[ $CONTROL_INTERVAL == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"` \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
-            `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
+        ./Update_HECHMS.py -d ${forecast_date} -t ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            `[[ ${INIT_STATE} == true ]] && echo "-i" || echo ""` \
+            `[[ ${CONTROL_INTERVAL} == 0 ]] && echo "" || echo "-c $CONTROL_INTERVAL"` \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z ${HEC_HMS_MODEL_DIR} ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Run HEC-HMS model
-        HEC_HMS_SCRIPT_PATH=$HEC_HMS_MODEL_DIR/2008_2_Events.script
+        HEC_HMS_SCRIPT_PATH=${HEC_HMS_MODEL_DIR}/2008_2_Events.script
         # TODO: Check python3 availability
         HEC_HMS_SCRIPT_RELATIVE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_SCRIPT_PATH', '$HEC_HMS_DIR'))")
-        cd $HEC_HMS_DIR
-        if [ -z "$(find $HEC_HMS_SCRIPT_RELATIVE_PATH -name 2008_2_Events.script)" ]; then
+        cd ${HEC_HMS_DIR}
+        if [ -z "$(find ${HEC_HMS_SCRIPT_RELATIVE_PATH} -name 2008_2_Events.script)" ]; then
             echo "Unable to find $HEC_HMS_SCRIPT_RELATIVE_PATH file"
             exit 1
         fi
         # Set FLO2D model path
         HEC_HMS_PROJECT_RELATIVE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$HEC_HMS_MODEL_DIR', '$HEC_HMS_DIR'))")
-        HEC_HMS_PROJECT_NAME="2008_2_Events$([[ -z $TAG ]] && echo "" || echo "")" # Do nothing
+        HEC_HMS_PROJECT_NAME="2008_2_Events$([[ -z ${TAG} ]] && echo "" || echo "")" # Do nothing
         HEC_HMS_PROJECT_TXT="OpenProject(\"$HEC_HMS_PROJECT_NAME\", \"$HEC_HMS_PROJECT_RELATIVE_PATH\")"
         
-        sed -i "/OpenProject/c\\$HEC_HMS_PROJECT_TXT" $HEC_HMS_SCRIPT_RELATIVE_PATH
+        sed -i "/OpenProject/c\\$HEC_HMS_PROJECT_TXT" ${HEC_HMS_SCRIPT_RELATIVE_PATH}
 
-        ./HEC-HMS.sh -s $HEC_HMS_SCRIPT_RELATIVE_PATH
-        cd $ROOT_DIR
+        ./HEC-HMS.sh -s ${HEC_HMS_SCRIPT_RELATIVE_PATH}
+        cd ${ROOT_DIR}
         # Read HEC-HMS result, then extract Discharge into .csv
-        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date $forecast_date --time $forecast_time \
-            --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
-            `[[ -z $HEC_HMS_MODEL_DIR ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
+        ./dssvue/hec-dssvue.sh DSSTOCSV.py --date ${forecast_date} --time ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z ${HEC_HMS_MODEL_DIR} ]] && echo "" || echo "--hec-hms-model-dir $HEC_HMS_MODEL_DIR"`
 
         # Read Discharge .csv, then create INFLOW.DAT file for FLO2D
-        ./CSVTODAT.py  -d $forecast_date -t $forecast_time \
-            --start-date $timeseries_start_date --start-time $timeseries_start_time \
-            `[[ -z $TAG ]] && echo "" || echo "--tag $TAG"` \
-            `[[ -z $FORCE_RUN ]] && echo "" || echo "-f"` \
-            `[[ -z $RUN_NAME ]] && echo "" || echo "--name $RUN_NAME"`
+        ./CSVTODAT.py  -d ${forecast_date} -t ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z ${FORCE_RUN} ]] && echo "" || echo "-f"` \
+            `[[ -z ${RUN_NAME} ]] && echo "" || echo "--name $RUN_NAME"`
         ret=$?
-        if [ $ret -ne 0 ]; then
+        if [ ${ret} -ne 0 ]; then
              echo "Error in converting Discharge CSV to FLO2D INFLOW.DAT"
              exit 1
         fi
 
-        if [ $FORCE_EXIT == false ]; then
+        if [ ${FORCE_EXIT} == false ]; then
             # Send INFLOW.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
-            curl -X POST --data-binary @$INFLOW_DAT_FILE  $WINDOWS_HOST/INFLOW.DAT?$forecast_date
+            curl -X POST --data-binary @${INFLOW_DAT_FILE}  ${WINDOWS_HOST}/INFLOW.DAT?${forecast_date}
 
             # Send RAINCELL.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
-            FLO2D_RAINCELL_FILE_PATH=$FLO2D_RAINCELL_DIR_PATH/created-$rf_forecasted_date/RAINCELL.DAT
-            curl -X POST --data-binary @$FLO2D_RAINCELL_FILE_PATH  $WINDOWS_HOST/RAINCELL.DAT?$forecast_date
+            FLO2D_RAINCELL_FILE_PATH=${FLO2D_RAINCELL_DIR_PATH}/created-${rf_forecasted_date}/RAINCELL.DAT
+            curl -X POST --data-binary @${FLO2D_RAINCELL_FILE_PATH}  ${WINDOWS_HOST}/RAINCELL.DAT?${forecast_date}
 
             # Send RUN_FLO2D.json file into Windows, and run FLO2D
             echo "Send POST request to $WINDOWS_HOST with RUN_FLO2D"
             FLO2D_MODEL_PATH=""
-            FLO2D_RUN_FILE=$FLO2D_DIR/RUN_FLO2D.json
+            FLO2D_RUN_FILE=${FLO2D_DIR}/RUN_FLO2D.json
 
-            if [ ! -z $TAG ]; then
+            if [ ! -z ${TAG} ]; then
                 FLO2D_RUN_FILE=${FLO2D_RUN_FILE/.json/".$TAG.json"}
-                FLO2D_MODEL_PATH=${forecast_date}_Kelani.$TAG
+                FLO2D_MODEL_PATH=${forecast_date}_Kelani.${TAG}
             fi
-            cp $META_FLO2D_DIR/RUN_FLO2D.json $FLO2D_RUN_FILE
+            cp ${META_FLO2D_DIR}/RUN_FLO2D.json ${FLO2D_RUN_FILE}
 
             # Set FLO2D model path
             FLO2D_MODEL_PATH_TXT="\"FLO2D_PATH\"\t : \"$FLO2D_MODEL_PATH\","
-            sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" $FLO2D_RUN_FILE
+            sed -i "/FLO2D_PATH/c\    $FLO2D_MODEL_PATH_TXT" ${FLO2D_RUN_FILE}
 
             # Set Base Start Date for FLO2D (which maps to 0 step)
             TIMESERIES_START_DATE_TXT="\"TIMESERIES_START_DATE\"\t : \"$timeseries_start_date\","
-            sed -i "/TIMESERIES_START_DATE/c\    $TIMESERIES_START_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            sed -i "/TIMESERIES_START_DATE/c\    $TIMESERIES_START_DATE_TXT" ${FLO2D_DIR}/RUN_FLO2D.json
             # Set Base Start Time for FLO2D (which maps to 0 step)
             TIMESERIES_START_TIME_TXT="\"TIMESERIES_START_TIME\"\t : \"$timeseries_start_time\","
-            sed -i "/TIMESERIES_START_TIME/c\    $TIMESERIES_START_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            sed -i "/TIMESERIES_START_TIME/c\    $TIMESERIES_START_TIME_TXT" ${FLO2D_DIR}/RUN_FLO2D.json
 
             # Set Model State Date for FLO2D
             MODEL_STATE_DATE_TXT="\"MODEL_STATE_DATE\"\t : \"$forecast_date\","
-            sed -i "/MODEL_STATE_DATE/c\    $MODEL_STATE_DATE_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            sed -i "/MODEL_STATE_DATE/c\    $MODEL_STATE_DATE_TXT" ${FLO2D_DIR}/RUN_FLO2D.json
             # Set Model State Time for FLO2D
             MODEL_STATE_TIME_TXT="\"MODEL_STATE_TIME\"\t : \"$forecast_time\","
-            sed -i "/MODEL_STATE_TIME/c\    $MODEL_STATE_TIME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            sed -i "/MODEL_STATE_TIME/c\    $MODEL_STATE_TIME_TXT" ${FLO2D_DIR}/RUN_FLO2D.json
 
             # Run name/tags of the Timeseries
             RUN_NAME_TXT="\"RUN_NAME\"\t : \"$RUN_NAME\","
-            sed -i "/RUN_NAME/c\    $RUN_NAME_TXT" $FLO2D_DIR/RUN_FLO2D.json
+            sed -i "/RUN_NAME/c\    $RUN_NAME_TXT" ${FLO2D_DIR}/RUN_FLO2D.json
 
-            curl -X POST --data-binary @$FLO2D_RUN_FILE $WINDOWS_HOST/RUN_FLO2D?$forecast_date
+            curl -X POST --data-binary @${FLO2D_RUN_FILE} ${WINDOWS_HOST}/RUN_FLO2D?${forecast_date}
         fi
-        ./CopyToCMS.sh -d $forecast_date -t $forecast_time
+        ./CopyToCMS.sh -d ${forecast_date} -t ${forecast_time}
     
-        local writeStatus=$(alreadyForecast $ROOT_DIR/$STATUS_FILE $forecast_date)
-        if [ $writeStatus == 0 ]; then
-            writeForecastStatus $forecast_date $STATUS_FILE
+        local writeStatus=$(alreadyForecast ${ROOT_DIR}/${STATUS_FILE} ${forecast_date})
+        if [ ${writeStatus} == 0 ]; then
+            writeForecastStatus ${forecast_date} ${STATUS_FILE}
         fi
     else
         echo "WARN: Already run the forecast. Quit"
@@ -407,7 +407,7 @@ main() {
 
 isWRFAvailable() {
     local File_Pattern="*$rf_forecasted_date*.txt"
-    if [ -z "$(find $RF_DIR_PATH -name $File_Pattern)" ]; then
+    if [ -z "$(find ${RF_DIR_PATH} -name ${File_Pattern})" ]; then
       # echo "empty (Unable find files $File_Pattern)"
       echo 0
     else
@@ -424,12 +424,12 @@ alreadyForecast() {
     local forecasted=0
 
     while IFS='' read -r line || [[ -n "$line" ]]; do
-        if [ $2 == $line ]; then
+        if [ $2 == ${line} ]; then
             forecasted=1
             break
         fi
     done < "$1"
-    echo $forecasted
+    echo ${forecasted}
 }
 
 main "$@"
