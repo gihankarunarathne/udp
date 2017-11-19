@@ -1,11 +1,19 @@
 #!/usr/bin/python3
 
-import sys, traceback, datetime, os, glob, csv, json, getopt
-from string import Template
+import csv
+import datetime
+import getopt
+import glob
+import json
+import os
+import sys
+import traceback
 from collections import OrderedDict
+
 from curwmysqladapter import MySQLAdapter
 
-def usage() :
+
+def usage():
     usageText = """
 Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 
@@ -20,25 +28,28 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 """
     print(usageText)
 
-def getObservedTimeseries(adapter, eventId, opts) :
+
+def getObservedTimeseries(adapter, eventId, opts):
     existingTimeseries = adapter.retrieve_timeseries([eventId], opts)
     newTimeseries = []
-    if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0 :
+    if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0:
         existingTimeseries = existingTimeseries[0]['timeseries']
         prevDateTime = existingTimeseries[0][0]
         precSum = existingTimeseries[0][1]
-        for tt in existingTimeseries :
-            if prevDateTime.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0, microsecond=0) :
-                precSum += tt[1] # TODO: If missing or minus -> ignore
+        for tt in existingTimeseries:
+            if prevDateTime.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0,
+                                                                                        microsecond=0):
+                precSum += tt[1]  # TODO: If missing or minus -> ignore
                 # TODO: Handle End of List
-            else :
+            else:
                 newTimeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), precSum])
                 prevDateTime = tt[0]
                 precSum = tt[1]
 
     return newTimeseries
 
-try :
+
+try:
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
     RF_FORECASTED_DAYS = 0
@@ -51,43 +62,43 @@ try :
     # Kelani Basin
     KB_OBS_ID = '8a1dac3e106c7d0eeaf0b232819fd9d5948c194759378001aeaf60ebc0112453'
 
-    MYSQL_HOST="localhost"
-    MYSQL_USER="root"
-    MYSQL_DB="curw"
-    MYSQL_PASSWORD=""
+    MYSQL_HOST = "localhost"
+    MYSQL_USER = "root"
+    MYSQL_DB = "curw"
+    MYSQL_PASSWORD = ""
 
-    if 'RF_FORECASTED_DAYS' in CONFIG :
+    if 'RF_FORECASTED_DAYS' in CONFIG:
         RF_FORECASTED_DAYS = CONFIG['RF_FORECASTED_DAYS']
-    if 'RAIN_CSV_FILE' in CONFIG :
+    if 'RAIN_CSV_FILE' in CONFIG:
         RAIN_CSV_FILE = CONFIG['RAIN_CSV_FILE']
-    if 'RF_DIR_PATH' in CONFIG :
+    if 'RF_DIR_PATH' in CONFIG:
         RF_DIR_PATH = CONFIG['RF_DIR_PATH']
-    if 'KUB_DIR_PATH' in CONFIG :
+    if 'KUB_DIR_PATH' in CONFIG:
         KUB_DIR_PATH = CONFIG['KUB_DIR_PATH']
-    if 'OUTPUT_DIR' in CONFIG :
+    if 'OUTPUT_DIR' in CONFIG:
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
-    if 'MYSQL_HOST' in CONFIG :
+    if 'MYSQL_HOST' in CONFIG:
         MYSQL_HOST = CONFIG['MYSQL_HOST']
-    if 'MYSQL_USER' in CONFIG :
+    if 'MYSQL_USER' in CONFIG:
         MYSQL_USER = CONFIG['MYSQL_USER']
-    if 'MYSQL_DB' in CONFIG :
+    if 'MYSQL_DB' in CONFIG:
         MYSQL_DB = CONFIG['MYSQL_DB']
-    if 'MYSQL_PASSWORD' in CONFIG :
+    if 'MYSQL_PASSWORD' in CONFIG:
         MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
     date = ''
     time = ''
     startDate = ''
     startTime = ''
-    tag=''
+    tag = ''
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:t:T:", [
             "help", "date=", "time=", "start-date=", "start-time=", "wrf-rf=", "wrf-kub=", "tag="
         ])
     except getopt.GetoptError:
         usage()
-        sys.exit(2)            
+        sys.exit(2)
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             usage()
@@ -109,31 +120,31 @@ try :
 
     UPPER_CATCHMENT_WEIGHTS = {
         # 'Attanagalla'   : 1/7,    # 1
-        'Daraniyagala'  : 0.146828, # 2
-        'Glencourse'    : 0.208938, # 3
-        'Hanwella'      : 0.078722, # 4
-        'Holombuwa'     : 0.163191, # 5
-        'Kitulgala'     : 0.21462,  # 6
-        'Norwood'       : 0.187701  # 7
+        'Daraniyagala': 0.146828,  # 2
+        'Glencourse': 0.208938,  # 3
+        'Hanwella': 0.078722,  # 4
+        'Holombuwa': 0.163191,  # 5
+        'Kitulgala': 0.21462,  # 6
+        'Norwood': 0.187701  # 7
     }
     UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
 
     KELANI_UPPER_BASIN_WEIGHTS = {
-        'mean-rf'       : 1
+        'mean-rf': 1
     }
     KELANI_UPPER_BASIN = KELANI_UPPER_BASIN_WEIGHTS.keys()
 
     LOWER_CATCHMENT_WEIGHTS = {
-        'Colombo'       :  1
+        'Colombo': 1
     }
     LOWER_CATCHMENTS = LOWER_CATCHMENT_WEIGHTS.keys()
 
     # Default run for current day
     modelState = datetime.datetime.now()
-    if date :
+    if date:
         modelState = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = modelState.strftime("%Y-%m-%d")
-    if time :
+    if time:
         modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = modelState.strftime("%H:%M:%S")
     # Set the RF forecast data available file name pattern
@@ -141,60 +152,59 @@ try :
     rfForecastedDate = rfForecastedDate.strftime("%Y-%m-%d")
 
     startDateTime = datetime.datetime.now()
-    if startDate :
+    if startDate:
         startDateTime = datetime.datetime.strptime(startDate, '%Y-%m-%d')
-    else :
+    else:
         startDateTime = datetime.datetime.strptime(date, '%Y-%m-%d')
     startDate = startDateTime.strftime("%Y-%m-%d")
 
-    if startTime :
+    if startTime:
         startDateTime = datetime.datetime.strptime('%s %s' % (startDate, startTime), '%Y-%m-%d %H:%M:%S')
     startTime = startDateTime.strftime("%H:%M:%S")
-
 
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(' RFTOCSV run for', date, '@', time, tag)
     print(' With Custom starting', startDate, '@', startTime, ' using RF data of ', rfForecastedDate)
 
     UPPER_THEISSEN_VALUES = OrderedDict()
-    for catchment in UPPER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, rfForecastedDate) )):
+    for catchment in UPPER_CATCHMENTS:
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, rfForecastedDate))):
             print('Start Operating on (Upper) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
-            for row in csvCatchment :
+            for row in csvCatchment:
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))
                 d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
                 key = d.timestamp()
-                if key not in UPPER_THEISSEN_VALUES :
+                if key not in UPPER_THEISSEN_VALUES:
                     UPPER_THEISSEN_VALUES[key] = 0
                 UPPER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
 
     KELANI_UPPER_BASIN_VALUES = OrderedDict()
-    for catchment in KELANI_UPPER_BASIN :
-        for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment+'-'+rfForecastedDate+'*.txt')):
+    for catchment in KELANI_UPPER_BASIN:
+        for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment + '-' + rfForecastedDate + '*.txt')):
             print('Start Operating on (Kelani Upper Basin) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
-            for row in csvCatchment :
+            for row in csvCatchment:
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))
                 d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
                 key = d.timestamp()
-                if key not in KELANI_UPPER_BASIN_VALUES :
+                if key not in KELANI_UPPER_BASIN_VALUES:
                     KELANI_UPPER_BASIN_VALUES[key] = 0
                 KELANI_UPPER_BASIN_VALUES[key] += float(row[1].strip(' \t')) * KELANI_UPPER_BASIN_WEIGHTS[catchment]
 
     LOWER_THEISSEN_VALUES = OrderedDict()
-    for lowerCatchment in LOWER_CATCHMENTS :
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment+'-'+rfForecastedDate+'*.txt')):
+    for lowerCatchment in LOWER_CATCHMENTS:
+        for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment + '-' + rfForecastedDate + '*.txt')):
             print('Start Operating on (Lower) ', filename)
             csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
             csvCatchment = list(csvCatchment)
-            for row in csvCatchment :
+            for row in csvCatchment:
                 # print(row[0].replace('_', ' '), row[1].strip(' \t'))
                 d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
                 key = d.timestamp()
-                if key not in LOWER_THEISSEN_VALUES :
+                if key not in LOWER_THEISSEN_VALUES:
                     LOWER_THEISSEN_VALUES[key] = 0
                 LOWER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * LOWER_CATCHMENT_WEIGHTS[lowerCatchment]
 
@@ -205,18 +215,19 @@ try :
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
     }
     KUB_Timeseries = getObservedTimeseries(adapter, KUB_OBS_ID, opts)
-    if len(KUB_Timeseries) > 0 :
+    if len(KUB_Timeseries) > 0:
         # print(KUB_Timeseries)
         print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
     KLB_Timeseries = getObservedTimeseries(adapter, KB_OBS_ID, opts)
-    if len(KLB_Timeseries) > 0 :
+    if len(KLB_Timeseries) > 0:
         # print(KLB_Timeseries)
         print('KLB_Timeseries::', len(KLB_Timeseries), KLB_Timeseries[0], KLB_Timeseries[-1])
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
     fileName = RAIN_CSV_FILE.rsplit('.', 1)
-    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
+    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.' + tag if tag else '',
+                                                       extention=fileName[1])
     RAIN_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     csvWriter = csv.writer(open(RAIN_CSV_FILE_PATH, 'w'), delimiter=',', quotechar='|')
     # Write Metadata https://publicwiki.deltares.nl/display/FEWSDOC/CSV
@@ -226,11 +237,11 @@ try :
 
     # Insert available observed data
     lastObsDateTime = startDateTime
-    for kub_tt in KUB_Timeseries :
+    for kub_tt in KUB_Timeseries:
         # look for same time value in Kelani Basin
-        kb_tt = kub_tt # TODO: Better to replace with missing ???
-        for sub_tt in KLB_Timeseries :
-            if sub_tt[0] == kub_tt[0] :
+        kb_tt = kub_tt  # TODO: Better to replace with missing ???
+        for sub_tt in KLB_Timeseries:
+            if sub_tt[0] == kub_tt[0]:
                 kb_tt = sub_tt
                 break
 
@@ -238,15 +249,16 @@ try :
         lastObsDateTime = kub_tt[0]
 
     # Iterate through each timestamp
-    for avg in UPPER_THEISSEN_VALUES :
+    for avg in UPPER_THEISSEN_VALUES:
         # print(avg, UPPER_THEISSEN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
-        if d > lastObsDateTime :
-            csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg], "%.2f" % LOWER_THEISSEN_VALUES[avg]])
+        if d > lastObsDateTime:
+            csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg],
+                                "%.2f" % LOWER_THEISSEN_VALUES[avg]])
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-except Exception as e :
+except Exception as e:
     traceback.print_exc()
 finally:
     print('Completed ', RF_DIR_PATH, ' to ', RAIN_CSV_FILE_PATH)
