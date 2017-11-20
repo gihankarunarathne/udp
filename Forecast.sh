@@ -19,6 +19,8 @@ Usage: ./Forecast.sh [-d FORECAST_DATE] [-t FORECAST_TIME] [-c CONFIG_FILE] [-r 
     -r      ROOT_DIR which is program running directory. Default is Forecast.sh exist directory.
     -b      Run forecast specified DAYS_BACK with respect to current date. Expect an integer.
             When specified -d option will be ignored.
+    -B      Run forecast specified BACK_START with respect to model state date. Expect an integer.
+            When specified --start-date option will be ignored.
     -f      Force run forecast. Even the forecast already run for the particular day, run again. Default is false.
     -i      Initiate a State at the end of HEC-HMS run.
     -s      Store Timeseries data on MySQL database.
@@ -110,6 +112,7 @@ rf_forecasted_date="`date -d "${forecast_date} ${RF_FORECASTED_DAYS} days" +'%Y-
 
 MODE="d" # 'd' | 'h'
 DAYS_BACK=0
+BACK_START=0
 FORCE_RUN=false
 INIT_STATE=false
 STORE_DATA=false
@@ -189,6 +192,11 @@ while true ; do
                 "") shift 2 ;;
                 *) DAYS_BACK="$2" ; shift 2 ;;
             esac ;;
+        -B)
+            case "$2" in
+                "") shift 2 ;;
+                *) BACK_START="$2" ; shift 2 ;;
+            esac ;;
         -f)  FORCE_RUN=true ; shift ;;
         -i)  INIT_STATE=true ; shift ;;
         -s)  STORE_DATA=true ; shift ;;
@@ -227,6 +235,9 @@ done
 if [ "$DAYS_BACK" -gt 0 ]; then
     #TODO: Try to back date base on user given date
     forecast_date="`date +%Y-%m-%d -d "$DAYS_BACK days ago"`";
+fi
+if [ "$BACK_START" -gt 0 ]; then
+    timeseries_start_date="`date +%Y-%m-%d -d "$forecast_date -$BACK_START days"`";
 fi
 if [ -z ${timeseries_start_date} ]; then
     timeseries_start_date=${forecast_date}
