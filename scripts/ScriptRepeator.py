@@ -10,7 +10,11 @@ try:
     parser.add_argument("--start-time", help="Start Time in HH:MM:SS.")
     parser.add_argument("-e", "--end-date", help="End Date in YYYY-MM.")
     parser.add_argument("--end-time", help="End Time in HH:MM:SS.")
+
     parser.add_argument("-f", "--force", action='store_true', help="Force insert.")
+    parser.add_argument("-b", "--back-start", help="Run forecast specified BACK_START with respect to model state date."
+                                                   "Expect an integer.")
+
     parser.add_argument("--exec", help="Executor that going to run the file.script. Default `python`. E.g: python3")
     parser.add_argument("-i", "--interval", help="Time Interval between two events in hours. Default 24 hours")
     parser.add_argument("--wait-before", help="Wait time before running the task in seconds")
@@ -59,6 +63,8 @@ try:
         execList = execList + ['-d', startDate.strftime("%Y-%m-%d")]
         if args.force:
             execList = execList + ['-f']
+        if args.back_start:
+            execList = execList + ['-B', args.back_start]
         print('*********************************************************')
         print('>>>', execList, '\n')
         proc = Popen(execList, stdout=sys.stdout)
