@@ -124,7 +124,7 @@ RUN_NAME=""
 
 # Read the options
 # Ref: http://www.bahmanm.com/blogs/command-line-options-how-to-parse-in-bash-using-getopt
-TEMP=`getopt -o hd:t:m:c:r:b:fiseC:T:n: \
+TEMP=`getopt -o hd:t:m:c:r:b:B:fiseC:T:n: \
         --long arga::,argb,argc:,start-date:,start-time:,mode:,tag:,wrf-out:,hec-hms-model-dir:,name: \
         -n 'Forecast.sh' -- "$@"`
 
