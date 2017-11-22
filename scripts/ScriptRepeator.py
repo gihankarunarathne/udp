@@ -12,7 +12,7 @@ try:
     parser.add_argument("--end-time", help="End Time in HH:MM:SS.")
 
     parser.add_argument("-f", "--force", action='store_true', help="Force insert.")
-    parser.add_argument("-b", "--back-start", help="Run forecast specified BACK_START with respect to model state date."
+    parser.add_argument("-B", "--back-start", help="Run forecast specified BACK_START with respect to model state date."
                                                    "Expect an integer.")
 
     parser.add_argument("--exec", help="Executor that going to run the file.script. Default `python`. E.g: python3")
@@ -57,8 +57,9 @@ try:
     if args.exec:
         executor = args.exec
 
-    while (startDate <= endDate):
-        if waitBeforeTime > 0: time.sleep(waitBeforeTime)
+    while startDate <= endDate:
+        if waitBeforeTime > 0:
+            time.sleep(waitBeforeTime)
         execList = [executor, args.file_path]
         execList = execList + ['-d', startDate.strftime("%Y-%m-%d")]
         if args.force:
@@ -69,7 +70,8 @@ try:
         print('>>>', execList, '\n')
         proc = Popen(execList, stdout=sys.stdout)
         proc.wait()
-        if waitTime > 0: time.sleep(waitTime)
+        if waitTime > 0:
+            time.sleep(waitTime)
         print('\n\n')
 
         startDate = startDate + datetime.timedelta(hours=timeInterval)
