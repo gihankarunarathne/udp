@@ -19,7 +19,7 @@ def extractForecastTimeseries(timeseries, extract_date, extract_time, by_day=Fal
     new_timeseries = []
     for i, tt in enumerate(timeseries):
         tt_date_time = datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
-        if tt_date_time > extract_date_time:
+        if tt_date_time >= extract_date_time:
             new_timeseries = timeseries[i:]
             break
     return new_timeseries
