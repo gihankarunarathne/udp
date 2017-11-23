@@ -1,51 +1,56 @@
 #!/usr/bin/python3
-import sys, traceback, csv, json, datetime, getopt, os
+
 from datetime import datetime
 
-def extractForecastTimeseries(timeseries, date, time) :
-    '''
+
+def extractForecastTimeseries(timeseries, extract_date, extract_time, by_day=False):
+    """
     Extracted timeseries upward from given date and time
     E.g. Consider timeseries 2017-09-01 to 2017-09-03
-    date: 2017-09-01 and time: 14:00:00 will extract a timeseries which contains 
+    date: 2017-09-01 and time: 14:00:00 will extract a timeseries which contains
     values that timestamp onwards
-    '''
+    """
     print('LibForecastTimeseries:: extractForecastTimeseries')
-    dateTime = datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
-    newTimeseries = []
-    for i, tt in enumerate(timeseries) :
-        ttDateTime = datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
-        if ttDateTime > dateTime :
-            newTimeseries = timeseries[i:]
+    if by_day:
+        extract_date_time = datetime.strptime(extract_date, '%Y-%m-%d')
+    else:
+        extract_date_time = datetime.strptime('%s %s' % (extract_date, extract_time), '%Y-%m-%d %H:%M:%S')
+
+    new_timeseries = []
+    for i, tt in enumerate(timeseries):
+        tt_date_time = datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
+        if tt_date_time > extract_date_time:
+            new_timeseries = timeseries[i:]
             break
-    return newTimeseries
+    return new_timeseries
 
 
-def extractForecastTimeseriesInDays(timeseries) :
-    '''
+def extractForecastTimeseriesInDays(timeseries):
+    """
     Devide into multiple timeseries for each day
     E.g. Consider timeseries 2017-09-01 14:00:00 to 2017-09-03 23:00:00
     will devide into 3 timeseries with
     [
-        [2017-09-01 14:00:00-2017-09-01 23:00:00], 
-        [2017-09-02 14:00:00-2017-09-02 23:00:00], 
+        [2017-09-01 14:00:00-2017-09-01 23:00:00],
+        [2017-09-02 14:00:00-2017-09-02 23:00:00],
         [2017-09-03 14:00:00-2017-09-03 23:00:00]
     ]
-    '''
-    newTimeseries = []
-    if len(timeseries) > 0 :
-        groupTimeseries = []
-        isDateTimeObs = isinstance(timeseries[0][0], datetime)
-        prevDate = timeseries[0][0] if isDateTimeObs else datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
-        prevDate = prevDate.replace(hour=0, minute=0, second=0, microsecond=0)
-        for tt in timeseries :
+    """
+    new_timeseries = []
+    if len(timeseries) > 0:
+        group_timeseries = []
+        is_date_time_obs = isinstance(timeseries[0][0], datetime)
+        prev_date = timeseries[0][0] if is_date_time_obs else datetime.strptime(timeseries[0][0], '%Y-%m-%d %H:%M:%S')
+        prev_date = prev_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        for tt in timeseries:
             # Match Daily
-            ttDateTime = tt[0] if isDateTimeObs else datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
-            if prevDate == ttDateTime.replace(hour=0, minute=0, second=0, microsecond=0) :
-                groupTimeseries.append(tt)
+            tt_date_time = tt[0] if is_date_time_obs else datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
+            if prev_date == tt_date_time.replace(hour=0, minute=0, second=0, microsecond=0) :
+                group_timeseries.append(tt)
             else :
-                newTimeseries.append(groupTimeseries[:])
-                groupTimeseries = []
-                prevDate = ttDateTime.replace(hour=0, minute=0, second=0, microsecond=0)
-                groupTimeseries.append(tt)
+                new_timeseries.append(group_timeseries[:])
+                group_timeseries = []
+                prev_date = tt_date_time.replace(hour=0, minute=0, second=0, microsecond=0)
+                group_timeseries.append(tt)
 
-    return newTimeseries
+    return new_timeseries
