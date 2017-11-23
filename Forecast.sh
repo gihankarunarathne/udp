@@ -290,7 +290,7 @@ main() {
         mkdir ${OUTPUT_DIR}
 
         # Read WRF forecast data, then create precipitation .csv for Upper Catchment 
-        # using Theissen Polygen
+        # using Theissen Polygon
         ./RFTOCSV.py -d ${forecast_date} -t ${forecast_time} \
             --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
             --wrf-rf ${RF_DIR_PATH} --wrf-kub ${KUB_DIR_PATH} \

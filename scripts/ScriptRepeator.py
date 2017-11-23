@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
-import sys, datetime, subprocess, argparse, time, traceback
+import argparse
+import datetime
+import sys
+import time
+import traceback
 from subprocess import Popen
 
 try:
@@ -68,8 +72,8 @@ try:
             execList = execList + ['-B', args.back_start]
         print('*********************************************************')
         print('>>>', execList, '\n')
-        proc = Popen(execList, stdout=sys.stdout)
-        proc.wait()
+        process = Popen(execList, stdout=sys.stdout)
+        process.wait()
         if waitTime > 0:
             time.sleep(waitTime)
         print('\n\n')
@@ -79,6 +83,7 @@ try:
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 except Exception as e:
+    print(e)
     traceback.print_exc()
 finally:
     print('Successfully run Script Repeater !.')

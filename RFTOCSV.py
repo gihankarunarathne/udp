@@ -29,24 +29,24 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
     print(usageText)
 
 
-def getObservedTimeseries(adapter, eventId, opts):
-    existingTimeseries = adapter.retrieve_timeseries([eventId], opts)
-    newTimeseries = []
-    if len(existingTimeseries) > 0 and len(existingTimeseries[0]['timeseries']) > 0:
-        existingTimeseries = existingTimeseries[0]['timeseries']
-        prevDateTime = existingTimeseries[0][0]
-        precSum = existingTimeseries[0][1]
-        for tt in existingTimeseries:
-            if prevDateTime.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0,
-                                                                                        microsecond=0):
-                precSum += tt[1]  # TODO: If missing or minus -> ignore
+def get_observed_timeseries(my_adapter, my_event_id, my_opts):
+    existing_timeseries = my_adapter.retrieve_timeseries([my_event_id], my_opts)
+    new_timeseries = []
+    if len(existing_timeseries) > 0 and len(existing_timeseries[0]['timeseries']) > 0:
+        existing_timeseries = existing_timeseries[0]['timeseries']
+        prev_date_time = existing_timeseries[0][0]
+        prev_sum = existing_timeseries[0][1]
+        for tt in existing_timeseries:
+            if prev_date_time.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0,
+                                                                                          microsecond=0):
+                prev_sum += tt[1]  # TODO: If missing or minus -> ignore
                 # TODO: Handle End of List
             else:
-                newTimeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), precSum])
-                prevDateTime = tt[0]
-                precSum = tt[1]
+                new_timeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), prev_sum])
+                prev_date_time = tt[0]
+                prev_sum = tt[1]
 
-    return newTimeseries
+    return new_timeseries
 
 
 try:
@@ -166,6 +166,7 @@ try:
     print(' RFTOCSV run for', date, '@', time, tag)
     print(' With Custom starting', startDate, '@', startTime, ' using RF data of ', rfForecastedDate)
 
+    # TODO: Do not use any more, using WRF generated KUB
     UPPER_THEISSEN_VALUES = OrderedDict()
     for catchment in UPPER_CATCHMENTS:
         for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, rfForecastedDate))):
@@ -180,6 +181,7 @@ try:
                     UPPER_THEISSEN_VALUES[key] = 0
                 UPPER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
 
+    # TODO: Need to be replace by retrieving data from database
     KELANI_UPPER_BASIN_VALUES = OrderedDict()
     for catchment in KELANI_UPPER_BASIN:
         for filename in glob.glob(os.path.join(KUB_DIR_PATH, catchment + '-' + rfForecastedDate + '*.txt')):
@@ -194,6 +196,8 @@ try:
                     KELANI_UPPER_BASIN_VALUES[key] = 0
                 KELANI_UPPER_BASIN_VALUES[key] += float(row[1].strip(' \t')) * KELANI_UPPER_BASIN_WEIGHTS[catchment]
 
+    # TODO: Need to be replace by using KLB-Mean generate by WRF
+    # TODO: Get data from database directly
     LOWER_THEISSEN_VALUES = OrderedDict()
     for lowerCatchment in LOWER_CATCHMENTS:
         for filename in glob.glob(os.path.join(RF_DIR_PATH, lowerCatchment + '-' + rfForecastedDate + '*.txt')):
@@ -214,11 +218,11 @@ try:
         'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
     }
-    KUB_Timeseries = getObservedTimeseries(adapter, KUB_OBS_ID, opts)
+    KUB_Timeseries = get_observed_timeseries(adapter, KUB_OBS_ID, opts)
     if len(KUB_Timeseries) > 0:
         # print(KUB_Timeseries)
         print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
-    KLB_Timeseries = getObservedTimeseries(adapter, KLB_OBS_ID, opts)
+    KLB_Timeseries = get_observed_timeseries(adapter, KLB_OBS_ID, opts)
     if len(KLB_Timeseries) > 0:
         # print(KLB_Timeseries)
         print('KLB_Timeseries::', len(KLB_Timeseries), KLB_Timeseries[0], KLB_Timeseries[-1])
@@ -239,13 +243,13 @@ try:
     lastObsDateTime = startDateTime
     for kub_tt in KUB_Timeseries:
         # look for same time value in Kelani Basin
-        kb_tt = kub_tt  # TODO: Better to replace with missing ???
+        klb_tt = kub_tt  # TODO: Better to replace with missing ???
         for sub_tt in KLB_Timeseries:
             if sub_tt[0] == kub_tt[0]:
-                kb_tt = sub_tt
+                klb_tt = sub_tt
                 break
 
-        csvWriter.writerow([kub_tt[0].strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % kub_tt[1], "%.2f" % kb_tt[1]])
+        csvWriter.writerow([kub_tt[0].strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % kub_tt[1], "%.2f" % klb_tt[1]])
         lastObsDateTime = kub_tt[0]
 
     # Iterate through each timestamp
@@ -259,6 +263,7 @@ try:
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 except Exception as e:
+    print(e)
     traceback.print_exc()
 finally:
     print('Completed ', RF_DIR_PATH, ' to ', RAIN_CSV_FILE_PATH)
