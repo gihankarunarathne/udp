@@ -1,18 +1,22 @@
 #!/usr/bin/python3
 
-import os, json, subprocess, sys, csv, traceback, getopt
+import csv
+import getopt
+import json
+import os
+import sys
+import traceback
+import copy
 from datetime import datetime, timedelta
-from os import curdir
 from os.path import join as pjoin
-from sys import executable
-from subprocess import Popen
-import Constants
 
 from curwmysqladapter import MySQLAdapter
+
+import Constants
+from LIBFLO2DWATERLEVELGRID import getWaterLevelOfChannels
 from Util.LibForecastTimeseries import extractForecastTimeseries
 from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 from Util.Utils import getUTCOffset
-from LIBFLO2DWATERLEVELGRID import getWaterLevelOfChannels
 
 
 def usage():
@@ -43,42 +47,49 @@ def isfloat(value):
         return False
 
 
-def saveForecastTimeseries(adapter, timeseries, date, time, opts):
-    print('EXTRACTFLO2DWATERLEVEL:: saveForecastTimeseries')
-    forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
-    # print(forecastTimeseries[:10])
-    extractedTimeseries = []
-    if 'utcOffset' in opts:
-        for item in forecastTimeseries:
-            extractedTimeseries.append(
-                [datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + opts['utcOffset'], item[1]])
-        extractedTimeseries = extractForecastTimeseriesInDays(extractedTimeseries)
+def save_forecast_timeseries(my_adapter, my_timeseries, my_model_date, my_model_time, my_opts):
+    print('EXTRACTFLO2DWATERLEVEL:: save_forecast_timeseries')
+
+    # Convert date time with offset
+    date_time = datetime.strptime('%s %s' % (my_model_date, my_model_time), Constants.COMMON_DATE_TIME_FORMAT)
+    if 'utcOffset' in my_opts:
+        date_time = date_time + my_opts['utcOffset']
+        my_model_date = date_time.strftime('%Y-%m-%d')
+        my_model_time = date_time.strftime('%H:%M:%S')
+
+    # If there is an offset, shift by offset before proceed
+    forecast_timeseries = []
+    if 'utcOffset' in my_opts:
+        for item in my_timeseries:
+            forecast_timeseries.append(
+                [datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + my_opts['utcOffset'], item[1]])
+
+        forecast_timeseries = extractForecastTimeseries(my_timeseries, my_model_date, my_model_time, by_day=True)
     else:
-        extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
+        forecast_timeseries = extractForecastTimeseries(my_timeseries, my_model_date, my_model_time, by_day=True)
+
+    # print(forecastTimeseries[:10])
+    extracted_timeseries = extractForecastTimeseriesInDays(forecast_timeseries)
 
     # for ll in extractedTimeseries :
     #     print(ll)
 
-    dateTime = datetime.strptime('%s %s' % (date, time), Constants.COMMON_DATE_TIME_FORMAT)
-    if 'utcOffset' in opts:
-        dateTime = dateTime + opts['utcOffset']
-
     # Check whether existing station
-    forceInsert = opts.get('forceInsert', False)
-    station = opts.get('station', '')
+    force_insert = my_opts.get('forceInsert', False)
+    station = my_opts.get('station', '')
     # TODO: Check whether station exist in Database
-    runName = opts.get('runName', 'Cloud-1')
-    lessCharIndex = runName.find('<')
-    greaterCharIndex = runName.find('>')
-    if -1 < lessCharIndex > -1 < greaterCharIndex:
-        startStr = runName[:lessCharIndex]
-        dateFormatStr = runName[lessCharIndex + 1:greaterCharIndex]
-        endStr = runName[greaterCharIndex + 1:]
+    run_name = my_opts.get('run_name', 'Cloud-1')
+    less_char_index = run_name.find('<')
+    greater_char_index = run_name.find('>')
+    if -1 < less_char_index > -1 < greater_char_index:
+        start_str = run_name[:less_char_index]
+        date_format_str = run_name[less_char_index + 1:greater_char_index]
+        end_str = run_name[greater_char_index + 1:]
         try:
-            dateStr = dateTime.strftime(dateFormatStr)
-            runName = startStr + dateStr + endStr
+            date_str = date_time.strftime(date_format_str)
+            run_name = start_str + date_str + end_str
         except ValueError:
-            raise ValueError("Incorrect data format " + dateFormatStr)
+            raise ValueError("Incorrect data format " + date_format_str)
 
     types = [
         'Forecast-0-d',
@@ -97,31 +108,32 @@ def saveForecastTimeseries(adapter, timeseries, date, time, opts):
         'Forecast-13-d-after',
         'Forecast-14-d-after'
     ]
-    metaData = {
+    meta_data = {
         'station': station,
         'variable': 'WaterLevel',
         'unit': 'm',
         'type': types[0],
         'source': 'FLO2D',
-        'name': runName
+        'name': run_name
     }
-    for i in range(0, min(len(types), len(extractedTimeseries))):
-        metaData['type'] = types[i]
-        eventId = adapter.get_event_id(metaData)
-        if eventId is None:
-            eventId = adapter.create_event_id(metaData)
-            print('HASH SHA256 created: ', eventId)
+    for i in range(0, min(len(types), len(extracted_timeseries))):
+        meta_data_copy = copy.deepcopy(meta_data)
+        meta_data_copy['type'] = types[i]
+        event_id = my_adapter.get_event_id(meta_data_copy)
+        if event_id is None:
+            event_id = my_adapter.create_event_id(meta_data_copy)
+            print('HASH SHA256 created: ', event_id)
         else:
-            print('HASH SHA256 exists: ', eventId)
-            if not forceInsert:
+            print('HASH SHA256 exists: ', event_id)
+            if not force_insert:
                 print('Timeseries already exists. User --force to update the existing.\n')
                 continue
 
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insert_timeseries(eventId, extractedTimeseries[i], forceInsert)
-        print('%s rows inserted.\n' % rowCount)
-        # -- END OF SAVEFORECASTTIMESERIES
+        row_count = my_adapter.insert_timeseries(event_id, extracted_timeseries[i], force_insert)
+        print('%s rows inserted.\n' % row_count)
+        # -- END OF SAVE_FORECAST_TIMESERIES
 
 
 try:
@@ -195,7 +207,7 @@ try:
     start_time = ''
     flo2d_config = ''
     run_name_default = 'Cloud-1'
-    run_name = ''
+    runName = ''
     utc_offset = ''
     forceInsert = False
     try:
@@ -224,7 +236,7 @@ try:
         elif opt in ("-T", "--start_time"):
             start_time = arg.strip()
         elif opt in ("-n", "--name"):
-            run_name = arg.strip()
+            runName = arg.strip()
         elif opt in ("-f", "--forceInsert"):
             forceInsert = True
         elif opt in ("-u", "--utc_offset"):
@@ -283,9 +295,9 @@ try:
 
     # Run Name of DB
     if 'RUN_NAME' in FLO2D_CONFIG and len(FLO2D_CONFIG['RUN_NAME']):  # Use FLO2D Config file data, if available
-        run_name = FLO2D_CONFIG['RUN_NAME']
-    if not run_name:
-        run_name = run_name_default
+        runName = FLO2D_CONFIG['RUN_NAME']
+    if not runName:
+        runName = run_name_default
 
     # UTC Offset
     if 'UTC_OFFSET' in FLO2D_CONFIG and len(FLO2D_CONFIG['UTC_OFFSET']):  # Use FLO2D Config file data, if available
@@ -417,12 +429,12 @@ try:
                     opts = {
                         'forceInsert': forceInsert,
                         'station': CHANNEL_CELL_MAP[elementNo],
-                        'runName': run_name
+                        'runName': runName
                     }
                     if utcOffset != timedelta():
                         opts['utcOffset'] = utcOffset
                     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-                    saveForecastTimeseries(adapter, timeseries, date, time, opts)
+                    save_forecast_timeseries(adapter, timeseries, date, time, opts)
 
                     isWaterLevelLines = False
                     isSeriesComplete = False
@@ -483,8 +495,8 @@ try:
             fileName = WATER_LEVEL_FILE.rsplit('.', 1)
             stationName = FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_')
             fileTimestamp = "%s_%s" % (date, time.replace(':', '-'))
-            fileName = "%s-%s-%s.%s" % (
-            fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), fileTimestamp, fileName[1])
+            fileName = "%s-%s-%s.%s" % \
+                       (fileName[0], FLOOD_PLAIN_CELL_MAP[elementNo].replace(' ', '_'), fileTimestamp, fileName[1])
             WATER_LEVEL_FILE_PATH = pjoin(WATER_LEVEL_DIR_PATH, fileName)
             csvWriter = csv.writer(open(WATER_LEVEL_FILE_PATH, 'w'), delimiter=',', quotechar='|')
             csvWriter.writerows(waterLevelSeriesDict[elementNo])
@@ -492,12 +504,12 @@ try:
             opts = {
                 'forceInsert': forceInsert,
                 'station': FLOOD_PLAIN_CELL_MAP[elementNo],
-                'runName': run_name
+                'runName': runName
             }
             if utcOffset != timedelta():
                 opts['utcOffset'] = utcOffset
             adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-            saveForecastTimeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
+            save_forecast_timeseries(adapter, waterLevelSeriesDict[elementNo], date, time, opts)
             print('Extracted Cell No', elementNo, FLOOD_PLAIN_CELL_MAP[elementNo], 'into -> ', fileName)
 
 except Exception as e:
