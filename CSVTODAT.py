@@ -1,13 +1,21 @@
 #!/usr/bin/python3
 
-from string import Template
-import sys, traceback, csv, json, datetime, getopt, os
+import csv
+import datetime
+import getopt
+import json
+import os
+import sys
+import traceback
+import copy
 
 from curwmysqladapter import MySQLAdapter
+
 from Util.LibForecastTimeseries import extractForecastTimeseries
 from Util.LibForecastTimeseries import extractForecastTimeseriesInDays
 
-def usage() :
+
+def usage():
     usageText = """
 Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 
@@ -23,65 +31,73 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
     print(usageText)
 
 
-def saveForecastTimeseries(adapter, timeseries, date, time, opts) :
-    print('CSVTODAT:: saveForecastTimeseries:: len', len(timeseries))
-    forecastTimeseries = extractForecastTimeseries(timeseries, date, time)
+def save_forecast_timeseries(my_adapter, timeseries, my_model_date, my_model_time, my_opts):
+    print('CSVTODAT:: save_forecast_timeseries:: len', len(timeseries))
+    forecast_timeseries = extractForecastTimeseries(timeseries, my_model_date, my_model_time, by_day=True)
     # print(forecastTimeseries[:10])
-    extractedTimeseries = extractForecastTimeseriesInDays(forecastTimeseries)
+    extracted_timeseries = extractForecastTimeseriesInDays(forecast_timeseries)
+    print('Extracted forecast types # :', len(extracted_timeseries))
     # for ll in extractedTimeseries :
     #     print(ll)
 
-    dateTime = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
-    forceInsert = opts.get('forceInsert', False)
+    force_insert = my_opts.get('forceInsert', False)
+    my_model_date_time = datetime.datetime.strptime('%s %s' % (my_model_date, my_model_time), '%Y-%m-%d %H:%M:%S')
 
     # TODO: Check whether station exist in Database
-    runName = opts.get('runName', 'Cloud-1')
-    lessCharIndex = runName.find('<')
-    greaterCharIndex = runName.find('>')
-    if lessCharIndex > -1 and greaterCharIndex > -1 and lessCharIndex < greaterCharIndex :
-        startStr = runName[:lessCharIndex]
-        dateFormatStr = runName[lessCharIndex+1:greaterCharIndex]
-        endStr = runName[greaterCharIndex+1:]
+    run_name = my_opts.get('runName', 'Cloud-1')
+    less_char_index = run_name.find('<')
+    greater_char_index = run_name.find('>')
+    # if less_char_index > -1 and greater_char_index > -1 and less_char_index < greater_char_index :
+    if -1 < less_char_index < greater_char_index > -1:
+        start_str = run_name[:less_char_index]
+        date_format_str = run_name[less_char_index + 1:greater_char_index]
+        end_str = run_name[greater_char_index + 1:]
         try:
-            dateStr = dateTime.strftime(dateFormatStr)
-            runName = startStr + dateStr + endStr
+            date_str = my_model_date_time.strftime(date_format_str)
+            run_name = start_str + date_str + end_str
         except ValueError:
-            raise ValueError("Incorrect data format " + dateFormatStr)
+            raise ValueError("Incorrect data format " + date_format_str)
     types = [
         'Forecast-0-d',
         'Forecast-1-d-after',
         'Forecast-2-d-after',
         'Forecast-3-d-after',
         'Forecast-4-d-after',
-        'Forecast-5-d-after'
+        'Forecast-5-d-after',
+        'Forecast-6-d-after',
+        'Forecast-7-d-after',
+        'Forecast-8-d-after',
+        'Forecast-9-d-after'
     ]
-    metaData = {
+    meta_data = {
         'station': 'Hanwella',
         'variable': 'Discharge',
         'unit': 'm3/s',
         'type': types[0],
         'source': 'HEC-HMS',
-        'name': runName,
+        'name': run_name,
     }
-    for i in range(0, len(types)) :
-        metaData['type'] = types[i]
-        eventId = adapter.get_event_id(metaData)
-        if eventId is None :
-            eventId = adapter.create_event_id(metaData)
-            print('HASH SHA256 created: ', eventId)
-        else :
-            print('HASH SHA256 exists: ', eventId)
-            if not forceInsert :
+    for index in range(0, min(len(types), len(extracted_timeseries))):
+        meta_data_copy = copy.deepcopy(meta_data)
+        meta_data_copy['type'] = types[index]
+        event_id = my_adapter.get_event_id(meta_data_copy)
+        if event_id is None:
+            event_id = my_adapter.create_event_id(meta_data_copy)
+            print('HASH SHA256 created: ', event_id)
+        else:
+            print('HASH SHA256 exists: ', event_id)
+            if not force_insert:
                 print('Timeseries already exists. User --force to update the existing.\n')
                 continue
         
         # for l in timeseries[:3] + timeseries[-2:] :
         #     print(l)
-        rowCount = adapter.insert_timeseries(eventId, extractedTimeseries[i], forceInsert)
-        print('%s rows inserted.\n' % rowCount)
-    # -- END OF SAVEFORECASTTIMESERIES
+        row_count = my_adapter.insert_timeseries(event_id, extracted_timeseries[index], force_insert)
+        print('%s rows inserted.\n' % row_count)
+    # -- END OF SAVE_FORECAST_TIMESERIES
 
-try :
+
+try:
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
 
@@ -97,22 +113,22 @@ try :
     MYSQL_DB="curw"
     MYSQL_PASSWORD=""
 
-    if 'DISCHARGE_CSV_FILE' in CONFIG :
+    if 'DISCHARGE_CSV_FILE' in CONFIG:
         DISCHARGE_CSV_FILE = CONFIG['DISCHARGE_CSV_FILE']
-    if 'INFLOW_DAT_FILE' in CONFIG :
+    if 'INFLOW_DAT_FILE' in CONFIG:
         INFLOW_DAT_FILE = CONFIG['INFLOW_DAT_FILE']
-    if 'OUTPUT_DIR' in CONFIG :
+    if 'OUTPUT_DIR' in CONFIG:
         OUTPUT_DIR = CONFIG['OUTPUT_DIR']
-    if 'INIT_WL_CONFIG' in CONFIG :
+    if 'INIT_WL_CONFIG' in CONFIG:
         INIT_WL_CONFIG = CONFIG['INIT_WL_CONFIG']
 
-    if 'MYSQL_HOST' in CONFIG :
+    if 'MYSQL_HOST' in CONFIG:
         MYSQL_HOST = CONFIG['MYSQL_HOST']
-    if 'MYSQL_USER' in CONFIG :
+    if 'MYSQL_USER' in CONFIG:
         MYSQL_USER = CONFIG['MYSQL_USER']
-    if 'MYSQL_DB' in CONFIG :
+    if 'MYSQL_DB' in CONFIG:
         MYSQL_DB = CONFIG['MYSQL_DB']
-    if 'MYSQL_PASSWORD' in CONFIG :
+    if 'MYSQL_PASSWORD' in CONFIG:
         MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
     date = ''
@@ -159,21 +175,21 @@ try :
 
     # Default run for current day
     modelState = datetime.datetime.now()
-    if date :
+    if date:
         modelState = datetime.datetime.strptime(date, '%Y-%m-%d')
     date = modelState.strftime("%Y-%m-%d")
-    if time :
+    if time:
         modelState = datetime.datetime.strptime('%s %s' % (date, time), '%Y-%m-%d %H:%M:%S')
     time = modelState.strftime("%H:%M:%S")
 
     startDateTime = datetime.datetime.now()
-    if startDate :
+    if startDate:
         startDateTime = datetime.datetime.strptime(startDate, '%Y-%m-%d')
-    else :
+    else:
         startDateTime = datetime.datetime.strptime(date, '%Y-%m-%d')
     startDate = startDateTime.strftime("%Y-%m-%d")
 
-    if startTime :
+    if startTime:
         startDateTime = datetime.datetime.strptime('%s %s' % (startDate, startTime), '%Y-%m-%d %H:%M:%S')
     startTime = startDateTime.strftime("%H:%M:%S")
 
@@ -182,7 +198,8 @@ try :
     print(' With Custom starting', startDate, '@', startTime, ' run name:', runName)
 
     fileName = DISCHARGE_CSV_FILE.rsplit('.', 1)
-    fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.'+tag if tag else '', extention=fileName[1])
+    fileName = '{name}-{date}{tag}.{extension}'.\
+        format(name=fileName[0], date=date, tag='.'+tag if tag else '', extension=fileName[1])
     DISCHARGE_CSV_FILE_PATH = os.path.join(OUTPUT_DIR, fileName)
     print('Open Discharge CSV ::', DISCHARGE_CSV_FILE_PATH)
     csvReader = csv.reader(open(DISCHARGE_CSV_FILE_PATH, 'r'), delimiter=',', quotechar='|')
@@ -194,7 +211,8 @@ try :
         sys.exit(1)
 
     fileName2 = INFLOW_DAT_FILE.rsplit('.', 1)
-    INFLOW_DAT_FILE_PATH = '{name}{tag}.{extention}'.format(name=fileName2[0], tag='.'+tag if tag else '', extention=fileName2[1])
+    INFLOW_DAT_FILE_PATH = '{name}{tag}.{extension}'.\
+        format(name=fileName2[0], tag='.'+tag if tag else '', extension=fileName2[1])
     print('Open FLO2D INFLOW ::', INFLOW_DAT_FILE_PATH)
     f = open(INFLOW_DAT_FILE_PATH, 'w')
     line1 = '{0} {1:{w}{b}}\n'.format(IHOURDAILY, IDEPLT, b='d', w=DAT_WIDTH)
@@ -207,12 +225,12 @@ try :
         lines.append('{0} {1:{w}{b}} {2:{w}{b}}\n'.format(HYDCHAR, i, float(value[1]), b='.1f', w=DAT_WIDTH))
         i += 1.0
 
-    print('Inserting Initial Waterlevels...')
-    with open(INIT_WL_CONFIG) as initWLConfFile :
-        initWaterlevels = initWLConfFile.readlines()
-        for initWaterlevel in initWaterlevels :
-            if len(initWaterlevel.split()) :
-                lines.append(initWaterlevel)
+    print('Inserting Initial Water levels...')
+    with open(INIT_WL_CONFIG) as initWLConfFile:
+        initWaterLevels = initWLConfFile.readlines()
+        for initWaterLevel in initWaterLevels:
+            if len(initWaterLevel.split()):
+                lines.append(initWaterLevel)
 
     f.writelines(lines)
 
@@ -222,9 +240,10 @@ try :
         'runName': runName
     }
     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
-    saveForecastTimeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, opts)
+    save_forecast_timeseries(adapter, csvList[CSV_NUM_METADATA_LINES:], date, time, opts)
 
 except Exception as e :
+    print(e)
     traceback.print_exc()
 finally:
     f.close()
