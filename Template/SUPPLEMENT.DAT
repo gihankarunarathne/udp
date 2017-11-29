@@ -1,13 +1,5 @@
- 6            [Shape Files]
-C:\FLO-2D\Data\Water_body\WATER_BODIES_SLD.SHP
-C:\FLO-2D\from lap\Colombo Flood Modelling_LEARNING\data\Shape_files\COLOMBO_SOUTH_FLOOD_BUND.SHP
-C:\FLO-2D\from lap\Colombo Flood Modelling_LEARNING\data\Shape_files\EXISTING_KOLONNAWA_CANAL_NETWORK.SHP
-C:\FLO-2D\from lap\Colombo Flood Modelling_LEARNING\data\Shape_files\EXISTING_METRO_COLOMBO_CANALS.SHP
-C:\FLO-2D\Data\Marsh\MARSH_SLD.SHP
-C:\FLO-2D\Data\Metro Sub Catchments\SUBCATCHMENTS.SHP
- 2            [Images]
-Single        C:\FLO-2D\Data\Maps\66_SLD99.TIF
-Single        C:\FLO-2D\Data\Maps\67_SLD99.TIF
+ 0            [Shape Files]
+ 0            [Images]
 [Modeling Boundary Polygon]=true
 189
         422864.28         474658.31
