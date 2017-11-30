@@ -7,13 +7,14 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from sys import executable
 from subprocess import Popen
 
-CONFIG = json.loads(open('CONFIG.json').read())
+root_dir = os.path.dirname(os.path.realpath(__file__))
+CONFIG = json.loads(open(pjoin(root_dir, './CONFIG.json')).read())
 print('Server Configurations :: ', CONFIG)
 HOST_ADDRESS = ''
 HOST_PORT = 8080
-if 'HOST_ADDRESS' in CONFIG :
+if 'HOST_ADDRESS' in CONFIG:
     HOST_ADDRESS = CONFIG['HOST_ADDRESS']
-if 'HOST_PORT' in CONFIG :
+if 'HOST_PORT' in CONFIG:
     HOST_PORT = CONFIG['HOST_PORT']
 
 FLO2D_DIR='FLO2D'
