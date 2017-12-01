@@ -100,7 +100,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             try :
                 # Execute FLO2D
                 print('Execute FLO2D ...')
-                execList = [executable, 'Run_FLO2D.py']
+                execList = [executable, pjoin(root_dir, 'Run_FLO2D.py')]
 
                 if len(date) > 0 :
                     execList = execList + ['-d' , date]

@@ -4,15 +4,15 @@ import sys, string, os, datetime, shutil, argparse, traceback
 from distutils.dir_util import copy_tree
 
 try :
-    CWD = os.getcwd()
+    root_dir = os.path.dirname(os.path.realpath(__file__))
 
     FLO2D_DIR='FLO2D'
     INFLOW_DAT_FILE='INFLOW.DAT'
     RAINCELL_DAT_FILE='RAINCELL.DAT'
     RUN_FLO2D_FILE='RUN_FLO2D.json'
 
-    FLO2D_TEMPLATE = os.path.join(CWD, 'Template')
-    FLO2D_RUN_FOR_PROJECT = os.path.join(CWD, 'RunForProjectFolder')
+    FLO2D_TEMPLATE = os.path.join(root_dir, 'Template')
+    FLO2D_RUN_FOR_PROJECT = os.path.join(root_dir, 'RunForProjectFolder')
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--date", help="Date in YYYY-MM. Default is current date.")
@@ -27,9 +27,9 @@ try :
     date = now.strftime("%Y-%m-%d")
 
     try:
-        appDir = os.path.join(CWD, date + '_Kelani')
+        appDir = os.path.join(root_dir, date + '_Kelani')
         if args.model_dir :
-            appDir = os.path.join(CWD, args.model_dir)
+            appDir = os.path.join(root_dir, args.model_dir)
 
         print('Run FLO2D on', date, ' on dir:', appDir)
 
@@ -41,7 +41,7 @@ try :
             print('Creating Dir : ', appDir)
             os.makedirs(appDir)
 
-        FLO2D_DIR_PATH = os.path.join(CWD, FLO2D_DIR)
+        FLO2D_DIR_PATH = os.path.join(root_dir, FLO2D_DIR)
         # Move INFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir
         INFLOW_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
         shutil.move(INFLOW_DAT_FILE_PATH, appDir)
@@ -60,6 +60,7 @@ try :
     except OSError as e:
         print('Directory not copied. Error: %s' % e)
     else:
+        print('>>>>>', appDir)
         os.chdir(appDir)
         os.system(os.path.join(appDir, 'FLOPRO.exe'))
 
