@@ -134,7 +134,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             try :
                 # Execute WATERLEVEL GRID extraction
                 print('Execute WATERLEVEL GRID extraction ...')
-                execList = ["powershell.exe", '.\CopyWaterLevelGridToCMS.ps1']
+                execList = ["powershell.exe", pjoin(root_dir, '.\CopyWaterLevelGridToCMS.ps1')]
                 if len(date) > 0 :
                     execList = execList + ['-date' , date]
                 if runConfig.get('MODEL_STATE_TIME') :
@@ -180,7 +180,7 @@ class StoreHandler(BaseHTTPRequestHandler):
             try :
                 # Execute WATERLEVEL extraction
                 print('Execute WATERLEVEL extraction ...')
-                execList = ["powershell.exe", '.\CopyWaterLevelToCMS.ps1']
+                execList = ["powershell.exe", pjoin(root_dir, '.\CopyWaterLevelToCMS.ps1')]
                 if len(date) > 0 :
                     execList = execList + ['-date' , date]
                 if runConfig.get('MODEL_STATE_TIME') :
