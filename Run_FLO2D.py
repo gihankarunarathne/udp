@@ -41,6 +41,11 @@ try :
             print('Creating Dir : ', appDir)
             os.makedirs(appDir)
 
+        # NOTE: Copy Templates first, otherwise actual data will be override by Template Samples
+        copy_tree(FLO2D_TEMPLATE, appDir)
+        copy_tree(FLO2D_RUN_FOR_PROJECT, appDir)
+        print('Copied FLO2D templates')
+
         FLO2D_DIR_PATH = os.path.join(root_dir, FLO2D_DIR)
         # Move INFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir
         INFLOW_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
@@ -50,9 +55,6 @@ try :
         RUN_FLO2D_FILE_PATH = os.path.join(FLO2D_DIR_PATH, RUN_FLO2D_FILE)
         shutil.move(RUN_FLO2D_FILE_PATH, appDir)
 
-        copy_tree(FLO2D_TEMPLATE, appDir)
-        copy_tree(FLO2D_RUN_FOR_PROJECT, appDir)
-        print('Copied FLO2D templates')
     # Directories are the same
     except shutil.Error as e:
         print('Directory not copied. Error: %s' % e)
