@@ -4,6 +4,8 @@ Template/F2D_TO_GDS_*
 CONFIG.json
 OUTPUT
 Status.txt
+WRF
+data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

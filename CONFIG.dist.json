@@ -24,6 +24,8 @@
     "BASE_OUT_FILE"     : "BASE.OUT",
     "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
     "INIT_WL_CONFIG"    : "./Template/INITWL.CONF",
+    "WATER_DISCHARGE_DIR"     : "water_discharge",
+    "WATER_DISCHARGE_FILE"    : "water_discharge.txt",
 
     "HOST_ADDRESS"      : "localhost",
     "HOST_PORT"         : 8080,

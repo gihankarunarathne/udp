@@ -439,8 +439,8 @@ try:
                     isWaterLevelLines = False
                     isSeriesComplete = False
                     waterLevelLines = []
-                    # -- END for loop
-                    # -- END while loop
+            # -- END for loop
+        # -- END while loop
 
     #################################################################
     # Extract Flood Plain water elevations from BASE.OUT file       #
@@ -487,7 +487,7 @@ try:
 
                 if isWaterLevelLines:
                     waterLevelLines.append(line)
-                    # -- END for loop
+            # -- END for loop
         # -- END while loop
 
         # Create files
@@ -514,5 +514,6 @@ try:
 
 except Exception as e:
     traceback.print_exc()
+    print(e)
 finally:
     print('Completed processing', HYCHAN_OUT_FILE_PATH, ' to ', WATER_LEVEL_FILE_PATH)
