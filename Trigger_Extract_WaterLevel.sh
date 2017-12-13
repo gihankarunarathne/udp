@@ -150,6 +150,9 @@ main() {
 
     curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  ${WINDOWS_HOST}/EXTRACT_WATERLEVEL_GRID?${forecast_date}
     echo "Send POST request to $WINDOWS_HOST with EXTRACT_WATERLEVEL_GRID?$forecast_date"
+
+    curl -X POST --data-binary @./FLO2D/RUN_FLO2D.json  ${WINDOWS_HOST}/EXTRACT_WATER_DISCHARGE?${forecast_date}
+    echo "Send POST request to $WINDOWS_HOST with EXTRACT_WATER_DISCHARGE?$forecast_date"
 }
 
 main "$@"
