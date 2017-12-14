@@ -18,9 +18,10 @@ def extractForecastTimeseries(timeseries, extract_date, extract_time, by_day=Fal
     else:
         extract_date_time = datetime.strptime('%s %s' % (extract_date, extract_time), '%Y-%m-%d %H:%M:%S')
 
+    is_date_time = isinstance(timeseries[0][0], datetime)
     new_timeseries = []
     for i, tt in enumerate(timeseries):
-        tt_date_time = datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
+        tt_date_time = tt[0] if is_date_time else datetime.strptime(tt[0], '%Y-%m-%d %H:%M:%S')
         if tt_date_time >= extract_date_time:
             new_timeseries = timeseries[i:]
             break
