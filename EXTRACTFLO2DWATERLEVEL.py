@@ -48,7 +48,7 @@ def isfloat(value):
 
 
 def save_forecast_timeseries(my_adapter, my_timeseries, my_model_date, my_model_time, my_opts):
-    print('EXTRACTFLO2DWATERLEVEL:: save_forecast_timeseries')
+    print('EXTRACTFLO2DWATERLEVEL:: save_forecast_timeseries >>', my_opts)
 
     # Convert date time with offset
     date_time = datetime.strptime('%s %s' % (my_model_date, my_model_time), Constants.COMMON_DATE_TIME_FORMAT)
@@ -429,7 +429,7 @@ try:
                     opts = {
                         'forceInsert': forceInsert,
                         'station': CHANNEL_CELL_MAP[elementNo],
-                        'runName': runName
+                        'run_name': runName
                     }
                     if utcOffset != timedelta():
                         opts['utcOffset'] = utcOffset
@@ -504,7 +504,7 @@ try:
             opts = {
                 'forceInsert': forceInsert,
                 'station': FLOOD_PLAIN_CELL_MAP[elementNo],
-                'runName': runName
+                'run_name': runName
             }
             if utcOffset != timedelta():
                 opts['utcOffset'] = utcOffset
