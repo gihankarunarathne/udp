@@ -60,15 +60,16 @@ def save_forecast_timeseries(my_adapter, my_timeseries, my_model_date, my_model_
     # If there is an offset, shift by offset before proceed
     forecast_timeseries = []
     if 'utcOffset' in my_opts:
+        print('Shit by utcOffset:', my_opts['utcOffset'].resolution)
         for item in my_timeseries:
             forecast_timeseries.append(
                 [datetime.strptime(item[0], Constants.COMMON_DATE_TIME_FORMAT) + my_opts['utcOffset'], item[1]])
 
-        forecast_timeseries = extractForecastTimeseries(my_timeseries, my_model_date, my_model_time, by_day=True)
+        forecast_timeseries = extractForecastTimeseries(forecast_timeseries, my_model_date, my_model_time, by_day=True)
     else:
         forecast_timeseries = extractForecastTimeseries(my_timeseries, my_model_date, my_model_time, by_day=True)
 
-    # print(forecastTimeseries[:10])
+    # print(forecast_timeseries[:10])
     extracted_timeseries = extractForecastTimeseriesInDays(forecast_timeseries)
 
     # for ll in extractedTimeseries :
