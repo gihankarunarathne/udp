@@ -10,7 +10,7 @@ import sys
 import traceback
 from collections import OrderedDict
 
-from curwmysqladapter import MySQLAdapter
+from curwmysqladapter import MySQLAdapter, Data
 
 
 def usage():
@@ -216,16 +216,21 @@ try:
     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     opts = {
         'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
-        'to': modelState.strftime("%Y-%m-%d %H:%M:%S")
+        'to': modelState.strftime("%Y-%m-%d %H:%M:%S"),
+        'mode': Data.processed_data
     }
     KUB_Timeseries = get_observed_timeseries(adapter, KUB_OBS_ID, opts)
     if len(KUB_Timeseries) > 0:
         # print(KUB_Timeseries)
         print('KUB_Timeseries::', len(KUB_Timeseries), KUB_Timeseries[0], KUB_Timeseries[-1])
+    else:
+        print('No data found for KUB Obs timeseries: ', KUB_Timeseries)
     KLB_Timeseries = get_observed_timeseries(adapter, KLB_OBS_ID, opts)
     if len(KLB_Timeseries) > 0:
         # print(KLB_Timeseries)
         print('KLB_Timeseries::', len(KLB_Timeseries), KLB_Timeseries[0], KLB_Timeseries[-1])
+    else:
+        print('No data found for KLB Obs timeseries: ', KLB_Timeseries)
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
