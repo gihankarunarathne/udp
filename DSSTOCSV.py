@@ -35,6 +35,9 @@ try :
             OUTPUT_DIR = CONFIG['OUTPUT_DIR']
 
         date = ''
+        time = ''
+        startDateTS = ''
+        startTimeTS = ''
         tag = ''
 
         # Passing Commandline Options to Jython. Not same as getopt in python.
@@ -113,8 +116,8 @@ try :
             csvWriter.writerow(['Location Ids', 'Hanwella'])
             csvWriter.writerow(['Time', 'Flow'])
 
-            # print flow.values[:10]
-            # print flow.times[:10]
+            print flow.values[:1], flow.times[:1]
+            print flow.values[-1], flow.times[-1]
 
             csvList = []
 
@@ -136,7 +139,7 @@ try :
 
                 csvList.append([dt.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % flow.values[i]])
                 
-            print csvList[:10]
+            print csvList[:3], "...", csvList[:-3]
             csvWriter.writerows(csvList)
 
     except Exception, e :
@@ -145,4 +148,4 @@ try :
         MessageBox.showError(e.getMessage(), "Error")
 finally :
     myDss.done()
-    print '\nCompleted converting ', DSS_OUTPUT_FILE, ' to ', DISCHARGE_CSV_FILE_PATH
+    print '\nCompleted converting.'
