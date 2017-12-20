@@ -14,12 +14,12 @@ EOF
 trimQuotes() {
     tmp="${1%\"}"
     tmp="${tmp#\"}"
-    echo $tmp
+    echo ${tmp}
 }
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_DIR=$(pwd)
-CONFIG_FILE=$ROOT_DIR/CONFIG.json
+CONFIG_FILE=${ROOT_DIR}/CONFIG.json
 
 forecast_date="`date +%Y-%m-%d`";
 forecast_time="`date +%H:00:00`";
@@ -27,7 +27,7 @@ DAYS_BACK=0
 
 # Extract user arguments
 while getopts hd:t:b:f opt; do
-    case $opt in
+    case ${opt} in
         h)
             usage
             exit 0
@@ -52,9 +52,9 @@ then
 fi
 
 # cd into bash script's root directory
-cd $ROOT_DIR
+cd ${ROOT_DIR}
 echo "Current Working Directory set to -> $(pwd)"
-if [ -z "$(find $CONFIG_FILE -name CONFIG.json)" ]
+if [ -z "$(find ${CONFIG_FILE} -name CONFIG.json)" ]
 then
     echo "Unable to find $CONFIG_FILE file"
     exit 1
@@ -69,17 +69,17 @@ RF_FORECASTED_DAYS=$(trimQuotes $(cat CONFIG.json | jq '.RF_FORECASTED_DAYS'))
 rf_forecasted_date="`date -d "${forecast_date} ${RF_FORECASTED_DAYS} days" +'%Y-%m-%d'`";
 
 # Copy Rainfall data
-RF_DIR_PATH=$RF_DIR_PATH/*-$rf_forecasted_date.*
-scp -r -i ~/.ssh/id_uwcc_admin $RF_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
+RF_DIR_PATH=${RF_DIR_PATH}/*-${rf_forecasted_date}.*
+scp -r -i ~/.ssh/id_uwcc_admin ${RF_DIR_PATH}  uwcc-admin@10.138.0.6:~/cfcwm/data/RF
 
 # Copy Kelani Upper Basin mean Rainfall data
-KUB_DIR_PATH=$KUB_DIR_PATH/mean-rf-$rf_forecasted_date.txt
-scp -r -i ~/.ssh/id_uwcc_admin $KUB_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-$forecast_date.txt
+KUB_DIR_PATH=${KUB_DIR_PATH}/mean-rf-${rf_forecasted_date}.txt
+scp -r -i ~/.ssh/id_uwcc_admin ${KUB_DIR_PATH}  uwcc-admin@10.138.0.6:~/cfcwm/data/RF/KUB/kelani-upper-basin-${forecast_date}.txt
 
 # Copy Rainfall Grid data
-RF_GRID_DIR_PATH=$RF_GRID_DIR_PATH/created-$rf_forecasted_date
-scp -r -i ~/.ssh/id_uwcc_admin $RF_GRID_DIR_PATH  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
+RF_GRID_DIR_PATH=${RF_GRID_DIR_PATH}/created-${rf_forecasted_date}
+scp -r -i ~/.ssh/id_uwcc_admin ${RF_GRID_DIR_PATH}  uwcc-admin@10.138.0.6:~/cfcwm/data/RF_GRID
 
 # Copy HEC-HMS Discharge
-OUTPUT_DIR=$OUTPUT_DIR/DailyDischarge-$forecast_date.*
-scp -r -i ~/.ssh/id_uwcc_admin $OUTPUT_DIR  uwcc-admin@10.138.0.6:~/cfcwm/data/DIS
+OUTPUT_DIR=${OUTPUT_DIR}/DailyDischarge-${forecast_date}.csv
+scp -r -i ~/.ssh/id_uwcc_admin ${OUTPUT_DIR}  uwcc-admin@10.138.0.6:~/cfcwm/data/DIS/DailyDischarge-${forecast_date}.txt
