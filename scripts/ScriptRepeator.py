@@ -25,7 +25,7 @@ try:
     parser.add_argument("--wait-before-min", help="Wait time before running the task in minutes")
     parser.add_argument("-w", "--wait", help="Wait time for complete the task before run for next event in seconds")
     parser.add_argument("--wait-min", help="Wait time for complete the task before run for next event in minutes")
-    parser.add_argument("--exit-windows", help="Exit without executing models which run on Windows.")
+    parser.add_argument("--exit-windows", action='store_true', help="Exit without executing models which run on Windows.")
     args = parser.parse_args()
     print('Commandline Options:', args)
 
