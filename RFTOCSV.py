@@ -223,7 +223,7 @@ try:
     opts = {
         'from': (startDateTime - datetime.timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S"),
-        'mode': Data.processed_data
+        # 'mode': Data.processed_data TODO: Hack -> Fill with WRF data
     }
     KUB_Timeseries = get_observed_timeseries(adapter, KUB_OBS_ID, opts)
     if len(KUB_Timeseries) > 0:
