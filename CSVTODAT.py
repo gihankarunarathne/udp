@@ -32,7 +32,7 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-h]
 
 
 def save_forecast_timeseries(my_adapter, timeseries, my_model_date, my_model_time, my_opts):
-    print('CSVTODAT:: save_forecast_timeseries:: len', len(timeseries))
+    print('CSVTODAT:: save_forecast_timeseries:: len', len(timeseries), my_model_date, my_model_time)
     forecast_timeseries = extractForecastTimeseries(timeseries, my_model_date, my_model_time, by_day=True)
     # print(forecastTimeseries[:10])
     extracted_timeseries = extractForecastTimeseriesInDays(forecast_timeseries)

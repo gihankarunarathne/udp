@@ -221,7 +221,7 @@ try:
     # Get Observed Data
     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     opts = {
-        'from': (startDateTime - datetime.timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
+        'from': (startDateTime - datetime.timedelta(minutes=90)).strftime("%Y-%m-%d %H:%M:%S"),
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S"),
         # 'mode': Data.processed_data TODO: Hack -> Fill with WRF data
     }
