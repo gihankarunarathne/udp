@@ -139,7 +139,7 @@ try :
 
                 csvList.append([dt.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % flow.values[i]])
                 
-            print csvList[:3], "...", csvList[:-3]
+            print csvList[:3], "...", csvList[-3:]
             csvWriter.writerows(csvList)
 
     except Exception, e :
