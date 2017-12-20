@@ -340,6 +340,11 @@ main() {
         sed -i "/OpenProject/c\\$HEC_HMS_PROJECT_TXT" ${HEC_HMS_SCRIPT_RELATIVE_PATH}
 
         ./HEC-HMS.sh -s ${HEC_HMS_SCRIPT_RELATIVE_PATH}
+        ret=$?
+        if [ ${ret} -ne 0 ]; then
+             echo "Error in running HEC-HMS Model"
+             exit 1
+        fi
         cd ${ROOT_DIR}
         # Read HEC-HMS result, then extract Discharge into .csv
         ./dssvue/hec-dssvue.sh DSSTOCSV.py --date ${forecast_date} --time ${forecast_time} \
