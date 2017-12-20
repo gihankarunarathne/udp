@@ -14,7 +14,7 @@ from curwmysqladapter import MySQLAdapter, Data
 
 
 def usage():
-    usageText = """
+    usage_text = """
 Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
 
 -h  --help          Show usage
@@ -26,24 +26,28 @@ Usage: ./CSVTODAT.py [-d YYYY-MM-DD] [-t HH:MM:SS] [-h]
     --wrf-rf        Path of WRF Rf(Rainfall) Directory. Otherwise using the `RF_DIR_PATH` from CONFIG.json
     --wrf-kub       Path of WRF kelani-upper-basin(KUB) Directory. Otherwise using the `KUB_DIR_PATH` from CONFIG.json
 """
-    print(usageText)
+    print(usage_text)
 
 
 def get_observed_timeseries(my_adapter, my_event_id, my_opts):
     existing_timeseries = my_adapter.retrieve_timeseries([my_event_id], my_opts)
     new_timeseries = []
     if len(existing_timeseries) > 0 and len(existing_timeseries[0]['timeseries']) > 0:
+        # TODO: HACK -> Time shift
+        shift = datetime.timedelta(minutes=30)
+
         existing_timeseries = existing_timeseries[0]['timeseries']
-        prev_date_time = existing_timeseries[0][0]
+        prev_date_time = existing_timeseries[0][0] + shift
         prev_sum = existing_timeseries[0][1]
         for tt in existing_timeseries:
+            tt[0] = tt[0] + shift
             if prev_date_time.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0,
                                                                                           microsecond=0):
                 prev_sum += tt[1]  # TODO: If missing or minus -> ignore
                 # TODO: Handle End of List
             else:
                 new_timeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), prev_sum])
-                prev_date_time = tt[0]
+                prev_date_time = tt[0] + shift
                 prev_sum = tt[1]
 
     return new_timeseries
@@ -58,9 +62,11 @@ try:
     KUB_DIR_PATH = './WRF/kelani-upper-basin'
     OUTPUT_DIR = './OUTPUT'
     # Kelani Upper Basin
-    KUB_OBS_ID = 'b0e008522be904bcf71e290b3b0096b33c3e24d9b623dcbe7e58e7d1cc82d0db'
+    # KUB_OBS_ID = 'b0e008522be904bcf71e290b3b0096b33c3e24d9b623dcbe7e58e7d1cc82d0db'
+    KUB_OBS_ID = 'fb575cb25f1e3d3a07c84513ea6a91c8f2fb98454df1a432518ab98ad7182861'  # wrf0, kub_mean, 0-d
     # Kelani Lower Basin
-    KLB_OBS_ID = '3fb96706de7433ba6aff4936c9800a28c9599efd46cbc9216a5404aab812d76a'
+    # KLB_OBS_ID = '3fb96706de7433ba6aff4936c9800a28c9599efd46cbc9216a5404aab812d76a'
+    KLB_OBS_ID = '69c464f749b36d9e55e461947238e7ed809c2033e75ae56234f466eec00aee35'  # wrf0, klb_mean, 0-d
 
     MYSQL_HOST = "localhost"
     MYSQL_USER = "root"
@@ -215,7 +221,7 @@ try:
     # Get Observed Data
     adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     opts = {
-        'from': startDateTime.strftime("%Y-%m-%d %H:%M:%S"),
+        'from': (startDateTime - datetime.timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
         'to': modelState.strftime("%Y-%m-%d %H:%M:%S"),
         'mode': Data.processed_data
     }
