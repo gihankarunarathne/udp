@@ -33,21 +33,18 @@ def get_observed_timeseries(my_adapter, my_event_id, my_opts):
     existing_timeseries = my_adapter.retrieve_timeseries([my_event_id], my_opts)
     new_timeseries = []
     if len(existing_timeseries) > 0 and len(existing_timeseries[0]['timeseries']) > 0:
-        # TODO: HACK -> Time shift
-        shift = datetime.timedelta(minutes=30)
-
         existing_timeseries = existing_timeseries[0]['timeseries']
-        prev_date_time = existing_timeseries[0][0] + shift
+        prev_date_time = existing_timeseries[0][0]
         prev_sum = existing_timeseries[0][1]
         for tt in existing_timeseries:
-            tt[0] = tt[0] + shift
+            tt[0] = tt[0]
             if prev_date_time.replace(minute=0, second=0, microsecond=0) == tt[0].replace(minute=0, second=0,
                                                                                           microsecond=0):
                 prev_sum += tt[1]  # TODO: If missing or minus -> ignore
                 # TODO: Handle End of List
             else:
                 new_timeseries.append([tt[0].replace(minute=0, second=0, microsecond=0), prev_sum])
-                prev_date_time = tt[0] + shift
+                prev_date_time = tt[0]
                 prev_sum = tt[1]
 
     return new_timeseries
@@ -240,6 +237,7 @@ try:
 
     print('Finished processing files. Start Writing Theissen polygon avg in to CSV')
     # print(UPPER_THEISSEN_VALUES)
+
     fileName = RAIN_CSV_FILE.rsplit('.', 1)
     fileName = '{name}-{date}{tag}.{extention}'.format(name=fileName[0], date=date, tag='.' + tag if tag else '',
                                                        extention=fileName[1])

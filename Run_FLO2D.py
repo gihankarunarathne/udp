@@ -6,10 +6,10 @@ from distutils.dir_util import copy_tree
 try :
     root_dir = os.path.dirname(os.path.realpath(__file__))
 
-    FLO2D_DIR='FLO2D'
-    INFLOW_DAT_FILE='INFLOW.DAT'
-    RAINCELL_DAT_FILE='RAINCELL.DAT'
-    RUN_FLO2D_FILE='RUN_FLO2D.json'
+    FLO2D_DIR = 'FLO2D'
+    INFLOW_DAT_FILE = 'INFLOW.DAT'
+    RAINCELL_DAT_FILE = 'RAINCELL.DAT'
+    RUN_FLO2D_FILE = 'RUN_FLO2D.json'
 
     FLO2D_TEMPLATE = os.path.join(root_dir, 'Template')
     FLO2D_RUN_FOR_PROJECT = os.path.join(root_dir, 'RunForProjectFolder')
@@ -33,7 +33,7 @@ try :
 
         print('Run FLO2D on', date, ' on dir:', appDir)
 
-        if(os.path.isdir(appDir)) :
+        if os.path.isdir(appDir):
             print('Removing Directory:', appDir)
             shutil.rmtree(appDir)
 
@@ -68,7 +68,8 @@ try :
 
 except ValueError:
     raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-except Exception as e :
+except Exception as e:
+    print(e)
     traceback.print_exc()
 finally:
     print('Successfully run FLO2D')
