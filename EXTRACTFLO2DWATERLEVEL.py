@@ -181,8 +181,10 @@ try:
         print(e)
         traceback.print_exc()
 
+    CHANNEL_CELL_MAP = {}
     if 'CHANNEL_CELL_MAP' in flo2d_source:
         CHANNEL_CELL_MAP = flo2d_source['CHANNEL_CELL_MAP']
+    FLOOD_PLAIN_CELL_MAP = {}
     if 'FLOOD_PLAIN_CELL_MAP' in flo2d_source:
         FLOOD_PLAIN_CELL_MAP = flo2d_source['FLOOD_PLAIN_CELL_MAP']
     """

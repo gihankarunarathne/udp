@@ -83,28 +83,46 @@ try:
     if 'MYSQL_PASSWORD' in CONFIG:
         MYSQL_PASSWORD = CONFIG['MYSQL_PASSWORD']
 
-    CHANNEL_CELL_MAP = {
-        618: "N'Street-River",
-        616: "N'Street-Canal",
-        179: "Wellawatta",
-        684: "Dematagoda-Canal",
-        221: "Dehiwala",
-        1515: "Parliament Lake Bridge-Kotte Canal",
-        2158: "Parliament Lake-Out",
-        4280: "Madiwela-US",
-        3582: "Ambathale",
-        3581: "Madiwela-Out",
-        2290: "Salalihini-River",
-        2395: "Salalihini-Canal",
-        1076: "Kittampahuwa-River",
-        1075: "kittampahuwa-Out",
-        1062: "Kolonnawa-Canal",
-        814: "Heen Ela",
-        592: "Torington",
+    adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    # TODO: Pass source name as a paramter to script
+    flo2d_source = adapter.get_source(name='FLO2D')
+    try:
+        flo2d_source = json.loads(flo2d_source.get('parameters', "{}"))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+    CHANNEL_CELL_MAP = {}
+    if 'CHANNEL_CELL_MAP' in flo2d_source:
+        CHANNEL_CELL_MAP = flo2d_source['CHANNEL_CELL_MAP']
+    FLOOD_PLAIN_CELL_MAP = {}
+    if 'FLOOD_PLAIN_CELL_MAP' in flo2d_source:
+        FLOOD_PLAIN_CELL_MAP = flo2d_source['FLOOD_PLAIN_CELL_MAP']
+    """
+    {
+        "CHANNEL_CELL_MAP": {
+            "179": "Wellawatta",
+            "221": "Dehiwala",
+            "592": "Torington",
+            "616": "N'Street-Canal",
+            "618": "N'Street-River",
+            "684": "Dematagoda-Canal",
+            "814": "Heen Ela",
+            "1062": "Kolonnawa-Canal",
+            "991": "kittampahuwa-Out",
+            "1161": "Kittampahuwa-River",
+            "1515": "Parliament Lake Bridge-Kotte Canal",
+            "2158": "Parliament Lake-Out",
+            "2396": "Salalihini-River",
+            "2496": "Salalihini-Canal",
+            "3580": "Madiwela-Out",
+            "3673": "Ambathale",
+            "3559": "Madiwela-US"
+        },
+        "FLOOD_PLAIN_CELL_MAP": {
+            "2265": "Parliament Lake"
+        }
     }
-    FLOOD_PLAIN_CELL_MAP = {
-        2265: "Parliament Lake",
-    }
+    """
 
     ELEMENT_NUMBERS = CHANNEL_CELL_MAP.keys()
     FLOOD_ELEMENT_NUMBERS = FLOOD_PLAIN_CELL_MAP.keys()
@@ -283,7 +301,7 @@ try:
             for line in lines:
                 if line.startswith('CHANNEL HYDROGRAPH FOR ELEMENT NO:', 5):
                     seriesSize = 0
-                    elementNo = int(line.split()[5])
+                    elementNo = line.split()[5]
 
                     if elementNo in ELEMENT_NUMBERS:
                         isWaterLevelLines = True
@@ -303,7 +321,7 @@ try:
                 if isSeriesComplete:
                     baseTime = datetime.strptime('%s %s' % (start_date, start_time), '%Y-%m-%d %H:%M:%S')
                     timeseries = []
-                    elementNo = int(waterLevelLines[0].split()[5])
+                    elementNo = waterLevelLines[0].split()[5]
                     print('Extracted Cell No', elementNo, CHANNEL_CELL_MAP[elementNo])
                     for ts in waterLevelLines[1:]:
                         v = ts.split()
