@@ -16,11 +16,14 @@ Usage: ./TIDAL_TO_OUTFLOW.py [-d YYYY-MM-DD] [-h]
 -h  --help          Show usage
 -d  --date          Model State Date in YYYY-MM. Default is current date.
 -t  --time          Model State Time in HH:MM:SS. Default is current time.
-    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format. Default is same as -d(date).
-    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format. Default is same as -t(date).
+    --start-date    Start date of timeseries which need to run the forecast in YYYY-MM-DD format.
+                    Default is same as -d(date).
+    --start-time    Start time of timeseries which need to run the forecast in HH:MM:SS format.
+                    Default is same as -t(date).
 -T  --tag           Tag to differential simultaneous Forecast Runs E.g. wrf1, wrf2 ...
 -f  --forceInsert   Force Insert into the database. May override existing values.
--n  --name          Name field value of the Run table in Database. Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
+-n  --name          Name field value of the Run table in Database.
+                    Use time format such as 'Cloud-1-<%H:%M:%S>' to replace with time(t).
 """
     print(usage_text)
 
@@ -30,18 +33,18 @@ def get_forecast_timeseries(my_adapter, my_event_id, my_opts):
     new_timeseries = []
     if len(existing_timeseries) > 0 and len(existing_timeseries[0]['timeseries']) > 0:
         existing_timeseries = existing_timeseries[0]['timeseries']
-        base_date_time = datetime.strptime(my_opts.get('from', existing_timeseries[0][0]), '%Y-%m-%d %H:%M:%S')
-        for step in existing_timeseries:
-            if step[0] - step[0].replace(minute=0, second=0, microsecond=0) > timedelta(minutes=30):
+        for ex_step in existing_timeseries:
+            if ex_step[0] - ex_step[0].replace(minute=0, second=0, microsecond=0) > timedelta(minutes=30):
                 new_timeseries.append(
-                    [step[0].replace(minute=0, second=0, microsecond=0) + timedelta(hours=1), step[1]])
+                    [ex_step[0].replace(minute=0, second=0, microsecond=0) + timedelta(hours=1), ex_step[1]])
             else:
                 new_timeseries.append(
-                    [step[0].replace(minute=0, second=0, microsecond=0), step[1]])
+                    [ex_step[0].replace(minute=0, second=0, microsecond=0), ex_step[1]])
 
     return new_timeseries
 
 
+f = None
 try:
     CONFIG = json.loads(open('CONFIG.json').read())
     # print('Config :: ', CONFIG)
@@ -98,9 +101,9 @@ try:
             date = arg
         elif opt in ("-t", "--time"):
             time = arg
-        elif opt in ("--start-date"):
+        elif opt in "--start-date":
             startDate = arg
-        elif opt in ("--start-time"):
+        elif opt in "--start-time":
             startTime = arg
         elif opt in ("-T", "--tag"):
             tag = arg
@@ -175,4 +178,5 @@ except Exception as e:
     print(e)
     traceback.print_exc()
 finally:
-    f.close()
+    if f:
+        f.close()
