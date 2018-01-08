@@ -21,7 +21,7 @@
 
     "FLO2D_RAINCELL_DIR_PATH" : "/mnt/disks/wrf-mod/OUTPUT/kelani-basin",
     "INFLOW_DAT_FILE"   : "./FLO2D/INFLOW.DAT",
-    "OUTFLOW_DAT_FILE"   : "./FLO2D/OUTFLOW.DAT",
+    "OUTFLOW_DAT_FILE"  : "./FLO2D/OUTFLOW.DAT",
     "BASE_OUT_FILE"     : "BASE.OUT",
     "HYCHAN_OUT_FILE"   : "HYCHAN.OUT",
     "INIT_WL_CONFIG"    : "./Template/INITWL.CONF",
