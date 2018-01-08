@@ -23,6 +23,7 @@ if 'HOST_PORT' in CONFIG:
 
 FLO2D_DIR = 'FLO2D'
 INFLOW_DAT_FILE = 'INFLOW.DAT'
+OUTFLOW_DAT_FILE = 'OUTFLOW.DAT'
 RAINCELL_DAT_FILE = 'RAINCELL.DAT'
 RUN_FLO2D = 'RUN_FLO2D'
 RUN_FLO2D_FILE = 'RUN_FLO2D.json'
@@ -60,6 +61,27 @@ class StoreHandler(BaseHTTPRequestHandler):
             inflow_file = open(inflow_dat_file_path, 'w')
             inflow_file.write(data.decode())
             inflow_file.close()
+
+            self.send_response(200)
+            self.send_header('Content-type', 'text/json')
+            self.end_headers()
+            return
+
+        # Handle OUTFLOW.DAT file
+        if self.path.startswith('/' + OUTFLOW_DAT_FILE):
+            date = self.path[len('/' + OUTFLOW_DAT_FILE) + 1:]
+            print('POST request on ', self.path, date)
+            length = self.headers['content-length']
+            data = self.rfile.read(int(length))
+            # print('DATA:', data)
+
+            flo2d_dir_path = os.path.join(curdir, FLO2D_DIR)
+            # Temporary write into FLO2D dir. Later move into FLO2D model dir while Running the model.
+            outflow_dat_file_path = pjoin(flo2d_dir_path, OUTFLOW_DAT_FILE)
+
+            outflow_file = open(outflow_dat_file_path, 'w')
+            outflow_file.write(data.decode())
+            outflow_file.close()
 
             self.send_response(200)
             self.send_header('Content-type', 'text/json')

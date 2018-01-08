@@ -12,6 +12,7 @@ try:
 
     FLO2D_DIR = 'FLO2D'
     INFLOW_DAT_FILE = 'INFLOW.DAT'
+    OUTFLOW_DAT_FILE = 'OUTFLOW.DAT'
     RAINCELL_DAT_FILE = 'RAINCELL.DAT'
     RUN_FLO2D_FILE = 'RUN_FLO2D.json'
 
@@ -51,9 +52,11 @@ try:
         print('Copied FLO2D templates')
 
         FLO2D_DIR_PATH = os.path.join(root_dir, FLO2D_DIR)
-        # Move INFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir
+        # Move INFLOW.DAT, OUTFLOW.DAT, RAINCELL.DAT and RUN_FLO2D files into model dir
         INFLOW_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, INFLOW_DAT_FILE)
         shutil.move(INFLOW_DAT_FILE_PATH, appDir)
+        OUTFLOW_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, OUTFLOW_DAT_FILE)
+        shutil.move(OUTFLOW_DAT_FILE_PATH, appDir)
         RAINCELL_DAT_FILE_PATH = os.path.join(FLO2D_DIR_PATH, RAINCELL_DAT_FILE)
         shutil.move(RAINCELL_DAT_FILE_PATH, appDir)
         RUN_FLO2D_FILE_PATH = os.path.join(FLO2D_DIR_PATH, RUN_FLO2D_FILE)

@@ -100,6 +100,7 @@ DSS_INPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_INPUT_FILE'))
 DSS_OUTPUT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.DSS_OUTPUT_FILE'))
 
 INFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.INFLOW_DAT_FILE'))
+OUTFLOW_DAT_FILE=$(trimQuotes $(cat CONFIG.json | jq '.OUTFLOW_DAT_FILE'))
 META_FLO2D_DIR=${ROOT_DIR}/META_FLO2D
 FLO2D_DIR=${ROOT_DIR}/FLO2D
 
@@ -258,6 +259,7 @@ main() {
 
     if [ ! -z ${TAG} ]; then
         INFLOW_DAT_FILE=${INFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
+        OUTFLOW_DAT_FILE=${OUTFLOW_DAT_FILE/.DAT/".$TAG.DAT"}
         HEC_HMS_MODEL_DIR=${HEC_HMS_MODEL_DIR}.${TAG}
     fi
 
@@ -364,10 +366,26 @@ main() {
              exit 1
         fi
 
+        # Read Tidal Forecast values, then create OUTFLOW.DAT file for FLO2D
+        ./TIDAL_TO_OUTFLOW.py  -d ${forecast_date} -t ${forecast_time} \
+            --start-date ${timeseries_start_date} --start-time ${timeseries_start_time} \
+            `[[ -z ${TAG} ]] && echo "" || echo "--tag $TAG"` \
+            `[[ -z ${FORCE_RUN} ]] && echo "" || echo "-f"` \
+            `[[ -z ${RUN_NAME} ]] && echo "" || echo "--name $RUN_NAME"`
+        ret=$?
+        if [ ${ret} -ne 0 ]; then
+             echo "Error in creating FLO2D OUTFLOW.DAT using Tidal data"
+             exit 1
+        fi
+
         if [ ${FORCE_EXIT} == false ]; then
             # Send INFLOW.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with INFLOW.DAT"
             curl -X POST --data-binary @${INFLOW_DAT_FILE}  ${WINDOWS_HOST}/INFLOW.DAT?${forecast_date}
+
+            # Send OUTFLOW.DAT file into Windows
+            echo "Send POST request to $WINDOWS_HOST with OUTFLOW.DAT"
+            curl -X POST --data-binary @${OUTFLOW_DAT_FILE}  ${WINDOWS_HOST}/OUTFLOW.DAT?${forecast_date}
 
             # Send RAINCELL.DAT file into Windows
             echo "Send POST request to $WINDOWS_HOST with RAINCELL.DAT"
