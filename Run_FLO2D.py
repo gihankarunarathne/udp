@@ -1,9 +1,13 @@
 #!/usr/bin/python
 
-import sys, string, os, datetime, shutil, argparse, traceback
+import argparse
+import datetime
+import os
+import shutil
+import traceback
 from distutils.dir_util import copy_tree
 
-try :
+try:
     root_dir = os.path.dirname(os.path.realpath(__file__))
 
     FLO2D_DIR = 'FLO2D'
@@ -22,13 +26,13 @@ try :
 
     # Default run for current day
     now = datetime.datetime.now()
-    if args.date :
+    if args.date:
         now = datetime.datetime.strptime(args.date, '%Y-%m-%d')
     date = now.strftime("%Y-%m-%d")
 
     try:
         appDir = os.path.join(root_dir, date + '_Kelani')
-        if args.model_dir :
+        if args.model_dir:
             appDir = os.path.join(root_dir, args.model_dir)
 
         print('Run FLO2D on', date, ' on dir:', appDir)
