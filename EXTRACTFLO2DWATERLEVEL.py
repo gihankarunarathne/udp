@@ -205,11 +205,11 @@ try:
             "2396": "Salalihini-River",
             "2496": "Salalihini-Canal",
             "3580": "Madiwela-Out",
-            "3673": "Ambathale",
-            "3559": "Madiwela-US"
+            "3673": "Ambathale"
         },
         "FLOOD_PLAIN_CELL_MAP": {
-            "2265": "Parliament Lake"
+            "2265": "Parliament Lake",
+            "3559": "Madiwela-US"
         }
     }
     """
