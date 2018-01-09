@@ -136,7 +136,7 @@ def getWaterLevelOfChannels(lines, channels=None):
         v = line.split()
         if v[0] in channels:
             # Get flood level (Elevation)
-            water_levels[int(v[0])] = v[1]
+            water_levels[v[0]] = v[1]
             # Get flood depth (Depth)
             # water_levels[int(v[0])] = v[2]
 
