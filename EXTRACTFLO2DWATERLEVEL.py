@@ -78,7 +78,12 @@ def save_forecast_timeseries(my_adapter, my_timeseries, my_model_date, my_model_
     # Check whether existing station
     force_insert = my_opts.get('forceInsert', False)
     station = my_opts.get('station', '')
-    # TODO: Check whether station exist in Database
+    is_station_exists = adapter.get_station({'name': station})
+    if is_station_exists is None:
+        print('WARNING: Station %s does not exists. Continue with others.' % station)
+        return
+    # TODO: Create if station does not exists.
+
     run_name = my_opts.get('run_name', 'Cloud-1')
     less_char_index = run_name.find('<')
     greater_char_index = run_name.find('>')
