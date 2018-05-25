@@ -121,17 +121,6 @@ try:
         elif opt in ("-T", "--tag"):
             tag = arg
 
-    UPPER_CATCHMENT_WEIGHTS = {
-        # 'Attanagalla'   : 1/7,    # 1
-        'Daraniyagala': 0.146828,  # 2
-        'Glencourse': 0.208938,  # 3
-        'Hanwella': 0.078722,  # 4
-        'Holombuwa': 0.163191,  # 5
-        'Kitulgala': 0.21462,  # 6
-        'Norwood': 0.187701  # 7
-    }
-    UPPER_CATCHMENTS = UPPER_CATCHMENT_WEIGHTS.keys()
-
     KELANI_UPPER_BASIN_WEIGHTS = {
         'mean-rf': 1
     }
@@ -168,21 +157,6 @@ try:
     print('RFTOCSV startTime:', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(' RFTOCSV run for', date, '@', time, tag)
     print(' With Custom starting', startDate, '@', startTime, ' using RF data of ', rfForecastedDate)
-
-    # TODO: Do not use any more, using WRF generated KUB
-    UPPER_THEISSEN_VALUES = OrderedDict()
-    for catchment in UPPER_CATCHMENTS:
-        for filename in glob.glob(os.path.join(RF_DIR_PATH, '%s-%s*.txt' % (catchment, rfForecastedDate))):
-            print('Start Operating on (Upper) ', filename)
-            csvCatchment = csv.reader(open(filename, 'r'), delimiter=' ', skipinitialspace=True)
-            csvCatchment = list(csvCatchment)
-            for row in csvCatchment:
-                # print(row[0].replace('_', ' '), row[1].strip(' \t'))
-                d = datetime.datetime.strptime(row[0].replace('_', ' '), '%Y-%m-%d %H:%M:%S')
-                key = d.timestamp()
-                if key not in UPPER_THEISSEN_VALUES:
-                    UPPER_THEISSEN_VALUES[key] = 0
-                UPPER_THEISSEN_VALUES[key] += float(row[1].strip(' \t')) * UPPER_CATCHMENT_WEIGHTS[catchment]
 
     # TODO: Need to be replace by retrieving data from database
     KELANI_UPPER_BASIN_VALUES = OrderedDict()
@@ -262,8 +236,8 @@ try:
         lastObsDateTime = kub_tt[0]
 
     # Iterate through each timestamp
-    for avg in UPPER_THEISSEN_VALUES:
-        # print(avg, UPPER_THEISSEN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
+    for avg in KELANI_UPPER_BASIN_VALUES:
+        # print(avg, KELANI_UPPER_BASIN_VALUES[avg], LOWER_THEISSEN_VALUES[avg])
         d = datetime.datetime.fromtimestamp(avg)
         if d > lastObsDateTime:
             csvWriter.writerow([d.strftime('%Y-%m-%d %H:%M:%S'), "%.2f" % KELANI_UPPER_BASIN_VALUES[avg],
